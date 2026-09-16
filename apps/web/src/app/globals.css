@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f1b2d;
+  --navy: #122046;
+  --muted: #6b7a90;
+  --border: #e6ebf5;
+  --surface: #ffffff;
+  --surface-soft: #f5f8ff;
+  --primary: #2962ff;
+  --primary-dark: #1a4de0;
+  --primary-soft: #e8f0ff;
+  --success: #22c55e;
+  --orange: #ff8a3d;
+  --violet: #7c5cff;
+  --pink: #ff5d8f;
+  --teal: #14b8a6;
+  --radius: 16px;
+  --shadow-card: 0 10px 30px rgba(18, 32, 70, 0.06);
+  --shadow-soft: 0 14px 40px rgba(41, 98, 255, 0.1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-navy: var(--navy);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-soft: var(--primary-soft);
+  --color-success: var(--success);
+  --color-orange: var(--orange);
+  --color-violet: var(--violet);
+  --color-pink: var(--pink);
+  --color-teal: var(--teal);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-outfit);
+  --font-hindi: var(--font-noto-devanagari);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-outfit), var(--font-noto-devanagari), sans-serif;
+}
+
+::selection {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.font-display {
+  font-family: var(--font-outfit), var(--font-noto-devanagari), sans-serif;
+}
+
+.font-hindi {
+  font-family: var(--font-noto-devanagari), var(--font-outfit), sans-serif;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.65s ease-out both;
+}
+
+.animate-fade-up-delay {
+  animation: fade-up 0.65s ease-out 0.12s both;
+}
+
+.animate-fade-up-delay-2 {
+  animation: fade-up 0.65s ease-out 0.24s both;
+}
+
+.animate-float {
+  animation: float-soft 5s ease-in-out infinite;
+}
