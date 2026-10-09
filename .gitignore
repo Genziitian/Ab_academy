@@ -14,3 +14,4 @@ yarn-error.log*
 .turbo/
 .vercel/
 *.tsbuildinfo
+supabase/.temp/

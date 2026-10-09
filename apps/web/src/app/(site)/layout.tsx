@@ -3,7 +3,7 @@ import { Noto_Sans_Devanagari, Outfit } from "next/font/google";
 import { MobileExploreBar } from "@/components/MobileExploreBar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import "./globals.css";
+import "../globals.css";
 
 const outfit = Outfit({
   variable: "--font-outfit",

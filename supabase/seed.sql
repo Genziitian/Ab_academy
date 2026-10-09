@@ -1,11 +1,13 @@
--- Seed catalog for Akhand Bharat Academy (Bihar Board first wave)
+-- Seeded rows use fixed ids and ON CONFLICT DO NOTHING, so this file is safe
+-- to run more than once.
 
 insert into public.teachers (id, display_name, bio, subjects)
 values
   ('11111111-1111-1111-1111-111111111101', 'Amit Sir', 'Mathematics faculty', array['Mathematics']),
   ('11111111-1111-1111-1111-111111111102', 'Priya Ma''am', 'Science faculty', array['Science']),
   ('11111111-1111-1111-1111-111111111103', 'Ravi Sir', 'Commerce faculty', array['Accountancy','Business Studies','Economics']),
-  ('11111111-1111-1111-1111-111111111104', 'Faculty Team', 'Multi-subject faculty', array['General']);
+  ('11111111-1111-1111-1111-111111111104', 'Faculty Team', 'Multi-subject faculty', array['General'])
+on conflict (id) do nothing;
 
 insert into public.courses (
   id, slug, title, description, board, class_level, language,
@@ -109,19 +111,24 @@ insert into public.course_teachers (course_id, teacher_id, is_primary) values
   ('22222222-2222-2222-2222-222222222203', '11111111-1111-1111-1111-111111111102', true),
   ('22222222-2222-2222-2222-222222222204', '11111111-1111-1111-1111-111111111104', true),
   ('22222222-2222-2222-2222-222222222205', '11111111-1111-1111-1111-111111111104', true),
-  ('22222222-2222-2222-2222-222222222206', '11111111-1111-1111-1111-111111111103', true);
+  ('22222222-2222-2222-2222-222222222206', '11111111-1111-1111-1111-111111111103', true)
+on conflict (course_id, teacher_id) do nothing;
 
 insert into public.course_batches (id, course_id, name, starts_on, is_active) values
   ('33333333-3333-3333-3333-333333333301', '22222222-2222-2222-2222-222222222201', '2027 Board Batch', '2026-04-01', true),
   ('33333333-3333-3333-3333-333333333302', '22222222-2222-2222-2222-222222222202', '2027 Board Batch', '2026-04-01', true),
-  ('33333333-3333-3333-3333-333333333303', '22222222-2222-2222-2222-222222222203', '2027 Board Batch', '2026-04-01', true);
+  ('33333333-3333-3333-3333-333333333303', '22222222-2222-2222-2222-222222222203', '2027 Board Batch', '2026-04-01', true)
+on conflict (id) do nothing;
 
 insert into public.subjects (id, batch_id, name, sort_order) values
-  ('44444444-4444-4444-4444-444444444401', '33333333-3333-3333-3333-333333333302', 'Mathematics', 1);
+  ('44444444-4444-4444-4444-444444444401', '33333333-3333-3333-3333-333333333302', 'Mathematics', 1)
+on conflict (id) do nothing;
 
 insert into public.chapters (id, subject_id, title, sort_order) values
-  ('55555555-5555-5555-5555-555555555501', '44444444-4444-4444-4444-444444444401', 'Real Numbers', 1);
+  ('55555555-5555-5555-5555-555555555501', '44444444-4444-4444-4444-444444444401', 'Real Numbers', 1)
+on conflict (id) do nothing;
 
-insert into public.lessons (chapter_id, title, lesson_type, sort_order, is_demo, is_published) values
-  ('55555555-5555-5555-5555-555555555501', 'Introduction (Demo)', 'VIDEO', 1, true, true),
-  ('55555555-5555-5555-5555-555555555501', 'Euclid Division Lemma', 'VIDEO', 2, false, true);
+insert into public.lessons (id, chapter_id, title, lesson_type, sort_order, is_demo, is_published) values
+  ('66666666-6666-6666-6666-666666666601', '55555555-5555-5555-5555-555555555501', 'Introduction (Demo)', 'VIDEO', 1, true, true),
+  ('66666666-6666-6666-6666-666666666602', '55555555-5555-5555-5555-555555555501', 'Euclid Division Lemma', 'VIDEO', 2, false, true)
+on conflict (id) do nothing;
