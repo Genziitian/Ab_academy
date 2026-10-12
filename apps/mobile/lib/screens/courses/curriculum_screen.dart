@@ -6,85 +6,201 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../data/mock/mock_data.dart';
 import '../../data/models/course.dart';
 import '../../data/providers/app_providers.dart';
+import '../../data/providers/remote_providers.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/buttons.dart';
-import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 
+/// 08 · Course & curriculum — subject tabs over expandable chapters.
 class CurriculumScreen extends ConsumerWidget {
-  const CurriculumScreen({super.key});
+  const CurriculumScreen({super.key, this.courseId});
+
+  /// Falls back to the student's first course when opened without one.
+  final String? courseId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final subject = ref.watch(curriculumSubjectProvider);
+    final id = courseId ?? MockData.scienceCrash.id;
+    final course = ref.watch(remoteCourseProvider(id)).value;
+    final chaptersAsync = ref.watch(remoteCurriculumProvider(id));
+    final subjects = (course?.subjects.isNotEmpty ?? false)
+        ? course!.subjects
+        : MockData.scienceSubjects;
+    final selected = ref.watch(curriculumSubjectProvider);
+    final subject = subjects.contains(selected) ? selected : subjects.first;
     final expanded = ref.watch(expandedChapterProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
+      appBar: AppTopBar(
+        title: 'Curriculum',
+        subtitle: course?.title ?? 'My course',
+        bottom: subjects.length > 1
+            ? UnderlineTabs(
+                tabs: subjects.map(_short).toList(),
+                selected: _short(subject),
+                gap: 18,
+                onSelected: (label) => ref
+                    .read(curriculumSubjectProvider.notifier)
+                    .select(subjects.firstWhere((s) => _short(s) == label)),
+              )
+            : null,
+      ),
+      body: chaptersAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: EmptyState(
+            icon: LucideIcons.wifiOff,
+            title: 'Could not load the curriculum',
+            body: 'Check your connection and try again.',
+          ),
+        ),
+        data: (all) {
+          // Mock chapters and single-subject courses show everything.
+          final chapters = all.any((c) => c.subject == subject)
+              ? all.where((c) => c.subject == subject).toList()
+              : subjects.length == 1
+              ? all
+              : <Chapter>[];
+          return ListView.separated(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            itemCount: chapters.isEmpty ? 1 : chapters.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
+            itemBuilder: (context, index) {
+              if (chapters.isEmpty) {
+                return EmptyState(
+                  icon: LucideIcons.bookOpen,
+                  title: 'Chapters coming soon',
+                  body: 'Teachers are still adding $subject lessons.',
+                );
+              }
+              final chapter = chapters[index];
+              return _ChapterCard(
+                chapter: chapter,
+                displayNumber: index + 1,
+                expanded: !chapter.isLocked && expanded == chapter.number,
+                onToggle: chapter.isLocked
+                    ? null
+                    : () => ref
+                          .read(expandedChapterProvider.notifier)
+                          .toggle(chapter.number),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  static String _short(String subject) =>
+      subject == 'Mathematics' ? 'Maths' : subject;
+}
+
+class _ChapterCard extends StatelessWidget {
+  const _ChapterCard({
+    required this.chapter,
+    required this.displayNumber,
+    required this.expanded,
+    required this.onToggle,
+  });
+
+  final Chapter chapter;
+  final int displayNumber;
+  final bool expanded;
+  final VoidCallback? onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final locked = chapter.isLocked;
+    return Opacity(
+      opacity: locked ? 0.6 : 1,
+      child: AppCard(
+        padding: EdgeInsets.zero,
+        clip: true,
+        borderColor: expanded ? AppColors.primaryTintBorder : AppColors.border,
         child: Column(
           children: [
-            Container(
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(bottom: BorderSide(color: AppColors.divider)),
-              ),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 52,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Row(
+            InkWell(
+              onTap: onToggle,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: locked
+                            ? AppColors.fillMuted
+                            : AppColors.primaryTint,
+                        borderRadius: AppRadius.xs,
+                      ),
+                      child: Text(
+                        displayNumber.toString().padLeft(2, '0'),
+                        style: AppText.tabular(
+                          12,
+                          FontWeight.w600,
+                          color: locked
+                              ? AppColors.textSubtle
+                              : AppColors.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SquareIconButton(
-                            icon: LucideIcons.chevronLeft,
-                            onPressed: () => context.pop(),
+                          Text(chapter.title, style: AppText.cardTitle),
+                          const SizedBox(height: 1),
+                          Text(
+                            locked
+                                ? (chapter.unlockLabel ?? 'Locked')
+                                : chapter.progressLabel,
+                            style: AppText.meta,
                           ),
-                          const SizedBox(width: 12),
-                          Text('Classes', style: AppText.tabular(16, FontWeight.w700)),
                         ],
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: ChipRow(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      children: [
-                        for (final name in MockData.allSubjects)
-                          FilterChipPill(
-                            label: name,
-                            selected: subject == name,
-                            onTap: () => ref.read(curriculumSubjectProvider.notifier).select(name),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
+                    if (locked)
+                      Text(
+                        'Locked',
+                        style: AppText.tabular(
+                          12,
+                          FontWeight.w400,
+                          color: AppColors.textSubtle,
+                        ),
+                      )
+                    else
+                      Text(
+                        expanded ? '−' : '+',
+                        style: AppText.tabular(
+                          16,
+                          FontWeight.w400,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                itemCount: MockData.chapters.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final chapter = MockData.chapters[index];
-                  if (chapter.isLocked) return _LockedChapterCard(chapter: chapter);
-                  return _ChapterCard(
-                    chapter: chapter,
-                    expanded: expanded == chapter.number,
-                    onToggle: () =>
-                        ref.read(expandedChapterProvider.notifier).toggle(chapter.number),
-                  );
-                },
+            if (expanded && chapter.lessons.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                child: Column(
+                  children: [
+                    for (final lesson in chapter.lessons) ...[
+                      LessonRow(lesson: lesson),
+                      if (lesson != chapter.lessons.last)
+                        const SizedBox(height: 6),
+                    ],
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -92,107 +208,7 @@ class CurriculumScreen extends ConsumerWidget {
   }
 }
 
-class _ChapterCard extends StatelessWidget {
-  const _ChapterCard({required this.chapter, required this.expanded, required this.onToggle});
-
-  final Chapter chapter;
-  final bool expanded;
-  final VoidCallback onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final complete = chapter.lessonsCompleted == chapter.lessonsTotal;
-    return AppCard(
-      padding: EdgeInsets.zero,
-      clip: true,
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: onToggle,
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(chapter.label, style: AppText.eyebrow(letterSpacing: 0.8)),
-                        const SizedBox(height: 5),
-                        Text(chapter.title, style: AppText.tabular(15.5, FontWeight.w700)),
-                        const SizedBox(height: 7),
-                        Row(
-                          children: [
-                            ProgressBar(
-                              value: chapter.progress,
-                              width: 74,
-                              height: 5,
-                              color: complete || chapter.progress >= 0.75
-                                  ? AppColors.science
-                                  : AppColors.primary,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              chapter.progressLabel,
-                              style: AppText.tabular(
-                                11.5,
-                                FontWeight.w500,
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  AnimatedRotation(
-                    turns: expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 220),
-                    child: const Icon(
-                      LucideIcons.chevronDown,
-                      size: 18,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          AnimatedCrossFade(
-            firstChild: const SizedBox(width: double.infinity),
-            secondChild: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: AppColors.dividerSoft)),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Column(
-                children: [
-                  if (chapter.lessons.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-                      child: Text(
-                        'Lessons for this chapter unlock as the batch progresses.',
-                        style: AppText.metaSm.copyWith(height: 1.5),
-                      ),
-                    )
-                  else
-                    for (final lesson in chapter.lessons) LessonRow(lesson: lesson),
-                ],
-              ),
-            ),
-            crossFadeState: expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-            duration: const Duration(milliseconds: 220),
-            sizeCurve: Curves.easeInOut,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// One lesson inside an expanded chapter — five visual states from the design.
+/// One lesson in a chapter: status tile, title and meta line.
 class LessonRow extends StatelessWidget {
   const LessonRow({super.key, required this.lesson});
 
@@ -200,209 +216,111 @@ class LessonRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCurrent = lesson.state == LessonState.current;
+    final current = lesson.state == LessonState.current;
+    final onTap = switch (lesson.state) {
+      LessonState.current ||
+      LessonState.completed => () => context.push(Routes.lesson(lesson.id)),
+      LessonState.live => () => context.push(Routes.liveLobby),
+      LessonState.notes => () => context.push(
+        Routes.pdf(lesson.id, lesson: true),
+        extra: lesson.title,
+      ),
+      LessonState.locked => null,
+    };
 
-    return InkWell(
-      onTap: switch (lesson.state) {
-        LessonState.current ||
-        LessonState.completed => () => context.push(Routes.lesson(lesson.id)),
-        LessonState.live => () => context.push(Routes.liveLobby),
-        LessonState.notes => () => showDemoSnack(context, 'Downloading ${lesson.title}'),
-        LessonState.locked => null,
-      },
-      child: Container(
-        color: isCurrent ? const Color(0xFFF7F8FC) : Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-        child: Row(
-          children: [
-            _LessonStateIcon(state: lesson.state),
-            const SizedBox(width: 13),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    lesson.title,
-                    style: AppText.tabular(
-                      13.5,
-                      switch (lesson.state) {
-                        LessonState.current || LessonState.live => FontWeight.w700,
-                        _ => FontWeight.w500,
-                      },
-                      color: switch (lesson.state) {
-                        LessonState.completed => AppColors.textMuted,
-                        LessonState.locked => AppColors.textFaint,
-                        _ => AppColors.ink,
-                      },
-                    ).copyWith(height: 1.3),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    switch (lesson.state) {
-                      LessonState.live => lesson.scheduleLabel ?? '',
-                      LessonState.notes => lesson.sizeLabel ?? '',
-                      _ => lesson.subtitle,
-                    },
-                    style: AppText.tabular(
-                      11.5,
-                      FontWeight.w400,
-                      color: lesson.state == LessonState.live
-                          ? AppColors.live
-                          : (lesson.state == LessonState.current
-                                ? AppColors.textSubtle
-                                : AppColors.textFaint),
+    final meta = switch (lesson.state) {
+      LessonState.current => lesson.resumeLabel ?? lesson.durationLabel ?? '',
+      LessonState.live => lesson.scheduleLabel ?? '',
+      LessonState.notes => lesson.sizeLabel ?? '',
+      _ => lesson.durationLabel ?? '',
+    }.replaceAll('•', '·');
+
+    final metaColor = switch (lesson.state) {
+      LessonState.current => AppColors.primary,
+      LessonState.live => AppColors.liveInk,
+      _ => AppColors.textMuted,
+    };
+
+    return Material(
+      color: current ? AppColors.primarySoft : AppColors.background,
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.xs,
+        side: current
+            ? const BorderSide(color: AppColors.primaryTintBorder)
+            : BorderSide.none,
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.xs,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+          child: Row(
+            children: [
+              _StatusTile(state: lesson.state),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      lesson.title,
+                      style: AppText.tabular(13, FontWeight.w600),
                     ),
-                  ),
-                ],
+                    Text(
+                      meta,
+                      style: AppText.tabular(
+                        11,
+                        FontWeight.w400,
+                        color: metaColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            _LessonTrailing(lesson: lesson),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _LessonStateIcon extends StatelessWidget {
-  const _LessonStateIcon({required this.state});
+class _StatusTile extends StatelessWidget {
+  const _StatusTile({required this.state});
 
   final LessonState state;
 
   @override
   Widget build(BuildContext context) {
+    final (bg, fg, label, size) = switch (state) {
+      LessonState.completed => (
+        AppColors.successTint,
+        AppColors.success,
+        '✓',
+        11.0,
+      ),
+      LessonState.current => (AppColors.primary, Colors.white, '▶', 10.0),
+      LessonState.live => (AppColors.liveTint, AppColors.liveInk, '●', 10.0),
+      LessonState.notes => (AppColors.pdfTint, AppColors.liveInk, 'PDF', 8.0),
+      LessonState.locked => (
+        AppColors.fillMuted,
+        AppColors.textSubtle,
+        '🔒',
+        10.0,
+      ),
+    };
     return Container(
-      width: 30,
-      height: 30,
+      width: 24,
+      height: 24,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: switch (state) {
-          LessonState.completed => AppColors.scienceTint,
-          LessonState.current => AppColors.primaryTint,
-          LessonState.live => AppColors.liveTint,
-          LessonState.notes => AppColors.fillMuted,
-          LessonState.locked => AppColors.fillMuted,
-        },
+        color: bg,
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
       ),
-      child: switch (state) {
-        LessonState.completed => const Icon(LucideIcons.check, size: 15, color: AppColors.science),
-        LessonState.current => const Icon(
-          Icons.play_arrow_rounded,
-          size: 17,
-          color: AppColors.primary,
-        ),
-        LessonState.live => const LiveDot(size: 8),
-        LessonState.notes => const Icon(LucideIcons.fileText, size: 14, color: Color(0xFFC43B3B)),
-        LessonState.locked => const Icon(LucideIcons.lock, size: 13, color: AppColors.textFaint),
-      },
-    );
-  }
-}
-
-class _LessonTrailing extends StatelessWidget {
-  const _LessonTrailing({required this.lesson});
-
-  final Lesson lesson;
-
-  @override
-  Widget build(BuildContext context) {
-    return switch (lesson.state) {
-      LessonState.current => const Icon(
-        LucideIcons.chevronRight,
-        size: 16,
-        color: AppColors.primary,
-      ),
-      LessonState.live => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: const BoxDecoration(
-          color: AppColors.primary,
-          borderRadius: BorderRadius.all(Radius.circular(9)),
-        ),
-        child: Text('Join', style: AppText.tabular(11.5, FontWeight.w700, color: Colors.white)),
-      ),
-      LessonState.notes => const Icon(LucideIcons.download, size: 17, color: AppColors.textMuted),
-      _ => const SizedBox.shrink(),
-    };
-  }
-}
-
-class _LockedChapterCard extends StatelessWidget {
-  const _LockedChapterCard({required this.chapter});
-
-  final Chapter chapter;
-
-  @override
-  Widget build(BuildContext context) {
-    return DottedBorderBox(
-      child: Row(
-        children: [
-          const Icon(LucideIcons.lock, size: 18, color: AppColors.textFaint),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${chapter.label.replaceAll('CHAPTER', 'Chapter')} · ${chapter.title}',
-                style: AppText.cardTitleSm.copyWith(color: AppColors.textSubtle),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                chapter.unlockLabel ?? '',
-                style: AppText.metaSm.copyWith(color: AppColors.textFaint),
-              ),
-            ],
-          ),
-        ],
+      child: Text(
+        label,
+        style: AppText.tabular(size, FontWeight.w700, color: fg),
       ),
     );
   }
-}
-
-/// Dashed hairline container used for locked and empty states.
-class DottedBorderBox extends StatelessWidget {
-  const DottedBorderBox({super.key, required this.child, this.padding = const EdgeInsets.all(16)});
-
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _DashedBorderPainter(),
-      child: Container(
-        padding: padding,
-        decoration: const BoxDecoration(
-          color: AppColors.surfaceHover,
-          borderRadius: AppRadius.card,
-        ),
-        child: child,
-      ),
-    );
-  }
-}
-
-class _DashedBorderPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.borderInput
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    final rrect = RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(18));
-    final path = Path()..addRRect(rrect);
-
-    for (final metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        canvas.drawPath(metric.extractPath(distance, distance + 5), paint);
-        distance += 10;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DashedBorderPainter oldDelegate) => false;
 }

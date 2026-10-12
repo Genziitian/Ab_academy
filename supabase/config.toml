@@ -36,3 +36,7 @@ secret = "env(SUPABASE_AUTH_GOOGLE_SECRET)"
 # http://127.0.0.1:54321/auth/v1/callback redirect URI added for local sign-in.
 redirect_uri = ""
 skip_nonce_check = false
+
+# The Razorpay webhook carries no user JWT; `checkout` verifies callers itself.
+[functions.checkout]
+verify_jwt = false

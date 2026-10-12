@@ -3,136 +3,144 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../data/mock/mock_data.dart';
 import '../../data/models/course.dart';
 import '../../data/providers/app_providers.dart';
+import '../../data/providers/remote_providers.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/buttons.dart';
-import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 
-class MyCoursesScreen extends ConsumerWidget {
-  const MyCoursesScreen({super.key});
+/// 07 · My courses — enrolled crash courses with progress. Shown as the
+/// "My courses" section of the Courses tab.
+class MyCoursesView extends ConsumerWidget {
+  const MyCoursesView({super.key, required this.onExplore});
+
+  /// Switches the Courses tab to the store.
+  final VoidCallback onExplore;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filter = ref.watch(courseFilterProvider);
-    final courses = ref.watch(filteredCoursesProvider);
+    final async = ref.watch(remoteMyCoursesProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(bottom: BorderSide(color: AppColors.divider)),
+    return RefreshIndicator(
+      onRefresh: () => ref.refresh(remoteMyCoursesProvider.future),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+        children: [
+          ...async.when(
+            loading: () => const [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 48),
+                child: Center(child: CircularProgressIndicator()),
               ),
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('My Courses', style: AppText.h3),
-                      SquareIconButton(
-                        icon: LucideIcons.search,
-                        onPressed: () => showDemoSnack(context, 'Course search coming soon'),
+            ],
+            error: (error, _) => [
+              EmptyState(
+                icon: LucideIcons.wifiOff,
+                title: 'Could not load your courses',
+                body: 'Check your connection and pull down to try again.',
+              ),
+            ],
+            data: (courses) {
+              final enrolled = courses
+                  .where((c) => c.progressPercent < 100)
+                  .toList();
+              final completed = courses
+                  .where((c) => c.progressPercent >= 100)
+                  .toList();
+              final shown = filter == 'Completed' ? completed : enrolled;
+              return [
+                SegmentedTabs(
+                  tabs: ['Enrolled (${enrolled.length})', 'Completed'],
+                  selected: filter == 'Completed'
+                      ? 'Completed'
+                      : 'Enrolled (${enrolled.length})',
+                  onSelected: (tab) => ref
+                      .read(courseFilterProvider.notifier)
+                      .select(
+                        tab.startsWith('Enrolled') ? 'Enrolled' : 'Completed',
                       ),
-                    ],
+                ),
+                const SizedBox(height: 16),
+                if (shown.isEmpty)
+                  EmptyState(
+                    icon: LucideIcons.bookOpen,
+                    title: filter == 'Completed'
+                        ? 'Nothing completed yet'
+                        : 'No crash courses yet',
+                    body: filter == 'Completed'
+                        ? 'Courses you finish will show up here.'
+                        : 'Pick a crash course for your class to start the 90-day plan.',
                   ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      for (final label in ['All', 'In Progress', 'Completed']) ...[
-                        if (label != 'All') const SizedBox(width: 8),
-                        FilterChipPill(
-                          label: label,
-                          selected: filter == label,
-                          onTap: () => ref.read(courseFilterProvider.notifier).select(label),
-                        ),
-                      ],
-                    ],
-                  ),
+                for (var i = 0; i < shown.length; i++) ...[
+                  if (i == 0 && filter != 'Completed')
+                    _FeaturedCourseCard(course: shown[i])
+                  else
+                    _CompactCourseCard(course: shown[i]),
+                  const SizedBox(height: 16),
                 ],
-              ),
-            ),
-            Expanded(
-              child: courses.isEmpty
-                  ? const _EmptyCourses()
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-                      itemCount: courses.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) =>
-                          _CourseCard(course: courses[index], primary: index == 0),
-                    ),
-            ),
-          ],
-        ),
+              ];
+            },
+          ),
+          _ExploreBanner(onTap: onExplore),
+        ],
       ),
     );
   }
 }
 
-class _CourseCard extends StatelessWidget {
-  const _CourseCard({required this.course, required this.primary});
+/// The current crash course: gradient header with the plan day, then stats.
+class _FeaturedCourseCard extends StatelessWidget {
+  const _FeaturedCourseCard({required this.course});
 
   final Course course;
 
-  /// First card gets the filled CTA, the rest an outlined one — as designed.
-  final bool primary;
-
   @override
   Widget build(BuildContext context) {
-    final isAllSubjects = course.subjects.length > 1;
-    final palette = SubjectPalette.fromName(course.subjects.first);
-    final bannerColor = isAllSubjects ? const Color(0xFFE8EAF7) : palette.tint;
-    final bannerInk = isAllSubjects ? AppColors.primary : palette.ink;
-    final badgeLabel = isAllSubjects
-        ? 'CLASS ${course.classLevel}'
-        : course.subjects.first.toUpperCase();
-
     return AppCard(
-      borderRadius: AppRadius.lg,
-      shadow: AppShadow.cardRaised,
       clip: true,
-      onTap: () => context.push(Routes.courseDetails(course.id)),
+      borderRadius: AppRadius.md,
+      onTap: () => context.push(Routes.curriculum, extra: course.id),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(
-            height: 132,
-            child: Stack(
+          Container(
+            height: 96,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: courseGradient(course.thumbnailHue),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  width: double.infinity,
-                  color: bannerColor,
-                  alignment: Alignment.center,
-                  child: Icon(
-                    isAllSubjects ? LucideIcons.bookOpen : LucideIcons.alignLeft,
-                    size: 42,
-                    color: bannerInk.withValues(alpha: 0.42),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.22),
+                    borderRadius: AppRadius.badge,
+                  ),
+                  child: Text(
+                    '${MockData.planDays}-DAY CRASH COURSE',
+                    style: AppText.badge(color: Colors.white),
                   ),
                 ),
-                Positioned(
-                  left: 16,
-                  top: 16,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                    ),
-                    child: Text(
-                      badgeLabel,
-                      style: AppText.eyebrow(color: bannerInk, size: 10, letterSpacing: 0.8),
+                if (course.planDay != null)
+                  Text(
+                    'Day ${course.planDay} of ${MockData.planDays}',
+                    style: AppText.tabular(
+                      12,
+                      FontWeight.w400,
+                      color: const Color(0xFFDBE6FF),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -141,66 +149,48 @@ class _CourseCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(course.title, style: AppText.cardTitleLg),
-                const SizedBox(height: 6),
-                Text(course.subtitle, style: AppText.metaSm.copyWith(fontSize: 12.5)),
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${course.progressPercent}% completed',
-                      style: AppText.tabular(12, FontWeight.w500, color: AppColors.textMuted),
-                    ),
-                    Text(
-                      course.chaptersShortLabel,
-                      style: AppText.tabular(12, FontWeight.w500, color: AppColors.textSubtle),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                ProgressBar(value: course.progress),
-                if (course.nextUpLabel != null && primary) ...[
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-                    decoration: const BoxDecoration(
-                      color: AppColors.surfaceMuted,
-                      borderRadius: AppRadius.xs,
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(LucideIcons.clock, size: 15, color: AppColors.primary),
-                        const SizedBox(width: 9),
-                        Expanded(
-                          child: Text(
-                            course.nextUpLabel!,
-                            style: AppText.tabular(
-                              12.5,
-                              FontWeight.w500,
-                              color: AppColors.textBodyAlt,
-                            ),
-                          ),
-                        ),
-                      ],
+                Text(course.title, style: AppText.tabular(16, FontWeight.w600)),
+                if (course.nextUpLabel != null) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    course.nextUpLabel!.replaceAll('•', '·'),
+                    style: AppText.tabular(
+                      13,
+                      FontWeight.w400,
+                      color: AppColors.textMuted,
                     ),
                   ),
                 ],
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: ProgressBar(value: course.progress)),
+                    const SizedBox(width: 10),
+                    Text(
+                      '${course.progressPercent}%',
+                      style: AppText.tabular(
+                        14,
+                        FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 14),
-                if (primary)
-                  PrimaryButton(
-                    label: 'Continue Learning',
-                    height: 48,
-                    onPressed: () => context.push(Routes.courseDetails(course.id)),
-                  )
-                else
-                  SecondaryButton(
-                    label: 'Continue Learning',
-                    height: 48,
-                    foreground: AppColors.primary,
-                    borderColor: const Color(0xFFD9DCE8),
-                    onPressed: () => context.push(Routes.courseDetails(course.id)),
-                  ),
+                Row(
+                  children: [
+                    for (final (value, label) in [
+                      (course.lessonsCount, 'Lessons'),
+                      (course.notesCount, 'Notes'),
+                      (course.liveClassesCount, 'Live'),
+                    ]) ...[
+                      if (label != 'Lessons') const SizedBox(width: 8),
+                      Expanded(
+                        child: _StatTile(value: '$value', label: label),
+                      ),
+                    ],
+                  ],
+                ),
               ],
             ),
           ),
@@ -210,34 +200,124 @@ class _CourseCard extends StatelessWidget {
   }
 }
 
-class _EmptyCourses extends StatelessWidget {
-  const _EmptyCourses();
+class _StatTile extends StatelessWidget {
+  const _StatTile({required this.value, required this.label});
+
+  final String value;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 22),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.borderInput, style: BorderStyle.solid),
-            borderRadius: AppRadius.md,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceMuted,
+        borderRadius: AppRadius.xs,
+      ),
+      child: Column(
+        children: [
+          Text(value, style: AppText.tabular(15, FontWeight.w700)),
+          Text(
+            label,
+            style: AppText.tabular(
+              10,
+              FontWeight.w400,
+              color: AppColors.textMuted,
+            ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+        ],
+      ),
+    );
+  }
+}
+
+class _CompactCourseCard extends StatelessWidget {
+  const _CompactCourseCard({required this.course});
+
+  final Course course;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      borderRadius: AppRadius.md,
+      onTap: () => context.push(Routes.curriculum, extra: course.id),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(LucideIcons.bookOpen, size: 30, color: AppColors.textDisabled),
-              const SizedBox(height: 10),
-              Text('No courses here yet', style: AppText.tabular(13.5, FontWeight.w700)),
-              const SizedBox(height: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      course.batchLabel.replaceAll('•', '·'),
+                      style: AppText.eyebrow(),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      course.title,
+                      style: AppText.tabular(16, FontWeight.w600),
+                    ),
+                    if (course.nextUpLabel != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        course.nextUpLabel!.replaceAll('•', '·'),
+                        style: AppText.tabular(
+                          13,
+                          FontWeight.w400,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
               Text(
-                'Try a different filter to see your other batches.',
-                textAlign: TextAlign.center,
-                style: AppText.meta.copyWith(height: 1.5),
+                '${course.progressPercent}%',
+                style: AppText.tabular(
+                  18,
+                  FontWeight.w700,
+                  color: AppColors.primary,
+                ),
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          ProgressBar(value: course.progress),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExploreBanner extends StatelessWidget {
+  const _ExploreBanner({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: const BoxDecoration(
+          color: AppColors.primaryTint,
+          borderRadius: AppRadius.card,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Explore more crash courses', style: AppText.rowTitle),
+            const Icon(
+              LucideIcons.arrowRight,
+              size: 18,
+              color: AppColors.primary,
+            ),
+          ],
         ),
       ),
     );

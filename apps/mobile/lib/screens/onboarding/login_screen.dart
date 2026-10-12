@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,9 +11,9 @@ import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/academy_mark.dart';
 import '../../widgets/buttons.dart';
 
+/// 02 · Login — phone number or Google.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -46,7 +47,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _snack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _continue() async {
@@ -69,13 +72,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     context.push(Routes.otp);
   }
 
-  /// Mock-data shortcut, so the app stays explorable without a backend. With
-  /// Supabase configured it refuses rather than faking a session.
+  /// Development shortcut past the SMS OTP.
+  ///
+  /// On mock data this just fakes a session. With Supabase configured it signs
+  /// in as the seeded demo student for real, so the app runs against live data
+  /// and RLS applies exactly as it would for any student.
   Future<void> _quickLogin() async {
-    if (AuthRepo.enabled) {
-      _snack('Quick login is disabled — sign in with your mobile number.');
+    if (_busy) return;
+    setState(() => _busy = true);
+
+    final result = await AuthRepo.quickLogin();
+    if (!mounted) return;
+    setState(() => _busy = false);
+
+    if (!result.ok) {
+      _snack(result.error ?? 'Quick login failed.');
       return;
     }
+
     await ref.read(sessionProvider.notifier).signIn();
     if (!mounted) return;
     context.go(Routes.home);
@@ -121,167 +135,175 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 48, 24, 0),
+        child: CustomScrollView(
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const AcademyMark(size: 44, strokeWidth: 3),
-                    const SizedBox(height: 32),
-                    Text('Welcome back', style: AppText.h1),
-                    const SizedBox(height: 8),
-                    Text('Continue your Bihar Board preparation', style: AppText.bodyLg),
-                    const SizedBox(height: 40),
-                    Text('Mobile number', style: AppText.labelStrong.copyWith(letterSpacing: 0.3)),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Container(
-                          height: 56,
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.borderInput),
-                            borderRadius: AppRadius.sm,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text('+91', style: AppText.tabular(15, FontWeight.w600)),
-                              const SizedBox(width: 6),
-                              const Icon(
-                                LucideIcons.chevronDown,
-                                size: 14,
-                                color: AppColors.textSubtle,
-                              ),
-                            ],
-                          ),
+                    ClipRRect(
+                      borderRadius: AppRadius.lg,
+                      child: AspectRatio(
+                        aspectRatio: 16 / 11,
+                        child: Image.asset(
+                          'assets/images/hero-students.png',
+                          fit: BoxFit.cover,
+                          semanticLabel:
+                              'Students learning with Akhand Bharat Academy',
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            height: 56,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              borderRadius: AppRadius.sm,
-                              border: Border.all(
-                                color: focused ? AppColors.primary : AppColors.borderInput,
-                                width: focused ? 1.5 : 1,
-                              ),
-                              boxShadow: focused
-                                  ? const [
-                                      BoxShadow(
-                                        color: AppColors.primaryTint,
-                                        spreadRadius: 4,
-                                        blurRadius: 0,
-                                      ),
-                                    ]
-                                  : null,
-                            ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Text('Log in or sign up', style: AppText.h2),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Use your mobile number or Google account.',
+                      style: AppText.bodyLg,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Mobile number',
+                      style: AppText.tabular(
+                        13,
+                        FontWeight.w500,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      height: 52,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        borderRadius: AppRadius.sm,
+                        border: Border.all(
+                          color: focused
+                              ? AppColors.primary
+                              : AppColors.borderInput,
+                          width: focused ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
                             alignment: Alignment.center,
-                            child: TextField(
-                              controller: _controller,
-                              focusNode: _focusNode,
-                              keyboardType: TextInputType.phone,
-                              autofocus: true,
-                              maxLength: 11,
-                              inputFormatters: [_PhoneFormatter()],
-                              onSubmitted: (_) => _continue(),
-                              style: AppText.tabular(16, FontWeight.w600, letterSpacing: 0.6),
-                              cursorColor: AppColors.primary,
-                              cursorWidth: 1.5,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                counterText: '',
-                                isCollapsed: true,
-                                hintText: '98765 43210',
-                                hintStyle: AppText.tabular(
-                                  16,
-                                  FontWeight.w600,
-                                  color: AppColors.textFaint,
-                                  letterSpacing: 0.6,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFF7F8FC),
+                              border: Border(
+                                right: BorderSide(color: AppColors.borderInput),
+                              ),
+                            ),
+                            child: Text(
+                              '+91',
+                              style: AppText.tabular(
+                                16,
+                                FontWeight.w400,
+                                color: AppColors.textBody,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              child: TextField(
+                                controller: _controller,
+                                focusNode: _focusNode,
+                                keyboardType: TextInputType.phone,
+                                maxLength: 11,
+                                inputFormatters: [_PhoneFormatter()],
+                                onSubmitted: (_) => _continue(),
+                                style: AppText.tabular(16, FontWeight.w400),
+                                cursorColor: AppColors.primary,
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  counterText: '',
+                                  isCollapsed: true,
+                                  hintText: '98765 43210',
+                                  hintStyle: AppText.tabular(
+                                    16,
+                                    FontWeight.w400,
+                                    color: AppColors.textFaint,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        const Icon(LucideIcons.info, size: 14, color: AppColors.textSubtle),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            "We'll send a 6-digit OTP to this number",
-                            style: AppText.metaSm.copyWith(height: 1.5, fontSize: 12.5),
-                          ),
-                        ),
-                      ],
+                    PrimaryButton(
+                      label: _busy ? 'Please wait…' : 'Send OTP',
+                      enabled: _canContinue && !_busy,
+                      onPressed: _continue,
                     ),
-                    const SizedBox(height: 28),
-                    PrimaryButton(label: 'Continue', enabled: _canContinue, onPressed: _continue),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         const Expanded(child: Divider(color: AppColors.border)),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Text('or', style: AppText.metaSm),
+                          child: Text(
+                            'OR',
+                            style: AppText.eyebrow(size: 12, letterSpacing: 1),
+                          ),
                         ),
                         const Expanded(child: Divider(color: AppColors.border)),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     _GoogleButton(onPressed: _googleLogin),
-                    const SizedBox(height: 10),
-                    SecondaryButton(
-                      label: 'Quick login (skip OTP)',
-                      icon: LucideIcons.zap,
-                      foreground: AppColors.primary,
-                      onPressed: _quickLogin,
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Signs you straight in as the demo student — no OTP needed.',
-                      textAlign: TextAlign.center,
-                      style: AppText.metaSm.copyWith(height: 1.5),
+                    if (kDebugMode) ...[
+                      const SizedBox(height: 10),
+                      SecondaryButton(
+                        label: 'Quick login (skip OTP)',
+                        icon: LucideIcons.zap,
+                        onPressed: _quickLogin,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Debug builds only — signs you in as the demo student.',
+                        textAlign: TextAlign.center,
+                        style: AppText.metaSm,
+                      ),
+                    ],
+                    const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 24, 8, 28),
+                      child: Text.rich(
+                        TextSpan(
+                          style: AppText.meta.copyWith(height: 1.5),
+                          children: [
+                            const TextSpan(
+                              text: 'By continuing you agree to our ',
+                            ),
+                            TextSpan(
+                              text: 'Terms',
+                              style: AppText.meta.copyWith(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const TextSpan(text: ' and '),
+                            TextSpan(
+                              text: 'Privacy Policy',
+                              style: AppText.meta.copyWith(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const TextSpan(text: '.'),
+                          ],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(32, 0, 32, 40),
-              child: Text.rich(
-                TextSpan(
-                  style: AppText.metaSm.copyWith(height: 1.7),
-                  children: [
-                    const TextSpan(text: 'By continuing you agree to our '),
-                    TextSpan(
-                      text: 'Terms of Use',
-                      style: AppText.metaSm.copyWith(
-                        height: 1.7,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const TextSpan(text: ' and '),
-                    TextSpan(
-                      text: 'Privacy Policy',
-                      style: AppText.metaSm.copyWith(
-                        height: 1.7,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                textAlign: TextAlign.center,
               ),
             ),
           ],
@@ -315,9 +337,15 @@ class _GoogleButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox.square(dimension: 18, child: CustomPaint(painter: _GoogleMark())),
-              const SizedBox(width: 12),
-              Text('Continue with Google', style: AppText.tabular(14.5, FontWeight.w600)),
+              const SizedBox.square(
+                dimension: 18,
+                child: CustomPaint(painter: _GoogleMark()),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Continue with Google',
+                style: AppText.tabular(16, FontWeight.w600),
+              ),
             ],
           ),
         ),
@@ -352,7 +380,6 @@ class _GoogleMark extends CustomPainter {
     }
 
     arc(-18, -72, const Color(0xFFEA4335)); // red, upper right
-    arc(-90, -125, const Color(0xFF4285F4).withValues(alpha: 0)); // spacer, unpainted
     arc(-90, -70, const Color(0xFFFBBC05)); // yellow, upper left
     arc(-160, -95, const Color(0xFF34A853)); // green, lower left
     arc(105, -90, const Color(0xFF4285F4)); // blue, lower right
@@ -360,7 +387,12 @@ class _GoogleMark extends CustomPainter {
     // The crossbar that closes the G.
     final barPaint = Paint()..color = const Color(0xFF4285F4);
     canvas.drawRect(
-      Rect.fromLTWH(size.width * 0.5, size.height * 0.4, size.width * 0.5, stroke * 0.85),
+      Rect.fromLTWH(
+        size.width * 0.5,
+        size.height * 0.4,
+        size.width * 0.5,
+        stroke * 0.85,
+      ),
       barPaint,
     );
   }
@@ -372,7 +404,10 @@ class _GoogleMark extends CustomPainter {
 /// Renders the number as "98765 43210" while keeping raw digits in the value.
 class _PhoneFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     final capped = digits.length > 10 ? digits.substring(0, 10) : digits;
     final formatted = capped.length > 5

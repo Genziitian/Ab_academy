@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500;600&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',sans-serif;color:#0f1b2d;background:#f7f8fc;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="display:flex;min-height:100vh;font-family:'IBM Plex Sans',sans-serif">
+  <dc-import name="PortalSidebar" active="materials" hint-size="248px,100vh"></dc-import>
+  <div style="flex:1;min-width:0">
+    <dc-import name="PortalTopbar" title="Study Materials" crumb="Student portal" hint-size="100%,68px"></dc-import>
+    <div style="padding:28px 32px 48px;max-width:1280px">
+      <div style="display:flex;gap:8px;margin-bottom:20px"><sc-for list="{{ filters }}" as="f" hint-placeholder-count="6"><button onClick="{{ f.pick }}" style="{{ f.style }}">{{ f.name }}</button></sc-for></div>
+      <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 140px 140px 200px;gap:16px;padding:12px 20px;background:#f7f8fc;border-bottom:1px solid #e6ebf5;font-size:12px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:#6b7a90"><span>Document</span><span>Subject</span><span>Updated</span><span style="text-align:right">Actions</span></div>
+        <sc-for list="{{ items }}" as="m" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 140px 140px 200px;gap:16px;align-items:center;padding:16px 20px;border-bottom:1px solid #eff1f5">
+            <div style="display:flex;align-items:center;gap:14px;min-width:0"><span style="width:40px;height:40px;border-radius:8px;background:#fde9e9;color:#c43b3b;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">PDF</span><div style="min-width:0"><p style="margin:0;font-size:15px;font-weight:600;color:#122046">{{ m.title }}</p><p style="margin:2px 0 0;font-size:13px;color:#6b7a90">{{ m.size }}</p></div></div>
+            <span style="{{ m.tag }}">{{ m.subject }}</span>
+            <span style="font-size:13px;color:#6b7a90">{{ m.updated }}</span>
+            <div style="display:flex;gap:8px;justify-content:flex-end"><button style="height:34px;padding:0 12px;border:1px solid #c9d6f5;border-radius:8px;background:#fff;font:inherit;font-size:13px;font-weight:600;color:#2962ff;cursor:pointer">Open</button><button onClick="{{ m.toggle }}" style="{{ m.dlStyle }}">{{ m.dlLabel }}</button></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SUB = { Mathematics: ['#e8f0ff', '#2962ff'], Science: ['#e8fff6', '#0f8f81'], Hindi: ['#fff1e8', '#c06a1a'], English: ['#f1ecff', '#6b4fd8'], 'Social Science': ['#ffeef3', '#c23a68'] };
+const M = [
+  { title: 'Chapter 04 Notes — Carbon and its Compounds', subject: 'Science', size: 'PDF · 4.2 MB', updated: 'Updated 12 Sept' },
+  { title: 'Quadratic Equations — formula sheet', subject: 'Mathematics', size: 'PDF · 1.1 MB', updated: 'Updated 09 Sept', off: true },
+  { title: 'व्याकरण — समास और संधि', subject: 'Hindi', size: 'PDF · 2.6 MB', updated: '—' },
+  { title: 'English — Letter Writing formats', subject: 'English', size: 'PDF · 0.8 MB', updated: '—' },
+  { title: 'Class 03 — worked examples', subject: 'Mathematics', size: 'PDF · 1.8 MB', updated: 'Updated 08 Sept' },
+];
+class Component extends DCLogic {
+  state = { f: 'All', off: { 1: true } };
+  renderVals() {
+    const s = this.state;
+    return {
+      filters: ['All', 'Mathematics', 'Science', 'Hindi', 'English', 'Social Science'].map(n => ({ name: n, pick: () => this.setState({ f: n }),
+        style: { height: 34, padding: '0 14px', borderRadius: 8, whiteSpace: 'nowrap', font: 'inherit', fontSize: 13, fontWeight: 500, cursor: 'pointer', border: s.f === n ? '1px solid #122046' : '1px solid #e6ebf5', background: s.f === n ? '#122046' : '#fff', color: s.f === n ? '#fff' : '#4a5872' } })),
+      items: M.map((m, i) => ({ ...m, i })).filter(m => s.f === 'All' || m.subject === s.f).map(m => { const off = !!s.off[m.i]; return { ...m,
+        tag: { justifySelf: 'start', padding: '3px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600, background: SUB[m.subject][0], color: SUB[m.subject][1] },
+        dlLabel: off ? '✓ Offline' : 'Download', toggle: () => this.setState({ off: { ...s.off, [m.i]: !off } }),
+        dlStyle: { height: 34, padding: '0 12px', border: 0, borderRadius: 8, whiteSpace: 'nowrap', font: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer', background: off ? '#e9f9ef' : '#2962ff', color: off ? '#16a34a' : '#fff' } }; }),
+    };
+  }
+}
+</script>
+</body>
+</html>

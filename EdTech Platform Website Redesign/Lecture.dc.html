@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',sans-serif;color:#0f1b2d;background:#f7f8fc;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="display:flex;min-height:100vh;font-family:'IBM Plex Sans',sans-serif">
+  <dc-import name="PortalSidebar" active="courses" hint-size="248px,100vh"></dc-import>
+  <div style="flex:1;min-width:0">
+    <dc-import name="PortalTopbar" title="Quadratic Equations · Class 03" crumb="My Courses › Class 10 Complete Batch › Mathematics" hint-size="100%,68px"></dc-import>
+    <div style="padding:24px 32px 48px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;max-width:1320px">
+      <div style="min-width:0">
+        <div style="position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#0f1b2d">
+          <img src="apps/web/public/images/feature-live-class.png" alt="Lecture" style="width:100%;height:100%;object-fit:cover;opacity:0.55;display:block">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span style="width:68px;height:68px;border-radius:50%;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#2962ff"></path></svg></span></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;padding:14px 18px;background:linear-gradient(transparent,rgba(15,27,45,0.85));color:#fff">
+            <div style="height:4px;border-radius:2px;background:rgba(255,255,255,0.25)"><div style="width:73%;height:100%;border-radius:2px;background:#2962ff"></div></div>
+            <div style="margin-top:10px;display:flex;justify-content:space-between;font-size:13px"><span>38:14 / 52:00</span><span style="display:flex;gap:16px;color:#c8d1e4"><span>1.0×</span><span>480p</span><span>CC</span><span>⛶</span></span></div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:flex-start;gap:24px">
+          <div>
+            <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.06em;color:#2962ff">MATHEMATICS · CHAPTER 04</p>
+            <h1 style="margin:6px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.01em;color:#122046">Quadratic Equations — Class 03</h1>
+            <div style="margin-top:10px;display:flex;align-items:center;gap:10px"><span style="width:28px;height:28px;border-radius:50%;background:#e8f0ff;color:#2962ff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center">AS</span><span style="font-size:14px;font-weight:500;color:#122046">Amit Sir</span><span style="font-size:13px;color:#6b7a90">· ★ 4.6 (128 ratings)</span></div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button style="height:38px;padding:0 14px;border:1px solid #e6ebf5;border-radius:8px;background:#fff;font:inherit;font-size:13px;font-weight:600;color:#122046;cursor:pointer">↓ Download</button>
+            <button style="height:38px;padding:0 14px;border:1px solid #e6ebf5;border-radius:8px;background:#fff;font:inherit;font-size:13px;font-weight:600;color:#122046;cursor:pointer">Save</button>
+            <button style="height:38px;padding:0 14px;border:0;border-radius:8px;background:#e9f9ef;font:inherit;font-size:13px;font-weight:600;color:#16a34a;cursor:pointer">✓ Mark complete</button>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;background:#fff;border:1px solid #e6ebf5;border-radius:12px">
+          <div style="display:flex;gap:4px;padding:0 20px;border-bottom:1px solid #e6ebf5"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4"><button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for></div>
+          <div style="padding:24px">
+            <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ true }}">
+              <h3 style="margin:0;font-size:16px;font-weight:600;color:#122046">About this lesson</h3>
+              <p style="margin:8px 0 0;font-size:15px;line-height:1.7;color:#4a5872;max-width:720px">Solving quadratic equations by factorisation and by completing the square, with the standard form ax² + bx + c = 0. Includes four board-pattern examples from the 2023 and 2024 papers.</p>
+            </sc-if>
+            <sc-if value="{{ isDiscussion }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0 0 18px;font-size:13px;color:#6b7a90">Questions about this lesson go to your teacher's doubt queue.</p>
+              <div style="display:flex;flex-direction:column;gap:20px">
+                <sc-for list="{{ comments }}" as="c" hint-placeholder-count="3">
+                  <div>
+                    <div style="display:flex;gap:12px"><span style="{{ c.av }}">{{ c.initials }}</span><div style="flex:1"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;font-weight:600;color:#122046">{{ c.author }}</span><sc-if value="{{ c.teacher }}" hint-placeholder-val="{{ false }}"><span style="padding:1px 6px;border-radius:4px;background:#2962ff;color:#fff;font-size:10px;font-weight:700;letter-spacing:0.05em">TEACHER</span></sc-if><span style="font-size:12px;color:#98a3b6">{{ c.time }}</span></div><p style="margin:4px 0 0;font-size:14px;line-height:1.6;color:#4a5872">{{ c.body }}</p></div></div>
+                    <sc-for list="{{ c.replies }}" as="r" hint-placeholder-count="0">
+                      <div style="margin:14px 0 0 44px;padding:12px 14px;border-radius:8px;background:#f5f8ff;display:flex;gap:10px"><span style="width:26px;height:26px;border-radius:50%;background:#2962ff;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ r.initials }}</span><div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:600;color:#122046">{{ r.author }}</span><span style="padding:1px 6px;border-radius:4px;background:#2962ff;color:#fff;font-size:10px;font-weight:700">TEACHER</span><span style="font-size:12px;color:#98a3b6">{{ r.time }}</span></div><p style="margin:4px 0 0;font-size:14px;line-height:1.6;color:#4a5872">{{ r.body }}</p></div></div>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="margin-top:24px;display:flex;gap:10px"><input value="{{ draft }}" onChange="{{ setDraft }}" placeholder="Ask a question about this lesson…" style="flex:1;height:44px;padding:0 14px;border:1px solid #dde0e8;border-radius:8px;font:inherit;font-size:14px;outline:none"><button onClick="{{ post }}" style="height:44px;padding:0 18px;border:0;border-radius:8px;background:#2962ff;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer">Post</button></div>
+            </sc-if>
+            <sc-if value="{{ isNotes }}" hint-placeholder-val="{{ false }}">
+              <h3 style="margin:0;font-size:16px;font-weight:600;color:#122046">Attached notes</h3><p style="margin:4px 0 16px;font-size:13px;color:#6b7a90">Open them here — no download needed.</p>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:14px;padding:14px;border:1px solid #e6ebf5;border-radius:10px"><span style="width:40px;height:40px;border-radius:8px;background:#fde9e9;color:#c43b3b;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">PDF</span><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Class 03 — worked examples</p><p style="margin:2px 0 0;font-size:12px;color:#6b7a90">PDF · 1.8 MB</p></div><a href="Study Materials.dc.html" style="font-size:13px;font-weight:600">Open</a></div>
+                <div style="display:flex;align-items:center;gap:14px;padding:14px;border:1px solid #e6ebf5;border-radius:10px"><span style="width:40px;height:40px;border-radius:8px;background:#fde9e9;color:#c43b3b;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">PDF</span><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Quadratic Equations — formula sheet</p><p style="margin:2px 0 0;font-size:12px;color:#6b7a90">PDF · 1.1 MB</p></div><a href="Study Materials.dc.html" style="font-size:13px;font-weight:600">Open</a></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isFeedback }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:16px"><span style="font-size:36px;font-weight:700;color:#122046;letter-spacing:-0.02em">4.6</span><div><p style="margin:0;font-size:18px;color:#e0a33a;letter-spacing:2px">★★★★★</p><p style="margin:2px 0 0;font-size:13px;color:#6b7a90">128 ratings</p></div></div>
+              <h3 style="margin:24px 0 10px;font-size:16px;font-weight:600;color:#122046">Rate this lesson</h3>
+              <div style="display:flex;gap:6px"><sc-for list="{{ stars }}" as="st" hint-placeholder-count="5"><button onClick="{{ st.pick }}" style="{{ st.style }}">★</button></sc-for></div>
+              <textarea rows="3" placeholder="What worked, what could be clearer? (optional)" style="margin-top:14px;width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #dde0e8;border-radius:8px;font:inherit;font-size:14px;resize:vertical"></textarea>
+              <button style="margin-top:12px;height:42px;padding:0 18px;border:0;border-radius:8px;background:#2962ff;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer">Submit feedback</button>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+
+      <aside style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;align-self:start;position:sticky;top:92px;overflow:hidden">
+        <div style="padding:16px 18px;border-bottom:1px solid #e6ebf5"><p style="margin:0;font-size:12px;color:#6b7a90">Chapter 01</p><p style="margin:2px 0 0;font-size:15px;font-weight:600;color:#122046">Real Numbers · 3 / 4 lessons</p></div>
+        <sc-for list="{{ playlist }}" as="p" hint-placeholder-count="5">
+          <a href="{{ p.href }}" style="{{ p.row }}"><span style="{{ p.dot }}">{{ p.icon }}</span><span style="flex:1;min-width:0"><span style="display:block;font-size:13px;font-weight:600;color:#122046">{{ p.title }}</span><span style="font-size:12px;color:{{ p.metaColor }}">{{ p.meta }}</span></span></a>
+        </sc-for>
+      </aside>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { tab: 'About', rating: 0, draft: '', mine: [] };
+  renderVals() {
+    const s = this.state;
+    const tab = on => ({ height: 48, padding: '0 14px', border: 0, background: 'none', font: 'inherit', fontSize: 14, fontWeight: on ? 600 : 500, color: on ? '#2962ff' : '#6b7a90', borderBottom: on ? '2px solid #2962ff' : '2px solid transparent', cursor: 'pointer' });
+    const av = t => ({ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', background: t ? '#2962ff' : '#e8f0ff', color: t ? '#fff' : '#2962ff' });
+    const comments = [
+      { author: 'Priya Sharma', initials: 'PS', body: 'Sir, in example 3 why do we take the positive root only?', time: '2h ago', replies: [{ author: 'Amit Sir', initials: 'AS', body: 'Good question Priya — the negative root gives a negative length, which is not possible here, so we discard it.', time: '1h ago' }] },
+      { author: 'Ankit Kumar', initials: 'AK', body: 'धन्यवाद सर, अब समझ आ गया 🙏', time: '45m ago', replies: [] },
+      { author: 'You', initials: 'RK', body: 'Can we get more board-pattern questions on completing the square?', time: '20m ago', replies: [] },
+      ...s.mine.map(b => ({ author: 'You', initials: 'RK', body: b, time: 'Just now', replies: [] })),
+    ].map(c => ({ ...c, av: av(false), teacher: false }));
+    const P = [
+      ['Class 1 · Introduction', 'Recorded · 32 min', 'done'], ["Class 2 · Euclid's Division Lemma", 'Recorded · 48 min', 'done'],
+      ['Class 3 · Fundamental Theorem', 'Now playing · 38:14', 'current'], ['Class 4 · Practice Session', 'Live today · 6:00 PM', 'live'], ['Chapter 01 Notes', 'PDF · 2.4 MB', 'notes']];
+    return {
+      tabs: ['About', 'Discussion', 'Notes', 'Feedback'].map(t => ({ label: t, style: tab(s.tab === t), pick: () => this.setState({ tab: t }) })),
+      isAbout: s.tab === 'About', isDiscussion: s.tab === 'Discussion', isNotes: s.tab === 'Notes', isFeedback: s.tab === 'Feedback',
+      comments, draft: s.draft, setDraft: e => this.setState({ draft: e.target.value }),
+      post: () => s.draft.trim() && this.setState({ mine: [...s.mine, s.draft.trim()], draft: '' }),
+      stars: [1, 2, 3, 4, 5].map(n => ({ pick: () => this.setState({ rating: n }), style: { border: 0, background: 'none', padding: 0, fontSize: 32, cursor: 'pointer', color: n <= s.rating ? '#e0a33a' : '#c7cad3' } })),
+      playlist: P.map(([title, meta, k]) => ({ title, meta, icon: { done: '✓', current: '▶', live: '●', notes: 'PDF' }[k],
+        href: k === 'live' ? 'Live Classroom.dc.html' : k === 'notes' ? 'Study Materials.dc.html' : 'Lecture.dc.html',
+        metaColor: k === 'live' ? '#c43b3b' : '#6b7a90',
+        row: { display: 'flex', gap: 12, alignItems: 'center', padding: '12px 18px', borderBottom: '1px solid #eff1f5', background: k === 'current' ? '#f5f8ff' : '#fff', borderLeft: k === 'current' ? '3px solid #2962ff' : '3px solid transparent' },
+        dot: { width: 26, height: 26, borderRadius: 6, flexShrink: 0, fontSize: k === 'notes' ? 8 : 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: { done: '#e9f9ef', current: '#2962ff', live: '#fde8e8', notes: '#fde9e9' }[k], color: { done: '#16a34a', current: '#fff', live: '#c43b3b', notes: '#c43b3b' }[k] } })),
+    };
+  }
+}
+</script>
+</body>
+</html>

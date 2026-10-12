@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',sans-serif;color:#0f1b2d;background:#e9edf4;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="padding:64px;font-family:'IBM Plex Sans',sans-serif">
+  <div style="display:flex;align-items:baseline;gap:16px"><h1 style="margin:0;font-size:32px;font-weight:700;color:#122046">Mobile app · Purchase</h1><span style="white-space:nowrap;font-size:15px;color:#6b7a90">Explore, course page, checkout and success</span></div>
+  <div style="margin-top:12px;display:flex;gap:16px;font-size:14px"><a href="Mobile App - Onboarding.dc.html">← Onboarding</a><a href="Mobile App - Learn.dc.html">← Learn</a><a href="Mobile App - Live.dc.html">← Live</a><a href="Mobile App - Library and Account.dc.html">← Library &amp; Account</a></div>
+  <div style="margin-top:40px;display:flex;flex-wrap:wrap;gap:48px">
+
+    <div data-screen-label="23 Explore" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">23 · Explore crash courses</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#f7f8fc;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" hint-size="100%,44px"></dc-import>
+        <div style="flex:1;overflow:hidden;padding:10px 0 0;display:flex;flex-direction:column;gap:16px">
+          <div style="padding:0 20px"><h2 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-0.02em;color:#122046">Crash courses</h2><p style="margin:4px 0 0;font-size:14px;color:#6b7a90">Bihar Board · 90-day plans</p></div>
+          <div style="padding:0 20px;display:flex;gap:6px"><span style="white-space:nowrap;height:34px;padding:0 14px;border-radius:8px;background:#122046;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center">Class 12</span><span style="white-space:nowrap;height:34px;padding:0 14px;border-radius:8px;background:#fff;border:1px solid #e6ebf5;color:#4a5872;font-size:13px;display:flex;align-items:center">Class 11</span><span style="white-space:nowrap;height:34px;padding:0 14px;border-radius:8px;background:#fff;border:1px solid #e6ebf5;color:#4a5872;font-size:13px;display:flex;align-items:center">Science</span><span style="white-space:nowrap;height:34px;padding:0 14px;border-radius:8px;background:#fff;border:1px solid #e6ebf5;color:#4a5872;font-size:13px;display:flex;align-items:center">Commerce</span></div>
+          <div style="display:flex;gap:12px;padding:0 20px;overflow:hidden">
+            <div style="width:270px;flex-shrink:0;background:#fff;border:1px solid #e6ebf5;border-radius:14px;overflow:hidden"><div style="height:110px;padding:12px;background:linear-gradient(145deg,hsl(214 70% 48%),hsl(236 65% 34%));color:#fff;display:flex;flex-direction:column;justify-content:space-between"><span style="white-space:nowrap;align-self:flex-start;padding:2px 7px;border-radius:4px;background:rgba(18,32,70,0.7);font-size:10px;font-weight:700">BESTSELLER</span><span style="white-space:nowrap;font-size:18px;font-weight:700">Science · PCM + PCB</span></div><div style="padding:14px"><p style="margin:0;font-size:15px;font-weight:600;color:#122046">Class 12 Science Crash Course</p><p style="margin:4px 0 0;font-size:12px;color:#6b7a90">120+ lectures · ★ 4.8</p><p style="margin:10px 0 0"><span style="white-space:nowrap;font-size:18px;font-weight:700;color:#122046">₹2,499</span> <span style="white-space:nowrap;font-size:12px;color:#6b7a90;text-decoration:line-through">₹4,999</span> <span style="white-space:nowrap;font-size:12px;font-weight:600;color:#16a34a">50% OFF</span></p></div></div>
+            <div style="width:270px;flex-shrink:0;background:#fff;border:1px solid #e6ebf5;border-radius:14px;overflow:hidden"><div style="height:110px;padding:12px;background:linear-gradient(145deg,hsl(198 70% 48%),hsl(220 65% 34%));color:#fff;display:flex;flex-direction:column;justify-content:space-between"><span style="white-space:nowrap;align-self:flex-start;padding:2px 7px;border-radius:4px;background:rgba(18,32,70,0.7);font-size:10px;font-weight:700">TOP RATED</span><span style="white-space:nowrap;font-size:18px;font-weight:700">Physics</span></div><div style="padding:14px"><p style="margin:0;font-size:15px;font-weight:600;color:#122046">Class 12 Physics Crash Course</p></div></div>
+          </div>
+          <div style="padding:0 20px"><p style="margin:0 0 10px;font-size:16px;font-weight:600;color:#122046">All Class 12</p>
+            <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px">
+              <div style="display:flex;gap:12px;align-items:center;padding:14px;border-bottom:1px solid #eff1f5"><span style="white-space:nowrap;width:44px;height:44px;border-radius:10px;background:hsl(320 70% 48%);flex-shrink:0"></span><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Commerce Crash Course</p><p style="margin:1px 0 0;font-size:12px;color:#6b7a90">Accountancy · BST · Economics</p></div><span style="white-space:nowrap;font-size:14px;font-weight:700;color:#122046">₹1,999</span></div>
+              <div style="display:flex;gap:12px;align-items:center;padding:14px"><span style="white-space:nowrap;width:44px;height:44px;border-radius:10px;background:hsl(28 70% 48%);flex-shrink:0"></span><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Arts Crash Course</p><p style="margin:1px 0 0;font-size:12px;color:#6b7a90">History · Pol. Science · Geography</p></div><span style="white-space:nowrap;font-size:14px;font-weight:700;color:#122046">₹1,799</span></div>
+            </div>
+          </div>
+        </div>
+        <dc-import name="MobileTabBar" active="courses" hint-size="100%,82px"></dc-import>
+      </div>
+    </div>
+
+    <div data-screen-label="24 Course Page" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">24 · Course page</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#f7f8fc;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <div style="background:#122046;color:#fff">
+          <dc-import name="MobileStatusBar" dark="{{ true }}" hint-size="100%,44px"></dc-import>
+          <div style="padding:6px 20px 22px"><span style="white-space:nowrap;font-size:20px">←</span><div style="margin-top:14px;display:flex;gap:6px"><span style="white-space:nowrap;padding:3px 8px;border-radius:4px;background:#2962ff;font-size:11px;font-weight:600">90-day crash course</span><span style="white-space:nowrap;padding:3px 8px;border-radius:4px;background:rgba(255,255,255,0.12);font-size:11px;font-weight:600">Hindi + English</span></div><p style="margin:12px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.01em;line-height:1.2">Class 12 Science Crash Course 2027</p><p style="margin:8px 0 0;font-size:13px;color:#c8d1e4"><span style="white-space:nowrap;color:#ffc56b;font-weight:700">★ 4.8</span> (1,260) · Senior Faculty</p></div>
+        </div>
+        <div style="flex:1;overflow:hidden;padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border:1px solid #e6ebf5;border-radius:12px;text-align:center"><div style="padding:12px 0;border-right:1px solid #eff1f5"><p style="margin:0;font-size:17px;font-weight:700;color:#122046">120+</p><p style="margin:0;font-size:11px;color:#6b7a90">Lectures</p></div><div style="padding:12px 0;border-right:1px solid #eff1f5"><p style="margin:0;font-size:17px;font-weight:700;color:#122046">90</p><p style="margin:0;font-size:11px;color:#6b7a90">Days</p></div><div style="padding:12px 0"><p style="margin:0;font-size:17px;font-weight:700;color:#122046">3,000+</p><p style="margin:0;font-size:11px;color:#6b7a90">Questions</p></div></div>
+          <p style="margin:0;font-size:16px;font-weight:600;color:#122046">What you get</p>
+          <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:6px 14px">
+            <p style="margin:0;padding:10px 0;border-bottom:1px solid #eff1f5;font-size:14px;color:#122046"><span style="white-space:nowrap;color:#16a34a;font-weight:700">✓</span>  Daily live classes with doubt solving</p>
+            <p style="margin:0;padding:10px 0;border-bottom:1px solid #eff1f5;font-size:14px;color:#122046"><span style="white-space:nowrap;color:#16a34a;font-weight:700">✓</span>  Recordings for every chapter</p>
+            <p style="margin:0;padding:10px 0;border-bottom:1px solid #eff1f5;font-size:14px;color:#122046"><span style="white-space:nowrap;color:#16a34a;font-weight:700">✓</span>  Chapter-wise PDF notes</p>
+            <p style="margin:0;padding:10px 0;border-bottom:1px solid #eff1f5;font-size:14px;color:#122046"><span style="white-space:nowrap;color:#16a34a;font-weight:700">✓</span>  Weekly board-pattern tests</p>
+            <p style="margin:0;padding:10px 0;font-size:14px;color:#122046"><span style="white-space:nowrap;color:#16a34a;font-weight:700">✓</span>  Offline downloads for low network</p>
+          </div>
+          <p style="margin:0;font-size:12px;line-height:1.5;color:#6b7a90">Access until 31 March 2027, including the full board revision series in January.</p>
+        </div>
+        <div style="padding:14px 20px 30px;background:#fff;border-top:1px solid #e6ebf5;display:flex;align-items:center;gap:14px"><div style="flex:1"><p style="margin:0;font-size:20px;font-weight:700;color:#122046">₹2,499</p><p style="margin:0;font-size:12px"><span style="white-space:nowrap;color:#6b7a90;text-decoration:line-through">₹4,999</span> <span style="white-space:nowrap;font-weight:600;color:#16a34a">50% OFF</span></p></div><span style="white-space:nowrap;height:50px;padding:0 24px;border-radius:10px;background:#2962ff;color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center">Enroll now</span></div>
+      </div>
+    </div>
+
+    <div data-screen-label="25 Checkout" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">25 · Checkout</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#f7f8fc;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" bg="#fff" hint-size="100%,44px"></dc-import>
+        <div style="background:#fff;padding:8px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #e6ebf5"><span style="white-space:nowrap;font-size:20px;color:#122046">←</span><p style="margin:0;flex:1;font-size:17px;font-weight:600;color:#122046">Checkout</p><span style="white-space:nowrap;font-size:12px;color:#6b7a90">🔒 Razorpay</span></div>
+        <div style="flex:1;overflow:hidden;padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+          <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:14px;display:flex;gap:12px;align-items:center"><span style="white-space:nowrap;width:48px;height:48px;border-radius:10px;background:linear-gradient(145deg,hsl(214 70% 48%),hsl(236 65% 34%));flex-shrink:0"></span><div style="flex:1;min-width:0"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Class 12 Science Crash Course</p><p style="margin:1px 0 0;font-size:12px;color:#6b7a90">PCM + PCB · 90 days</p></div></div>
+          <p style="margin:4px 0 0;font-size:15px;font-weight:600;color:#122046">Payment method</p>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:#f5f8ff;border:1.5px solid #2962ff"><span style="white-space:nowrap;width:38px;height:38px;border-radius:8px;background:#fff;font-size:11px;font-weight:700;color:#122046;display:flex;align-items:center;justify-content:center;border:1px solid #e6ebf5">UPI</span><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">UPI</p><p style="margin:0;font-size:12px;color:#6b7a90">Pay by any UPI app</p></div><span style="white-space:nowrap;width:18px;height:18px;border-radius:50%;border:5px solid #2962ff;box-sizing:border-box"></span></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:#fff;border:1px solid #e6ebf5"><span style="white-space:nowrap;width:38px;height:38px;border-radius:8px;background:#f2f3f7;font-size:11px;font-weight:700;color:#122046;display:flex;align-items:center;justify-content:center">GP</span><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Google Pay</p><p style="margin:0;font-size:12px;color:#6b7a90">rahul@okaxis</p></div><span style="white-space:nowrap;width:18px;height:18px;border-radius:50%;border:2px solid #c7cad3;box-sizing:border-box"></span></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:#fff;border:1px solid #e6ebf5"><span style="white-space:nowrap;width:38px;height:38px;border-radius:8px;background:#f2f3f7;font-size:11px;font-weight:700;color:#122046;display:flex;align-items:center;justify-content:center">PP</span><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">PhonePe</p><p style="margin:0;font-size:12px;color:#6b7a90">Linked account</p></div><span style="white-space:nowrap;width:18px;height:18px;border-radius:50%;border:2px solid #c7cad3;box-sizing:border-box"></span></div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;background:#fff;border:1px solid #e6ebf5"><span style="white-space:nowrap;width:38px;height:38px;border-radius:8px;background:#f2f3f7;font-size:9px;font-weight:700;color:#122046;display:flex;align-items:center;justify-content:center">CARD</span><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Debit / Credit Card</p><p style="margin:0;font-size:12px;color:#6b7a90">Visa, Mastercard, RuPay</p></div><span style="white-space:nowrap;width:18px;height:18px;border-radius:50%;border:2px solid #c7cad3;box-sizing:border-box"></span></div>
+          </div>
+          <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;font-size:13px;color:#4a5872"><div style="display:flex;justify-content:space-between"><span>Course price</span><span>₹4,999</span></div><div style="display:flex;justify-content:space-between"><span>Discount</span><span style="white-space:nowrap;color:#16a34a">− ₹2,500</span></div><div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid #eff1f5;font-size:15px;font-weight:700;color:#122046"><span>Total</span><span>₹2,499</span></div></div>
+        </div>
+        <div style="padding:14px 20px 30px;background:#fff;border-top:1px solid #e6ebf5"><div style="height:52px;border-radius:10px;background:#2962ff;color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center">Pay ₹2,499</div></div>
+      </div>
+    </div>
+
+    <div data-screen-label="26 Payment Success" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">26 · Payment success</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#fff;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" hint-size="100%,44px"></dc-import>
+        <div style="flex:1;padding:0 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+          <span style="white-space:nowrap;width:72px;height:72px;border-radius:50%;background:#e9f9ef;display:flex;align-items:center;justify-content:center"><svg width="36" height="36" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#22c55e"></circle><path d="M5 9.2 7.6 11.7 13 6.4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <p style="margin:22px 0 0;font-size:24px;font-weight:700;color:#122046">Payment successful</p>
+          <p style="margin:6px 0 0;font-size:14px;color:#6b7a90">You're enrolled in Class 12 Science Crash Course.</p>
+          <div style="margin-top:28px;width:100%;background:#f7f8fc;border-radius:12px;text-align:left">
+            <div style="padding:12px 16px;display:flex;justify-content:space-between;border-bottom:1px solid #eceef3;font-size:13px"><span style="white-space:nowrap;color:#6b7a90">Order ID</span><span style="white-space:nowrap;font-family:'IBM Plex Mono',monospace;color:#122046">ABA-2026-84172</span></div>
+            <div style="padding:12px 16px;display:flex;justify-content:space-between;border-bottom:1px solid #eceef3;font-size:13px"><span style="white-space:nowrap;color:#6b7a90">Amount paid</span><span style="white-space:nowrap;font-weight:600;color:#122046">₹2,499</span></div>
+            <div style="padding:12px 16px;display:flex;justify-content:space-between;font-size:13px"><span style="white-space:nowrap;color:#6b7a90">Method</span><span style="white-space:nowrap;font-weight:600;color:#122046">UPI</span></div>
+          </div>
+        </div>
+        <div style="padding:0 24px 36px;display:flex;flex-direction:column;gap:10px"><div style="height:52px;border-radius:10px;background:#2962ff;color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center">Start learning</div><div style="height:48px;border-radius:10px;border:1px solid #c9d6f5;color:#2962ff;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center">Download receipt</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

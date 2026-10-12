@@ -1,4 +1,9 @@
-import '../models/community.dart';
+import 'dart:typed_data';
+
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show FunctionException, HttpMethod, PostgrestException;
+
+import '../models/banner.dart';
 import '../models/course.dart';
 import '../models/popup.dart';
 import '../models/ticket.dart';
@@ -17,7 +22,7 @@ abstract final class Repo {
 
     final profile = await Api.client
         .from('profiles')
-        .select('full_name, phone, email')
+        .select('full_name, phone, email, student_code')
         .eq('id', id)
         .maybeSingle();
     if (profile == null) return null;
@@ -51,7 +56,7 @@ abstract final class Repo {
 
   static const _courseFields = '''
     id, slug, title, description, board, class_level, language, price_inr,
-    original_price_inr, rating, lessons_count, highlights, subjects,
+    original_price_inr, rating, lessons_count, highlights, subjects, thumbnail_hue,
     is_published,
     course_teachers ( is_primary, teachers ( display_name, subjects ) ),
     course_batches ( id, name )
@@ -118,7 +123,7 @@ abstract final class Repo {
         .from('lessons')
         .select('''
           id, title, lesson_type, sort_order, duration_seconds, is_demo,
-          is_published, video_provider, video_ref, storage_path,
+          is_published, video_provider,
           chapters!inner (
             id, title, sort_order,
             subjects!inner ( name, course_batches!inner ( course_id ) )
@@ -135,62 +140,111 @@ abstract final class Repo {
     );
   }
 
-  /// Playable URL for a lesson: a YouTube id, or a signed URL into the
-  /// private lesson-videos bucket.
-  static Future<({String? youtubeId, String? signedUrl})> lessonVideo(
-    String lessonId,
-  ) async {
-    final row = await Api.client
-        .from('lessons')
-        .select('video_provider, video_ref, storage_path')
-        .eq('id', lessonId)
-        .maybeSingle();
-
-    if (row == null) return (youtubeId: null, signedUrl: null);
-
-    if (row['video_provider'] == 'youtube') {
-      return (youtubeId: row['video_ref'] as String?, signedUrl: null);
+  /// The YouTube id for one lesson, asked for only when it is about to play.
+  ///
+  /// `lesson_playback` returns it only to staff, for published demo lessons,
+  /// or to a student with an active enrolment; students cannot select
+  /// `video_ref` any other way (migration 6). Null when the lesson is not a
+  /// YouTube lesson; throws [PlaybackDenied] when the student has no access.
+  static Future<String?> lessonYoutubeId(String lessonId) async {
+    try {
+      final rows = await Api.client.rpc(
+        'lesson_playback',
+        params: {'p_lesson_id': lessonId},
+      );
+      final list = (rows as List).cast<Map<String, dynamic>>();
+      if (list.isEmpty) return null;
+      final row = list.first;
+      if (row['provider'] != 'youtube') return null;
+      return row['video_ref'] as String?;
+    } on PostgrestException catch (e) {
+      if (e.code == '42501') throw const PlaybackDenied();
+      rethrow;
     }
-
-    final path = row['storage_path'] as String?;
-    if (path == null) return (youtubeId: null, signedUrl: null);
-
-    return (
-      youtubeId: null,
-      signedUrl: await Api.signedUrl('lesson-videos', path),
-    );
   }
 
-  /// Notes attached to a lesson, each with a short-lived signed URL.
-  static Future<List<({String id, String title, String meta, String? url})>>
-  lessonNotes(String lessonId) async {
+  /// Notes attached to a lesson. No location comes back — students cannot
+  /// select storage paths or Drive ids (migration 7); [noteBytes] fetches
+  /// the file itself.
+  static Future<List<({String id, String title, String meta})>> lessonNotes(
+    String lessonId,
+  ) async {
     final rows = await Api.client
         .from('lesson_resources')
-        .select('id, title, resource_type, storage_path, size_bytes')
-        .eq('lesson_id', lessonId);
+        .select('id, title, size_bytes, source')
+        .eq('lesson_id', lessonId)
+        .order('created_at');
 
-    return Future.wait(
-      rows.map((r) async {
-        return (
+    return [
+      for (final r in rows)
+        (
           id: r['id'] as String,
-          title: (r['title'] as String?) ?? 'Notes',
-          meta: sizeLabel(r['size_bytes'] as int?),
-          url: await Api.signedUrl(
-            'lesson-notes',
-            r['storage_path'] as String,
-          ),
-        );
-      }),
-    );
+          title: (r['title'] as String?) ?? 'Class notes',
+          meta: r['source'] == 'gdrive'
+              ? 'PDF'
+              : 'PDF · ${sizeLabel(r['size_bytes'] as int?)}',
+        ),
+    ];
+  }
+
+  /// Every note the student can read, newest first, with its subject — the
+  /// Academics → Notes list. RLS limits rows to enrolled courses and demos.
+  static Future<List<Map<String, dynamic>>> notesLibrary() async {
+    final rows = await Api.client
+        .from('lesson_resources')
+        .select(
+          'id, title, size_bytes, source, created_at, '
+          'lessons ( chapters ( subjects ( name ) ) )',
+        )
+        .order('created_at', ascending: false)
+        .limit(200);
+    return rows.cast<Map<String, dynamic>>();
+  }
+
+  /// The PDF bytes of one note, streamed by the `notes` Edge Function after
+  /// it checks the student's access. The file's real location — the private
+  /// bucket or Google Drive — never reaches the app.
+  static Future<Uint8List> noteBytes(String resourceId) async {
+    try {
+      final response = await Api.client.functions.invoke(
+        'notes',
+        method: HttpMethod.get,
+        queryParameters: {'id': resourceId},
+      );
+      final data = response.data;
+      if (data is Uint8List) return data;
+      throw const NoteUnavailable('These notes could not be opened.');
+    } on FunctionException catch (e) {
+      final details = e.details;
+      throw NoteUnavailable(
+        details is Map && details['error'] != null
+            ? details['error'].toString()
+            : 'These notes could not be opened.',
+        denied: e.status == 403,
+      );
+    }
   }
 
   // ------------------------------------------------- doubts under a lesson
 
-  static Future<List<({String id, String author, String initials, String body, String time, bool isStaff})>>
+  static Future<
+    List<
+      ({
+        String id,
+        String author,
+        String initials,
+        String body,
+        String time,
+        bool isStaff,
+      })
+    >
+  >
   lessonComments(String lessonId) async {
     final rows = await Api.client
         .from('lesson_comments')
-        .select('id, body, created_at, author_id, profiles:author_id ( full_name, role )')
+        .select(
+          'id, body, created_at, author_id, profiles:author_id ( full_name, role )',
+        )
         .eq('lesson_id', lessonId)
         .isFilter('parent_id', null)
         .order('created_at');
@@ -226,7 +280,11 @@ abstract final class Repo {
     });
   }
 
-  static Future<void> rateLesson(String lessonId, int rating, String? comment) async {
+  static Future<void> rateLesson(
+    String lessonId,
+    int rating,
+    String? comment,
+  ) async {
     final id = Api.currentUserId;
     if (id == null) return;
 
@@ -236,64 +294,6 @@ abstract final class Repo {
       'rating': rating,
       'comment': comment,
     }, onConflict: 'lesson_id,student_id');
-  }
-
-  // ------------------------------------------------------- communities
-
-  static Future<List<Community>> communities() async {
-    final rows = await Api.client
-        .from('communities')
-        .select('''
-          id, name, course_id,
-          courses ( subjects ),
-          community_members ( count )
-        ''')
-        .order('name');
-
-    return Future.wait(
-      rows.map((row) async {
-        final messages = await communityMessages(row['id'] as String);
-        return communityFromRow(row, messages);
-      }),
-    );
-  }
-
-  static Future<List<CommunityMessage>> communityMessages(
-    String communityId, {
-    int limit = 100,
-  }) async {
-    final rows = await Api.client
-        .from('community_messages')
-        .select('id, body, pinned, created_at, author_id, profiles:author_id ( full_name, role )')
-        .eq('community_id', communityId)
-        .order('created_at')
-        .limit(limit);
-
-    final me = Api.currentUserId;
-    return rows.map((r) => communityMessageFromRow(r, myUserId: me)).toList();
-  }
-
-  static Future<void> postToCommunity(String communityId, String body) async {
-    final id = Api.currentUserId;
-    if (id == null) return;
-
-    await Api.client.from('community_messages').insert({
-      'community_id': communityId,
-      'author_id': id,
-      'body': body,
-    });
-  }
-
-  /// Live feed for one community. Backed by the realtime publication the
-  /// slice 3 migration added.
-  static Stream<List<CommunityMessage>> communityStream(String communityId) {
-    final me = Api.currentUserId;
-    return Api.client
-        .from('community_messages')
-        .stream(primaryKey: ['id'])
-        .eq('community_id', communityId)
-        .order('created_at')
-        .map((rows) => rows.map((r) => communityMessageFromRow(r, myUserId: me)).toList());
   }
 
   // ----------------------------------------------------------- tickets
@@ -366,7 +366,11 @@ abstract final class Repo {
 
   // ----------------------------------------------------- notifications
 
-  static Future<List<({String id, String title, String body, String time, String? deepLink})>>
+  static Future<
+    List<
+      ({String id, String title, String body, String time, String? deepLink})
+    >
+  >
   notifications() async {
     final rows = await Api.client
         .from('notifications')
@@ -497,4 +501,75 @@ abstract final class Repo {
         .eq('popup_id', popupId)
         .eq('student_id', me);
   }
+
+  // ----------------------------------------------------------- banners
+
+  /// Live slides for the course slider, in admin order. RLS already hides
+  /// inactive and out-of-window slides from students.
+  static Future<List<CourseBanner>> banners() async {
+    final rows = await Api.client
+        .from('course_banners')
+        .select('id, title, subtitle, image_path, course_id, cta_label, hue')
+        .order('sort_order')
+        .order('created_at');
+
+    final base =
+        '${Api.client.storage.url.replaceAll(RegExp(r'/storage/v1$'), '')}'
+        '/storage/v1/object/public/banner-images/';
+
+    return rows.map((r) => CourseBanner.fromRow(r, publicBase: base)).toList();
+  }
+
+  // ---------------------------------------------------------- checkout
+
+  /// Calls the `checkout` Edge Function. Orders, payments and enrolments are
+  /// written there with the service role; students cannot write them.
+  static Future<Map<String, dynamic>> checkout(
+    Map<String, dynamic> body,
+  ) async {
+    try {
+      final response = await Api.client.functions.invoke(
+        'checkout',
+        body: body,
+      );
+      return Map<String, dynamic>.from(response.data as Map);
+    } on FunctionException catch (e) {
+      final details = e.details;
+      final message = details is Map && details['error'] != null
+          ? details['error'].toString()
+          : 'Checkout failed (${e.status}).';
+      throw CheckoutException(message);
+    }
+  }
+}
+
+/// A checkout step the server refused, with a message fit to show the student.
+class CheckoutException implements Exception {
+  const CheckoutException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+/// The student is not enrolled in the course this lesson belongs to.
+class PlaybackDenied implements Exception {
+  const PlaybackDenied();
+
+  @override
+  String toString() => 'Enroll in this course to watch the lecture.';
+}
+
+/// A note the server would not hand over, with a message for the student.
+class NoteUnavailable implements Exception {
+  const NoteUnavailable(this.message, {this.denied = false});
+
+  final String message;
+
+  /// True when the student is not enrolled, rather than a fetch failure.
+  final bool denied;
+
+  @override
+  String toString() => message;
 }

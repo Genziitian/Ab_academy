@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',sans-serif;color:#0f1b2d;background:#0f1b2d;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="height:100vh;display:flex;flex-direction:column;font-family:'IBM Plex Sans',sans-serif;background:#0f1b2d;color:#fff">
+  <header style="height:60px;flex-shrink:0;display:flex;align-items:center;gap:16px;padding:0 24px;border-bottom:1px solid rgba(255,255,255,0.08)">
+    <a href="Live Classes.dc.html" style="color:#c8d1e4;font-size:14px;font-weight:500">← Leave</a>
+    <span style="width:1px;height:20px;background:rgba(255,255,255,0.12)"></span>
+    <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:4px;background:rgba(255,93,143,0.18);color:#ff8fb0;font-size:11px;font-weight:700;letter-spacing:0.06em"><span style="width:6px;height:6px;border-radius:50%;background:#ff5d8f"></span>LIVE · 24:18</span>
+    <div><p style="margin:0;font-size:15px;font-weight:600">Mathematics · Trigonometry</p></div>
+    <span style="margin-left:auto;font-size:13px;color:#9aa7c2">Amit Sir · 327 students</span>
+  </header>
+  <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 360px">
+    <div style="padding:24px;display:flex;flex-direction:column;gap:16px;min-height:0">
+      <div style="flex:1;min-height:0;border-radius:12px;background:#fff;color:#122046;padding:48px;display:flex;flex-direction:column;position:relative">
+        <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.08em;color:#6b7a90">SLIDE 12 / 24</p>
+        <h2 style="margin:12px 0 0;font-size:36px;font-weight:700;letter-spacing:-0.02em">Trigonometric Ratios</h2>
+        <div style="margin-top:32px;display:flex;flex-direction:column;gap:18px;font-size:24px;font-weight:500">
+          <span>sin θ = Perpendicular / Hypotenuse</span><span>cos θ = Base / Hypotenuse</span><span>tan θ = Perpendicular / Base</span>
+        </div>
+        <div style="position:absolute;right:20px;bottom:20px;width:180px;aspect-ratio:4/3;border-radius:8px;overflow:hidden;background:#1c2c5c;border:2px solid #fff;box-shadow:0 6px 20px rgba(0,0,0,0.2)"><img src="apps/web/public/images/feature-live-class.png" alt="Teacher camera" style="width:100%;height:100%;object-fit:cover"></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:stretch">
+        <div style="flex:1;padding:14px 16px;border-radius:10px;background:#16264a"><p style="margin:0;font-size:12px;color:#9fb8ff">My notes · 6:14 PM</p><p style="margin:4px 0 0;font-size:14px;color:#e2e8f4">tan θ = sin θ / cos θ — revise identity list before test.</p></div>
+        <button style="padding:0 18px;border:0;border-radius:10px;background:#16264a;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer">✋ Raise hand</button>
+        <button style="padding:0 18px;border:0;border-radius:10px;background:#16264a;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer">+ Add note</button>
+      </div>
+    </div>
+    <aside style="background:#fff;color:#122046;display:flex;flex-direction:column;min-height:0">
+      <div style="display:flex;border-bottom:1px solid #e6ebf5"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2"><button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for></div>
+      <div style="flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:16px">
+        <sc-for list="{{ items }}" as="m" hint-placeholder-count="4">
+          <div style="display:flex;gap:10px"><span style="{{ m.av }}">{{ m.initials }}</span><div style="flex:1"><div style="display:flex;gap:6px;align-items:center"><span style="font-size:13px;font-weight:600">{{ m.author }}</span><sc-if value="{{ m.teacher }}" hint-placeholder-val="{{ false }}"><span style="padding:1px 5px;border-radius:3px;background:#2962ff;color:#fff;font-size:9px;font-weight:700;letter-spacing:0.05em">TEACHER</span></sc-if></div><p style="margin:3px 0 0;font-size:14px;line-height:1.5;color:#4a5872">{{ m.body }}</p><p style="margin:3px 0 0;font-size:12px;color:#98a3b6">{{ m.meta }}</p></div></div>
+        </sc-for>
+      </div>
+      <div style="padding:14px;border-top:1px solid #e6ebf5;display:flex;gap:8px"><input value="{{ draft }}" onChange="{{ setDraft }}" placeholder="{{ placeholder }}" style="flex:1;height:42px;padding:0 12px;border:1px solid #dde0e8;border-radius:8px;font:inherit;font-size:14px;outline:none"><button onClick="{{ send }}" style="height:42px;padding:0 16px;border:0;border-radius:8px;background:#2962ff;color:#fff;font:inherit;font-size:14px;font-weight:600;cursor:pointer">Send</button></div>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { tab: 'chat', draft: '', chat: [
+    { author: 'Rahul', initials: 'RK', body: 'Sir please explain Question 5.' },
+    { author: 'Priya', initials: 'PS', body: 'Will this come in board exam?' },
+    { author: 'Amit Sir', initials: 'AS', body: 'Yes Priya — 2 marks almost every year. Rahul, doing Q5 now.', teacher: true },
+    { author: 'Ankit', initials: 'AK', body: 'धन्यवाद सर 🙏' }],
+    qa: [{ author: 'Priya', initials: 'PS', body: 'Is √2 rational or irrational?', meta: 'Asked by Priya · 12 upvotes' }, { author: 'Rahul', initials: 'RK', body: "Sir, will you share today's PDF?", meta: 'Answered' }] };
+  renderVals() {
+    const s = this.state, key = s.tab;
+    const tab = on => ({ flex: 1, height: 48, border: 0, background: 'none', font: 'inherit', fontSize: 14, fontWeight: on ? 600 : 500, color: on ? '#2962ff' : '#6b7a90', borderBottom: on ? '2px solid #2962ff' : '2px solid transparent', cursor: 'pointer' });
+    return {
+      tabs: [['chat', 'Live chat'], ['qa', 'Questions (2)']].map(([v, l]) => ({ label: l, style: tab(key === v), pick: () => this.setState({ tab: v }) })),
+      items: s[key].map(m => ({ meta: '', ...m, teacher: !!m.teacher, av: { width: 30, height: 30, borderRadius: '50%', flexShrink: 0, fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', background: m.teacher ? '#2962ff' : '#e8f0ff', color: m.teacher ? '#fff' : '#2962ff' } })),
+      placeholder: key === 'chat' ? 'Message the class…' : 'Ask the teacher a question…',
+      draft: s.draft, setDraft: e => this.setState({ draft: e.target.value }),
+      send: () => { const b = s.draft.trim(); if (!b) return; this.setState({ draft: '', [key]: [...s[key], { author: 'You', initials: 'RK', body: b, meta: key === 'qa' ? 'Asked by you · 0 upvotes' : '' }] }); },
+    };
+  }
+}
+</script>
+</body>
+</html>

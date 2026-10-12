@@ -15,4 +15,13 @@ abstract final class Env {
   /// `lib/data/remote/` falls back to `MockData` when this is false.
   static bool get hasBackend =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+
+  /// Seeded demo student used by the quick-login shortcut, so testing the app
+  /// does not need a real SMS. Supplied with --dart-define like everything
+  /// else here; absent by default, which leaves quick login switched off.
+  static const demoEmail = String.fromEnvironment('DEMO_EMAIL');
+  static const demoPassword = String.fromEnvironment('DEMO_PASSWORD');
+
+  static bool get hasDemoLogin =>
+      demoEmail.isNotEmpty && demoPassword.isNotEmpty;
 }

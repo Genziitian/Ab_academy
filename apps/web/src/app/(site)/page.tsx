@@ -1,358 +1,269 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ButtonLink } from "@/components/ButtonLink";
-import { CourseCard } from "@/components/CourseCard";
+import { FeaturedCarousel } from "@/components/FeaturedCarousel";
+import {
+  CheckBadge,
+  LiveIcon,
+  NotesIcon,
+  TestIcon,
+  VideoIcon,
+} from "@/components/icons";
 import { listCourses } from "@/lib/catalog";
+import { Course, formatInr } from "@/lib/courses";
 
 const features = [
   {
     title: "Live Classes",
     body: "Join scheduled sessions with expert teachers in real time.",
-    tint: "bg-[#e8f0ff] text-primary",
-    icon: "live",
+    tint: "bg-primary-soft text-primary",
+    Icon: LiveIcon,
   },
   {
     title: "Recorded Lectures",
     body: "Rewatch every lecture anytime if you miss a class.",
-    tint: "bg-[#fff1e8] text-orange",
-    icon: "record",
+    tint: "bg-amber-soft text-orange",
+    Icon: VideoIcon,
   },
   {
     title: "Study Notes",
     body: "Chapter PDFs and important questions ready to revise.",
-    tint: "bg-[#f1ecff] text-violet",
-    icon: "notes",
+    tint: "bg-violet-soft text-violet",
+    Icon: NotesIcon,
   },
   {
     title: "Tests & Practice",
-    body: "Stay exam-ready with structured practice (coming soon).",
-    tint: "bg-[#e8fff6] text-teal",
-    icon: "test",
+    body: "Board-pattern tests every week to stay exam-ready.",
+    tint: "bg-teal-soft text-teal",
+    Icon: TestIcon,
+  },
+];
+
+const streams = [
+  {
+    name: "Science (PCM + PCB)",
+    subjects: "Physics · Chemistry · Maths · Biology",
+    match: (c: Course) => c.subjects.some((s) => ["Physics", "Chemistry", "Biology"].includes(s)),
+  },
+  {
+    name: "Commerce",
+    subjects: "Accountancy · Business Studies · Economics",
+    match: (c: Course) => c.subjects.includes("Accountancy"),
+  },
+  {
+    name: "Arts",
+    subjects: "History · Political Science · Geography",
+    match: (c: Course) => c.subjects.includes("History"),
   },
 ];
 
 const classCards = [
-  {
-    level: 9,
-    title: "Class 9",
-    tagline: "Strong foundations for the years ahead",
-    bg: "bg-[#fff4ec]",
-    iconBg: "bg-[#ff8a3d]",
-  },
-  {
-    level: 10,
-    title: "Class 10",
-    tagline: "Board preparation with live guidance",
-    bg: "bg-[#eef3ff]",
-    iconBg: "bg-[#2962ff]",
-  },
-  {
-    level: 11,
-    title: "Class 11",
-    tagline: "Stream-ready Science, Commerce & Arts",
-    bg: "bg-[#f4efff]",
-    iconBg: "bg-[#7c5cff]",
-  },
-  {
-    level: 12,
-    title: "Class 12",
-    tagline: "Board + entrance focused batches",
-    bg: "bg-[#eefbf6]",
-    iconBg: "bg-[#14b8a6]",
-  },
+  { level: 12, title: "Class 12", tagline: "Board 2027 crash courses", color: "text-primary" },
+  { level: 11, title: "Class 11", tagline: "Build a strong base for Class 12", color: "text-violet" },
 ];
 
+/** "From ₹999" when a stream has several courses, the price when it has one. */
+function streamPrice(courses: Course[]) {
+  if (!courses.length) return "Coming soon";
+  const min = Math.min(...courses.map((c) => c.price));
+  return courses.length > 1 ? `From ${formatInr(min)}` : formatInr(min);
+}
+
 export default async function HomePage() {
-  const featured = (await listCourses()).slice(0, 3);
+  const all = await listCourses();
+  const featured = [...all].sort(
+    (a, b) => b.classLevel - a.classLevel || Number(!!b.bestseller) - Number(!!a.bestseller),
+  );
 
   return (
     <>
-      {/* Hero — matches UI kit layout */}
-      <section className="relative overflow-hidden bg-white">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:py-16">
-          <div className="order-2 lg:order-1">
-            <p className="animate-fade-up text-sm font-semibold uppercase tracking-[0.16em] text-primary">
-              Akhand Bharat Academy
+      <section className="border-b border-border bg-white">
+        <div className="mx-auto grid max-w-[1200px] items-center gap-14 px-4 pb-[72px] pt-12 sm:px-6 sm:pt-16 lg:grid-cols-2">
+          <div>
+            <p className="inline-flex items-center gap-2 whitespace-nowrap rounded-md bg-primary-soft px-3 py-1.5 text-[13px] font-semibold text-primary">
+              <span className="size-1.5 rounded-full bg-primary" />
+              Board 2027 crash courses now enrolling
             </p>
-            <h1 className="animate-fade-up-delay mt-3 max-w-xl text-[2rem] font-extrabold leading-[1.15] tracking-tight text-navy sm:text-5xl">
-              Learn Today Build a{" "}
-              <span className="text-primary">Brighter Tomorrow</span>
+            <h1 className="mt-5 text-[38px] font-bold leading-[1.08] tracking-[-0.025em] text-balance text-navy sm:text-[52px]">
+              Class 11 &amp; 12 <span className="text-primary">Crash Courses</span>{" "}
+              for Bihar Board
             </h1>
-            <p className="animate-fade-up-delay-2 mt-4 max-w-lg text-sm leading-relaxed text-muted sm:text-base">
-              Live classes, recorded lectures and notes for Classes 9–12.
-              Starting with Bihar Board — more boards and domains coming soon.
+            <p className="mt-5 max-w-[520px] text-lg leading-[1.6] text-pretty text-ink">
+              Finish the full syllabus in 90 days with live classes, recorded
+              lectures, chapter notes and board-pattern tests — Science,
+              Commerce and Arts.
             </p>
-
-            <ul className="animate-fade-up-delay-2 mt-6 space-y-2.5 text-sm font-medium text-navy">
-              <li className="flex items-center gap-2.5">
-                <CheckIcon /> Board focused learning
-              </li>
-              <li className="flex items-center gap-2.5">
-                <CheckIcon /> Expert teachers
-              </li>
-              <li className="flex items-center gap-2.5">
-                <CheckIcon /> Affordable learning
-              </li>
-            </ul>
-
-            <div className="animate-fade-up-delay-2 mt-8 flex flex-wrap gap-3">
-              <ButtonLink href="/login">Get Started</ButtonLink>
-              <ButtonLink href="/courses" variant="secondary">
-                Explore Courses
-              </ButtonLink>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/courses"
+                className="flex h-12 items-center whitespace-nowrap rounded-lg bg-primary px-6 text-[15px] font-semibold text-white hover:bg-primary-dark"
+              >
+                Explore Crash Courses
+              </Link>
+              <Link
+                href="/login"
+                className="flex h-12 items-center whitespace-nowrap rounded-lg border border-primary-line px-6 text-[15px] font-semibold text-primary hover:bg-primary-soft"
+              >
+                Get Started Free
+              </Link>
+            </div>
+            <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-border pt-7">
+              {["90-day board plan", "Expert teachers", "Hindi & English medium"].map(
+                (item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-navy"
+                  >
+                    <CheckBadge />
+                    {item}
+                  </div>
+                ),
+              )}
             </div>
           </div>
 
-          <div className="relative order-1 mx-auto w-full max-w-md lg:order-2 lg:max-w-none">
-            <div className="absolute -right-6 top-6 h-64 w-64 rounded-[40%] bg-[#dbe7ff] sm:-right-10 sm:h-80 sm:w-80 lg:right-0" />
-            <div className="absolute -bottom-4 -left-4 h-28 w-28 rounded-full bg-primary/10 blur-xl" />
-
-            <div className="animate-fade-up relative overflow-hidden rounded-[1.75rem]">
+          <div className="relative">
+            <div className="aspect-[9/7] overflow-hidden rounded-2xl bg-[#dbe7ff]">
               <Image
                 src="/images/hero-students.png"
                 alt="Students learning with Akhand Bharat Academy"
-                width={720}
-                height={560}
+                width={900}
+                height={700}
                 priority
-                className="relative z-[1] h-auto w-full object-cover"
+                className="size-full object-cover"
               />
             </div>
-
-            <div className="animate-float absolute -left-2 top-8 z-[2] max-w-[11rem] rounded-2xl bg-white px-3.5 py-3 text-xs font-semibold leading-snug text-navy shadow-[var(--shadow-soft)] sm:left-0 sm:top-12 sm:max-w-[13rem] sm:text-sm">
-              Better Students.
-              <br />
-              Brighter Futures.
-              <span className="absolute -bottom-2 left-8 h-4 w-4 rotate-45 bg-white" />
+            <div className="absolute bottom-8 left-3 flex items-center gap-3 rounded-xl border border-border bg-white px-4 py-3.5 shadow-[var(--shadow-float)] sm:-left-4">
+              <span className="shrink-0 whitespace-nowrap rounded bg-danger-soft px-2 py-[3px] text-[11px] font-bold tracking-[0.04em] text-danger">
+                ● LIVE
+              </span>
+              <div>
+                <p className="whitespace-nowrap text-sm font-semibold text-navy">
+                  Class 12 Physics · Electrostatics
+                </p>
+                <p className="mt-0.5 text-xs text-muted">Amit Sir · Today 6:00 PM</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Feature cards — icon style like kit */}
       <section className="bg-surface-soft">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-2xl font-extrabold tracking-tight text-navy sm:text-3xl">
-              Everything you need to succeed
-            </h2>
-            <p className="mt-3 text-sm text-muted sm:text-base">
+        <div className="mx-auto max-w-[1200px] px-4 py-[72px] sm:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+            <div className="max-w-[560px]">
+              <p className="eyebrow">Inside every crash course</p>
+              <h2 className="mt-2.5 text-[28px] font-bold tracking-[-0.02em] text-navy sm:text-[34px]">
+                Everything you need to succeed
+              </h2>
+            </div>
+            <p className="max-w-[380px] text-base text-muted">
               One simple path — join class, revise, and track your progress.
             </p>
           </div>
-
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-            {features.map((feature) => (
-              <article
-                key={feature.title}
-                className="rounded-2xl border border-border bg-white p-5 shadow-[var(--shadow-card)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]"
-              >
-                <div
-                  className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl ${feature.tint}`}
+          <div className="mt-9 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+            {features.map(({ title, body, tint, Icon }) => (
+              <article key={title} className="bg-white p-7">
+                <span
+                  className={`flex size-11 items-center justify-center rounded-[10px] ${tint}`}
                 >
-                  <FeatureIcon name={feature.icon} />
-                </div>
-                <h3 className="text-base font-bold text-navy">{feature.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">
-                  {feature.body}
-                </p>
+                  <Icon size={22} />
+                </span>
+                <h3 className="mt-5 text-[17px] font-semibold text-navy">{title}</h3>
+                <p className="mt-2 text-sm leading-[1.6] text-muted">{body}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Choose your class — pastel cards */}
       <section className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-2xl font-extrabold tracking-tight text-navy sm:text-3xl">
-              Choose Your Class
-            </h2>
-            <p className="mt-3 text-sm text-muted sm:text-base">
-              Bihar Board Classes 9–12 available now. More programmes launching
-              soon.
-            </p>
-          </div>
+        <div className="mx-auto max-w-[1200px] px-4 py-[72px] sm:px-6">
+          <FeaturedCarousel courses={featured} />
+        </div>
+      </section>
 
-          <div className="mt-10 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-            {classCards.map((item) => (
-              <Link
-                key={item.level}
-                href={`/courses?class=${item.level}`}
-                className={`rounded-2xl ${item.bg} p-4 transition duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-soft)] sm:p-6`}
-              >
-                <span
-                  className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl text-white sm:h-12 sm:w-12 ${item.iconBg}`}
+      <section className="bg-surface-soft">
+        <div className="mx-auto max-w-[1200px] px-4 py-[72px] sm:px-6">
+          <h2 className="text-[28px] font-bold tracking-[-0.02em] text-navy sm:text-[34px]">
+            Choose your class &amp; stream
+          </h2>
+          <p className="mt-2.5 text-base text-muted">
+            Bihar Board Class 11 and 12 crash courses available now.
+          </p>
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            {classCards.map((card) => {
+              const ofClass = all.filter((c) => c.classLevel === card.level);
+              return (
+                <div
+                  key={card.level}
+                  className="rounded-xl border border-border bg-white p-7"
                 >
-                  <BookIcon />
-                </span>
-                <h3 className="mt-4 text-lg font-extrabold text-navy sm:text-xl">
-                  {item.title}
-                </h3>
-                <p className="mt-1.5 text-xs leading-relaxed text-muted sm:text-sm">
-                  {item.tagline}
-                </p>
-              </Link>
-            ))}
+                  <div className="flex items-baseline gap-3.5">
+                    <span
+                      className={`text-5xl font-bold leading-none tracking-[-0.03em] ${card.color}`}
+                    >
+                      {card.level}
+                    </span>
+                    <div>
+                      <h3 className="text-xl font-semibold text-navy">{card.title}</h3>
+                      <p className="mt-0.5 text-sm text-muted">{card.tagline}</p>
+                    </div>
+                  </div>
+                  <div className="mt-[22px] flex flex-col border-t border-border">
+                    {streams.map((stream) => {
+                      const price = streamPrice(ofClass.filter(stream.match));
+                      return (
+                        <Link
+                          key={stream.name}
+                          href={`/courses?class=${card.level}`}
+                          className="group flex items-center justify-between gap-3 border-b border-line py-3.5"
+                        >
+                          <span>
+                            <span className="block text-[15px] font-semibold text-navy group-hover:text-primary">
+                              {stream.name}
+                            </span>
+                            <span className="text-[13px] text-muted">
+                              {stream.subjects}
+                            </span>
+                          </span>
+                          <span className="whitespace-nowrap text-sm font-semibold text-primary">
+                            {price} →
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Popular courses */}
-      <section className="bg-surface-soft">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-extrabold tracking-tight text-navy sm:text-3xl">
-                Popular Courses
+      <section className="bg-white">
+        <div className="mx-auto max-w-[1200px] px-4 py-[72px] sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl bg-primary p-8 sm:p-12">
+            <div className="flex-[1_1_360px]">
+              <p className="font-hindi text-[15px] text-[#dbe6ff]">
+                आज शुरू करें — कल का आत्मविश्वास बनाएँ।
+              </p>
+              <h2 className="mt-2.5 text-[26px] font-bold tracking-[-0.02em] text-white sm:text-[32px]">
+                Boards are closer than they look.
               </h2>
-              <p className="mt-2 text-sm text-muted sm:text-base">
-                Complete batches and subject courses to get started.
+              <p className="mt-2.5 max-w-[520px] text-base text-[#dbe6ff]">
+                Start your 90-day crash course today and finish the syllabus
+                with time left to revise.
               </p>
             </div>
-            <ButtonLink
-              href="/courses"
-              variant="secondary"
-              className="hidden sm:inline-flex"
+            <Link
+              href="/login"
+              className="flex h-12 shrink-0 items-center whitespace-nowrap rounded-lg bg-white px-6 text-[15px] font-semibold text-primary hover:bg-primary-soft"
             >
-              View all courses
-            </ButtonLink>
-          </div>
-          <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-            {featured.map((course) => (
-              <CourseCard key={course.slug} course={course} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA band */}
-      <section className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-          <div className="overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-primary to-primary-dark px-6 py-10 text-white sm:px-10 sm:py-12">
-            <p className="font-hindi text-sm text-white/75">
-              आज शुरू करें — कल का आत्मविश्वास बनाएँ।
-            </p>
-            <h2 className="mt-3 max-w-xl text-2xl font-extrabold sm:text-3xl">
-              Ready for your next live class?
-            </h2>
-            <p className="mt-3 max-w-lg text-sm text-white/80 sm:text-base">
-              Join Akhand Bharat Academy — start with Bihar Board, grow into more
-              domains with us.
-            </p>
-            <div className="mt-8">
-              <ButtonLink
-                href="/login"
-                variant="secondary"
-                className="border-transparent bg-white text-primary hover:bg-primary-soft"
-              >
-                Create free account
-              </ButtonLink>
-            </div>
+              Create free account
+            </Link>
           </div>
         </div>
       </section>
     </>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-      <circle cx="9" cy="9" r="9" fill="#22c55e" />
-      <path
-        d="M5 9.2 7.6 11.7 13 6.4"
-        stroke="white"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function BookIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5V5.5Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path d="M4 19.5h16" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  );
-}
-
-function FeatureIcon({ name }: { name: string }) {
-  const common = {
-    width: 22,
-    height: 22,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    "aria-hidden": true as const,
-  };
-
-  if (name === "live") {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="3" fill="currentColor" />
-        <path
-          d="M5.5 8.5a8 8 0 0 1 0 7M18.5 8.5a8 8 0 0 0 0 7"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-  if (name === "record") {
-    return (
-      <svg {...common}>
-        <rect
-          x="3"
-          y="6"
-          width="14"
-          height="12"
-          rx="2"
-          stroke="currentColor"
-          strokeWidth="1.8"
-        />
-        <path
-          d="m17 10 4-2v8l-4-2"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-  if (name === "notes") {
-    return (
-      <svg {...common}>
-        <path
-          d="M7 3h8l4 4v14H7V3Z"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M15 3v4h4M9 12h6M9 16h6"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-  return (
-    <svg {...common}>
-      <path
-        d="M4 5h16v4H4V5Zm0 7h10v7H4v-7Zm12 0h4v7h-4v-7Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

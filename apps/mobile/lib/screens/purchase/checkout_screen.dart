@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../data/mock/mock_data.dart';
-import '../../data/models/content.dart';
+import '../../data/models/course.dart';
 import '../../data/providers/app_providers.dart';
+import '../../data/providers/remote_providers.dart';
+import '../../data/remote/payment_service.dart';
+import '../../data/remote/repositories.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -13,240 +15,191 @@ import '../../theme/app_theme.dart';
 import '../../utils/format.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/common.dart';
-import '../onboarding/setup_stream_screen.dart';
+import '../onboarding/setup_class_screen.dart';
 
-class CheckoutScreen extends ConsumerWidget {
+/// 25 · Checkout — order summary and payment method.
+///
+/// With Supabase configured, "Pay" sells the course for real through
+/// [PaymentService] (Razorpay). On mock data it completes a test enrolment and
+/// the success screen says nothing was charged.
+class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key, required this.courseId});
 
   final String courseId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final course = ref.watch(courseByIdProvider(courseId));
+  ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
+}
+
+class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
+  final _payments = PaymentService();
+  bool _paying = false;
+
+  String get courseId => widget.courseId;
+
+  @override
+  void dispose() {
+    _payments.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pay(Course course, String method) async {
+    if (_paying) return;
+
+    if (!ref.read(hasBackendProvider)) {
+      context.go(
+        Routes.paymentSuccess,
+        extra: PaymentReceipt(
+          courseId: course.id,
+          orderId: MockData.orderId,
+          amountInr: course.priceInr,
+          method: method,
+          testMode: true,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _paying = true);
+    try {
+      final receipt = await _payments.buy(
+        courseId: course.id,
+        methodLabel: method,
+      );
+      // The new enrolment shows up in My courses and the store.
+      ref.invalidate(remoteMyCoursesProvider);
+      ref.invalidate(remoteCatalogProvider(null));
+      if (!mounted) return;
+      context.go(Routes.paymentSuccess, extra: receipt);
+    } on CheckoutException catch (e) {
+      if (mounted) showDemoSnack(context, e.message);
+    } catch (_) {
+      if (mounted) {
+        showDemoSnack(context, 'Payment could not be completed. Try again.');
+      }
+    } finally {
+      if (mounted) setState(() => _paying = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final remote = ref.watch(remoteCourseProvider(courseId)).value;
+    final Course course = remote ?? ref.watch(courseByIdProvider(courseId));
     final method = ref.watch(paymentMethodProvider);
-    final student = ref.watch(studentProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Container(
-              height: 56,
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(bottom: BorderSide(color: AppColors.divider)),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  SquareIconButton(icon: LucideIcons.chevronLeft, onPressed: () => context.pop()),
-                  const SizedBox(width: 12),
-                  Text('Complete Payment', style: AppText.tabular(17, FontWeight.w700)),
-                ],
-              ),
+      appBar: AppTopBar(
+        title: 'Checkout',
+        actions: [
+          Text(
+            '🔒 Razorpay',
+            style: AppText.tabular(
+              12,
+              FontWeight.w400,
+              color: AppColors.textMuted,
             ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-                children: [
-                  AppCard(
-                    shadow: null,
-                    child: Column(
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(course.title, style: AppText.cardTitle),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${course.board} • 2027 • ${student.medium} Medium',
-                                    style: AppText.meta,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Text(
-                              formatRupees(course.originalPriceInr),
-                              style: AppText.tabular(15, FontWeight.w700),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const Divider(height: 1, color: AppColors.dividerSoft),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Discount applied',
-                              style: AppText.tabular(
-                                12.5,
-                                FontWeight.w500,
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                            Text(
-                              '− ${formatRupees(MockData.discountInr)}',
-                              style: AppText.tabular(
-                                12.5,
-                                FontWeight.w600,
-                                color: AppColors.scienceInk,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Total payable', style: AppText.cardTitleSm),
-                            Text(
-                              formatRupees(course.priceInr),
-                              style: AppText.tabular(18, FontWeight.w800),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+        children: [
+          AppCard(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: courseGradient(course.thumbnailHue),
+                    borderRadius: AppRadius.sm,
                   ),
-                  const SizedBox(height: 20),
-
-                  Row(
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Container(
-                          height: 48,
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          alignment: Alignment.centerLeft,
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.all(Radius.circular(13)),
-                            border: Border.all(color: const Color(0xFFC9CDD9)),
-                          ),
-                          child: Text(
-                            'Have a coupon code?',
-                            style: AppText.tabular(
-                              13,
-                              FontWeight.w500,
-                              color: AppColors.textSubtle,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 9),
-                      GestureDetector(
-                        onTap: () => showDemoSnack(context, 'Discount already applied'),
-                        child: Container(
-                          height: 48,
-                          padding: const EdgeInsets.symmetric(horizontal: 18),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.all(Radius.circular(13)),
-                            border: Border.all(color: AppColors.primary, width: 1.5),
-                          ),
-                          child: Text(
-                            'Apply',
-                            style: AppText.tabular(13, FontWeight.w700, color: AppColors.primary),
-                          ),
-                        ),
+                      Text(course.title, style: AppText.rowTitle),
+                      const SizedBox(height: 1),
+                      Text(
+                        '${course.stream ?? course.subjects.join(' · ')} · ${MockData.planDays} days',
+                        style: AppText.meta,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-
-                  Text('Payment method', style: AppText.tabular(14.5, FontWeight.w700)),
-                  const SizedBox(height: 11),
-                  for (final option in MockData.paymentMethods) ...[
-                    _PaymentMethodRow(
-                      option: option,
-                      selected: method == option.name,
-                      onTap: () => ref.read(paymentMethodProvider.notifier).select(option.name),
-                    ),
-                    if (option != MockData.paymentMethods.last) const SizedBox(height: 9),
-                  ],
-                  const SizedBox(height: 20),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    decoration: const BoxDecoration(
-                      color: AppColors.fillMutedAlt,
-                      borderRadius: BorderRadius.all(Radius.circular(13)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(LucideIcons.lock, size: 16, color: AppColors.textMuted),
-                        const SizedBox(width: 9),
-                        Expanded(
-                          child: Text(
-                            'Payments are processed securely. Card details are never stored '
-                            'on your device.',
-                            style: AppText.tabular(
-                              11.5,
-                              FontWeight.w500,
-                              color: AppColors.textMuted,
-                            ).copyWith(height: 1.5),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Container(
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(top: BorderSide(color: AppColors.divider)),
-              ),
-              padding: EdgeInsets.fromLTRB(
-                20,
-                14,
-                20,
-                MediaQuery.viewPaddingOf(context).bottom + 14,
-              ),
-              child: PrimaryButton(
-                label: 'Pay ${formatRupees(course.priceInr)}',
-                onPressed: () => context.go(Routes.paymentSuccess),
-              ),
+          ),
+          const SizedBox(height: 18),
+          Text('Payment method', style: AppText.cardTitle),
+          const SizedBox(height: 12),
+          for (final option in MockData.paymentMethods) ...[
+            _MethodRow(
+              name: option.name,
+              subtitle: option.subtitle,
+              short: option.short,
+              selected: method == option.name,
+              onTap: () =>
+                  ref.read(paymentMethodProvider.notifier).select(option.name),
             ),
+            const SizedBox(height: 8),
           ],
+          const SizedBox(height: 6),
+          _Summary(course: course),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          border: Border(top: BorderSide(color: AppColors.border)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+        child: SafeArea(
+          top: false,
+          child: PrimaryButton(
+            label: _paying
+                ? 'Processing…'
+                : 'Pay ${formatRupees(course.priceInr)}',
+            enabled: !_paying,
+            onPressed: () => _pay(course, method),
+          ),
         ),
       ),
     );
   }
 }
 
-class _PaymentMethodRow extends StatelessWidget {
-  const _PaymentMethodRow({required this.option, required this.selected, required this.onTap});
+class _MethodRow extends StatelessWidget {
+  const _MethodRow({
+    required this.name,
+    required this.subtitle,
+    required this.short,
+    required this.selected,
+    required this.onTap,
+  });
 
-  final PaymentMethodOption option;
+  final String name;
+  final String subtitle;
+  final String short;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final (tint, ink) = switch (option.name) {
-      'UPI' => (AppColors.primaryTint, AppColors.primary),
-      'Google Pay' => (AppColors.mathsTint, AppColors.maths),
-      'PhonePe' => (AppColors.englishTint, AppColors.english),
-      _ => (AppColors.fillMuted, AppColors.textMuted),
-    };
-
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.all(14),
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFF7F8FD) : AppColors.surface,
-          borderRadius: AppRadius.md,
+          color: selected ? AppColors.primarySoft : AppColors.surface,
+          borderRadius: AppRadius.sm,
           border: Border.all(
             color: selected ? AppColors.primary : AppColors.border,
             width: selected ? 1.5 : 1,
@@ -254,27 +207,92 @@ class _PaymentMethodRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            IconTile(
-              background: tint,
-              label: option.short,
-              labelStyle: AppText.tabular(12, FontWeight.w800, color: ink),
-              size: 40,
-              radius: 12,
+            Container(
+              width: 38,
+              height: 38,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: selected ? AppColors.surface : AppColors.fillMuted,
+                borderRadius: AppRadius.xs,
+                border: selected ? Border.all(color: AppColors.border) : null,
+              ),
+              child: Text(
+                short,
+                style: AppText.tabular(
+                  short.length > 3 ? 9 : 11,
+                  FontWeight.w700,
+                ),
+              ),
             ),
-            const SizedBox(width: 13),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(option.name, style: AppText.cardTitleSm),
-                  const SizedBox(height: 3),
-                  Text(option.subtitle, style: AppText.metaSm),
+                  Text(name, style: AppText.rowTitle),
+                  Text(subtitle, style: AppText.meta),
                 ],
               ),
             ),
-            RadioDot(selected: selected, size: 20, thickness: 6),
+            RadioDot(selected: selected, size: 18),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _Summary extends StatelessWidget {
+  const _Summary({required this.course});
+
+  final Course course;
+
+  @override
+  Widget build(BuildContext context) {
+    final original = course.originalPriceInr > course.priceInr
+        ? course.originalPriceInr
+        : course.priceInr;
+    final discount = original - course.priceInr;
+    final row = AppText.tabular(13, FontWeight.w400, color: AppColors.textBody);
+
+    return AppCard(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Course price', style: row),
+              Text(formatRupees(original), style: row),
+            ],
+          ),
+          if (discount > 0) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Discount', style: row),
+                Text(
+                  '− ${formatRupees(discount)}',
+                  style: row.copyWith(color: AppColors.success),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 8),
+          const Divider(height: 1, color: AppColors.divider),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Total', style: AppText.tabular(15, FontWeight.w700)),
+              Text(
+                formatRupees(course.priceInr),
+                style: AppText.tabular(15, FontWeight.w700),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

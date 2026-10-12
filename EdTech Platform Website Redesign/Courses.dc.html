@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500;600&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',sans-serif;color:#0f1b2d;background:#f7f8fc;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<dc-import name="SiteHeader" active="courses" hint-size="100%,68px"></dc-import>
+<main style="font-family:'IBM Plex Sans',sans-serif">
+  <section style="background:#fff;border-bottom:1px solid #e6ebf5">
+    <div style="max-width:1200px;margin:0 auto;padding:36px 24px 0">
+      <nav style="font-size:13px;color:#6b7a90;display:flex;gap:8px"><a href="Home.dc.html" style="color:#6b7a90">Home</a><span>›</span><span style="color:#122046">Courses</span></nav>
+      <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:flex-end;gap:32px">
+        <div style="max-width:640px">
+          <h1 style="margin:0;font-size:38px;font-weight:700;letter-spacing:-0.02em;color:#122046">Class 11 &amp; 12 Crash Courses</h1>
+          <p style="margin:12px 0 0;font-size:16px;line-height:1.6;color:#6b7a90;text-wrap:pretty">Fast-track, board-focused crash courses with live classes, recordings and notes. Bihar Board Class 11 &amp; 12 — Science, Commerce and Arts.</p>
+        </div>
+        <div style="display:flex;gap:32px;padding-bottom:4px">
+          <div><p style="margin:0;font-size:28px;font-weight:700;color:#2962ff">6</p><p style="margin:2px 0 0;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#6b7a90">Crash courses</p></div>
+          <div><p style="margin:0;font-size:28px;font-weight:700;color:#122046">90</p><p style="margin:2px 0 0;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#6b7a90">Day plan</p></div>
+        </div>
+      </div>
+      <div style="margin-top:28px;display:flex;gap:4px">
+        <sc-for list="{{ classTabs }}" as="t" hint-placeholder-count="3">
+          <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <div style="max-width:1200px;margin:0 auto;padding:28px 24px 64px;display:grid;grid-template-columns:260px minmax(0,1fr);gap:28px;align-items:start">
+    <aside style="display:flex;flex-direction:column;gap:16px;position:sticky;top:88px">
+      <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0;font-size:15px;font-weight:600;color:#122046">Filters</h2><button onClick="{{ clearAll }}" style="border:0;background:none;padding:0;font:inherit;font-size:13px;font-weight:600;color:#2962ff;cursor:pointer">Clear all</button></div>
+        <p style="margin:20px 0 10px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6b7a90">Subjects</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ subjects }}" as="s" hint-placeholder-count="8">
+            <label style="display:flex;align-items:center;justify-content:space-between;font-size:14px;color:#122046;cursor:pointer"><span style="display:flex;align-items:center;gap:8px"><input type="checkbox" checked="{{ s.checked }}" onChange="{{ s.toggle }}" style="accent-color:#2962ff;width:15px;height:15px;margin:0">{{ s.name }}</span><span style="font-size:12px;color:#6b7a90">{{ s.count }}</span></label>
+          </sc-for>
+        </div>
+        <p style="margin:20px 0 10px;padding-top:20px;border-top:1px solid #e6ebf5;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6b7a90">Course type</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ types }}" as="t" hint-placeholder-count="3">
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#122046;cursor:pointer"><input type="radio" name="ct" checked="{{ t.checked }}" onChange="{{ t.pick }}" style="accent-color:#2962ff;margin:0">{{ t.label }}</label>
+          </sc-for>
+        </div>
+        <p style="margin:20px 0 10px;padding-top:20px;border-top:1px solid #e6ebf5;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6b7a90">Max price · {{ maxPriceLabel }}</p>
+        <input type="range" min="500" max="5000" step="100" value="{{ maxPrice }}" onChange="{{ setPrice }}" style="width:100%;accent-color:#2962ff">
+        <p style="margin:20px 0 10px;padding-top:20px;border-top:1px solid #e6ebf5;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6b7a90">Student rating</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ ratings }}" as="r" hint-placeholder-count="3">
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#122046;cursor:pointer"><input type="radio" name="rt" checked="{{ r.checked }}" onChange="{{ r.pick }}" style="accent-color:#2962ff;margin:0">{{ r.label }}</label>
+          </sc-for>
+        </div>
+      </div>
+      <div style="border-radius:12px;background:#122046;padding:20px;color:#fff">
+        <p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#9fb8ff">Medha Scholarship</p>
+        <p style="margin:8px 0 0;font-size:15px;font-weight:600;line-height:1.4">Merit support for dedicated learners</p>
+        <a href="Contact.dc.html" style="margin-top:12px;display:inline-flex;font-size:14px;font-weight:600;color:#9fb8ff">Check eligibility →</a>
+      </div>
+      <div style="border-radius:12px;background:#e8f0ff;padding:20px">
+        <p style="margin:0;font-size:15px;font-weight:600;color:#122046">Academic counselor</p>
+        <p style="margin:6px 0 0;font-size:14px;line-height:1.5;color:#4a5872">Confused about which batch to pick? Chat with us.</p>
+        <a href="Contact.dc.html" style="margin-top:12px;display:inline-flex;font-size:14px;font-weight:600">Chat on WhatsApp →</a>
+      </div>
+    </aside>
+
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
+        <sc-for list="{{ mediums }}" as="m" hint-placeholder-count="4">
+          <button onClick="{{ m.pick }}" style="{{ m.style }}">{{ m.label }}</button>
+        </sc-for>
+        <span style="margin-left:auto;font-size:14px;color:#6b7a90">{{ resultLabel }}</span>
+        <select value="{{ sortBy }}" onChange="{{ setSort }}" style="height:36px;padding:0 10px;border:1px solid #e6ebf5;border-radius:8px;background:#fff;font:inherit;font-size:14px;color:#122046"><option value="popular">Sort: Popular</option><option value="price-asc">Price: Low to high</option><option value="price-desc">Price: High to low</option></select>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+        <sc-for list="{{ filtered }}" as="c" hint-placeholder-count="6">
+          <article style="display:flex;flex-direction:column;background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden" style-hover="box-shadow:0 14px 40px rgba(41,98,255,0.1)">
+            <a href="Course Detail.dc.html" style="{{ c.thumb }}">
+              <div style="display:flex;gap:6px"><span style="padding:3px 8px;border-radius:4px;background:rgba(18,32,70,0.7);font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:#fff">{{ c.badge }}</span><span style="padding:3px 8px;border-radius:4px;background:rgba(255,255,255,0.22);font-size:11px;font-weight:600;color:#fff">Class {{ c.classLevel }}</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-end"><span style="font-size:13px;color:rgba(255,255,255,0.9)">{{ c.lessons }}+ lectures</span><span style="padding:3px 8px;border-radius:4px;background:#fff;font-size:12px;font-weight:700;color:#122046">★ {{ c.rating }}</span></div>
+            </a>
+            <div style="padding:18px;display:flex;flex-direction:column;flex:1">
+              <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:#2962ff">{{ c.tagline }}</p>
+              <a href="Course Detail.dc.html" style="margin-top:6px;font-size:16px;font-weight:600;line-height:1.35;color:#122046">{{ c.title }}</a>
+              <p style="margin:8px 0 0;font-size:13px;line-height:1.55;color:#6b7a90;flex:1">{{ c.description }}</p>
+              <p style="margin:12px 0 0;font-size:13px;color:#4a5872"><span style="font-weight:600;color:#122046">{{ c.teacher }}</span> · {{ c.language }}</p>
+              <div style="margin-top:14px;padding-top:14px;border-top:1px solid #e6ebf5;display:flex;justify-content:space-between;align-items:center">
+                <div><p style="margin:0;font-size:18px;font-weight:700;color:#122046">{{ c.priceLabel }}</p><p style="margin:0;font-size:12px"><span style="color:#6b7a90;text-decoration:line-through">{{ c.origLabel }}</span> <span style="font-weight:600;color:#16a34a">{{ c.off }}% OFF</span></p></div>
+                <a href="Course Detail.dc.html" style="height:36px;padding:0 14px;display:flex;align-items:center;border-radius:8px;background:#122046;color:#fff;font-size:14px;font-weight:600" style-hover="background:#2962ff;color:#fff">Enroll</a>
+              </div>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+      <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:64px 0;text-align:center;border:1px dashed #d5dcea;border-radius:12px;background:#fff;color:#6b7a90">No courses match these filters.</p></sc-if>
+      <section style="margin-top:32px;border-radius:12px;background:#e8f0ff;padding:24px;display:flex;justify-content:space-between;align-items:center;gap:24px">
+        <div><p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#2962ff">Student stories</p><p style="margin:8px 0 0;font-size:16px;font-weight:500;color:#122046">“The 90-day plan kept me on track for every chapter before boards.” — Rahul, Class 12</p></div>
+        <a href="For Students.dc.html" style="flex-shrink:0;height:40px;padding:0 16px;display:flex;align-items:center;border-radius:8px;background:#122046;color:#fff;font-size:14px;font-weight:600">How learning works</a>
+      </section>
+    </div>
+  </div>
+
+  <section style="background:#fff;border-top:1px solid #e6ebf5">
+    <div style="max-width:1200px;margin:0 auto;padding:64px 24px;display:grid;grid-template-columns:320px minmax(0,1fr);gap:48px">
+      <div><h2 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-0.02em;color:#122046">Frequently Asked Questions</h2><p style="margin:10px 0 0;font-size:14px;color:#6b7a90">Admission &amp; batch details · <span style="font-family:'IBM Plex Sans Devanagari',sans-serif">प्रवेश और बैच संबंधी प्रश्न</span></p></div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#e6ebf5;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+        <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="6">
+          <div style="background:#fff;padding:20px"><h3 style="margin:0;font-size:15px;font-weight:600;color:#122046">{{ f.q }}</h3><p style="margin:8px 0 0;font-size:14px;line-height:1.6;color:#6b7a90">{{ f.a }}</p></div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+</main>
+<dc-import name="SiteFooter" hint-size="100%,340px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const COURSES = [
+  { title: 'Class 12 Science Crash Course 2027', classLevel: 12, badge: 'Bestseller', tagline: 'PCM + PCB · 90-day plan', description: 'Complete Class 12 Science revision in 90 days with live classes, chapter recordings, notes and board-pattern tests.', teacher: 'Senior Faculty', language: 'Hindi + English', price: 2499, orig: 4999, rating: 4.8, lessons: 120, hue: 214, subjects: ['Physics','Chemistry','Mathematics','Biology'] },
+  { title: 'Class 12 Physics Crash Course', classLevel: 12, badge: 'Top rated', tagline: 'Full Physics syllabus', description: 'Electrostatics to Semiconductors with numericals, derivations and important board questions.', teacher: 'Amit Sir', language: 'Hindi', price: 999, orig: 1799, rating: 4.9, lessons: 48, hue: 198, subjects: ['Physics'] },
+  { title: 'Class 12 Commerce Crash Course', classLevel: 12, badge: 'Popular', tagline: 'Accountancy · BST · Economics', description: 'Fast revision of Accountancy, Business Studies and Economics with solved board papers.', teacher: 'Ravi Sir', language: 'Hindi', price: 1999, orig: 3499, rating: 4.7, lessons: 90, hue: 320, subjects: ['Accountancy','Business Studies','Economics'] },
+  { title: 'Class 12 Arts Crash Course', classLevel: 12, badge: 'New', tagline: 'History · Pol. Science · Geography', description: 'Chapter summaries, map work and answer-writing practice for Class 12 Arts boards.', teacher: 'Faculty Team', language: 'Hindi', price: 1799, orig: 2999, rating: 4.6, lessons: 80, hue: 28, subjects: ['History','Political Science','Geography'] },
+  { title: 'Class 11 Science Crash Course', classLevel: 11, badge: 'Foundation', tagline: 'PCM + PCB · Strong base', description: 'Cover Class 11 Science quickly so Class 12 and entrance prep feel manageable.', teacher: "Neha Ma'am", language: 'Hindi + English', price: 1999, orig: 3499, rating: 4.7, lessons: 100, hue: 162, subjects: ['Physics','Chemistry','Mathematics','Biology'] },
+  { title: 'Class 11 Commerce Crash Course', classLevel: 11, badge: 'New', tagline: 'Accountancy · BST · Economics', description: 'Clear Class 11 Commerce concepts with numerical practice and Hindi notes.', teacher: 'Ravi Sir', language: 'Hindi', price: 1499, orig: 2499, rating: 4.5, lessons: 72, hue: 250, subjects: ['Accountancy','Business Studies','Economics'] },
+];
+const SUBJECTS = ['Physics','Chemistry','Mathematics','Biology','Accountancy','Business Studies','Economics','History','Political Science','Geography'];
+const FAQS = [
+  { q: 'What is the medium of teaching?', a: 'Most batches are bilingual (Hindi + English). Check each course page for the exact medium.' },
+  { q: 'Can I download lectures?', a: 'Recordings stay inside your enrolled classroom. Offline download for selected content will roll out based on licensing.' },
+  { q: 'Are live classes mandatory?', a: 'No. You can join live or watch the recording later from the same chapter.' },
+  { q: 'Will this work for boards beyond Bihar Board?', a: 'We are launching with Bihar Board first. More boards and domain courses will be added under Akhand Bharat Academy soon.' },
+  { q: 'How do refunds work?', a: 'Refund rules will be published with payments. Until then, contact support before enrolling if you need clarity.' },
+  { q: 'Do I get notes and syllabus PDFs?', a: 'Yes. Enrolled students get chapter notes and syllabus PDFs from the course classroom.' },
+];
+class Component extends DCLogic {
+  state = { cls: 'all', subs: [], type: 'all', maxPrice: 5000, minRating: 0, medium: 'all', sortBy: 'popular' };
+  renderVals() {
+    const s = this.state, set = o => this.setState(o);
+    const inr = n => '₹' + n.toLocaleString('en-IN');
+    let list = COURSES.filter(c => (s.cls === 'all' || c.classLevel === s.cls)
+      && (!s.subs.length || s.subs.some(x => c.subjects.includes(x)))
+      && (s.type === 'all' || (s.type === 'complete' ? c.subjects.length >= 3 : c.subjects.length <= 2))
+      && c.price <= s.maxPrice && c.rating >= s.minRating
+      && (s.medium === 'all' || (s.medium === 'Bilingual' ? c.language.includes('+') : c.language.includes(s.medium))));
+    if (s.sortBy === 'price-asc') list.sort((a, b) => a.price - b.price);
+    else if (s.sortBy === 'price-desc') list.sort((a, b) => b.price - a.price);
+    else list.sort((a, b) => b.rating - a.rating);
+    const tab = on => ({ height: 44, padding: '0 16px', border: 0, background: 'none', font: 'inherit', fontSize: 14, fontWeight: on ? 600 : 500, color: on ? '#2962ff' : '#6b7a90', borderBottom: on ? '2px solid #2962ff' : '2px solid transparent', cursor: 'pointer' });
+    const pill = on => ({ height: 34, padding: '0 14px', borderRadius: 8, whiteSpace: 'nowrap', font: 'inherit', fontSize: 13, fontWeight: 500, cursor: 'pointer', border: on ? '1px solid #122046' : '1px solid #e6ebf5', background: on ? '#122046' : '#fff', color: on ? '#fff' : '#4a5872' });
+    return {
+      classTabs: [['all', 'All Crash Courses'], [12, 'Class 12'], [11, 'Class 11']].map(([v, l]) => ({ label: l, style: tab(s.cls === v), onClick: () => set({ cls: v }) })),
+      subjects: SUBJECTS.map(n => ({ name: n, count: COURSES.filter(c => c.subjects.includes(n)).length, checked: s.subs.includes(n), toggle: () => set({ subs: s.subs.includes(n) ? s.subs.filter(x => x !== n) : [...s.subs, n] }) })).filter(x => x.count),
+      types: [['all', 'All types'], ['complete', 'Full stream crash course'], ['subject', 'Single subject']].map(([v, l]) => ({ label: l, checked: s.type === v, pick: () => set({ type: v }) })),
+      ratings: [0, 4, 4.5].map(v => ({ label: v ? `${v}+ stars` : 'Any rating', checked: s.minRating === v, pick: () => set({ minRating: v }) })),
+      mediums: ['all', 'Hindi', 'English', 'Bilingual'].map(v => ({ label: v === 'all' ? 'Any medium' : v, style: pill(s.medium === v), pick: () => set({ medium: v }) })),
+      maxPrice: s.maxPrice, maxPriceLabel: inr(s.maxPrice), setPrice: e => set({ maxPrice: +e.target.value }),
+      sortBy: s.sortBy, setSort: e => set({ sortBy: e.target.value }),
+      clearAll: () => set({ cls: 'all', subs: [], type: 'all', maxPrice: 5000, minRating: 0, medium: 'all', sortBy: 'popular' }),
+      resultLabel: `${list.length} of ${COURSES.length} courses`, empty: list.length === 0, faqs: FAQS,
+      filtered: list.map(c => ({ ...c, priceLabel: inr(c.price), origLabel: inr(c.orig), off: Math.round((c.orig - c.price) / c.orig * 100),
+        thumb: { minHeight: 140, padding: 14, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: `linear-gradient(145deg, hsl(${c.hue} 70% 48%), hsl(${c.hue + 22} 65% 34%))` } })),
+    };
+  }
+}
+</script>
+</body>
+</html>

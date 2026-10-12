@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans',sans-serif;color:#0f1b2d;background:#f7f8fc;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<dc-import name="SiteHeader" active="notes" hint-size="100%,68px"></dc-import>
+<main style="font-family:'IBM Plex Sans',sans-serif">
+  <section style="background:#fff;border-bottom:1px solid #e6ebf5">
+    <div style="max-width:1200px;margin:0 auto;padding:36px 24px 0">
+      <nav style="font-size:13px;color:#6b7a90;display:flex;gap:8px"><a href="Home.dc.html" style="color:#6b7a90">Home</a><span>›</span><span style="color:#122046">Notes</span></nav>
+      <h1 style="margin:16px 0 0;font-size:38px;font-weight:700;letter-spacing:-0.02em;color:#122046">Class 11 &amp; 12 Notes</h1>
+      <p style="margin:12px 0 0;font-size:16px;line-height:1.6;color:#6b7a90;max-width:640px">Chapter-wise PDF notes, formula sheets and syllabus for Bihar Board. Free notes open for everyone; full sets unlock with a crash course.</p>
+      <div style="margin-top:24px;display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ classTabs }}" as="t" hint-placeholder-count="2"><button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for></div>
+    </div>
+  </section>
+  <div style="max-width:1200px;margin:0 auto;padding:28px 24px 72px">
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px"><sc-for list="{{ subjects }}" as="s" hint-placeholder-count="6"><button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.name }}</button></sc-for></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+      <sc-for list="{{ notes }}" as="n" hint-placeholder-count="6">
+        <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:40px;height:40px;border-radius:8px;background:#fde9e9;color:#c43b3b;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">PDF</span><div style="flex:1;min-width:0"><p style="margin:0;font-size:12px;font-weight:600;color:#2962ff">{{ n.subject }} · Class {{ n.cls }}</p><p style="margin:3px 0 0;font-size:15px;font-weight:600;color:#122046">{{ n.title }}</p><p style="margin:3px 0 0;font-size:13px;color:#6b7a90">{{ n.meta }}</p></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #eff1f5"><span style="{{ n.tag }}">{{ n.access }}</span><a href="{{ n.href }}" style="font-size:14px;font-weight:600;white-space:nowrap">{{ n.cta }}</a></div>
+        </div>
+      </sc-for>
+    </div>
+    <section style="margin-top:32px;border-radius:12px;background:#122046;color:#fff;padding:28px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:20px">
+      <div><p style="margin:0;font-size:18px;font-weight:600">Get every chapter's notes with a crash course</p><p style="margin:6px 0 0;font-size:14px;color:#c8d1e4">Includes formula banks, important questions and solved board papers.</p></div>
+      <a href="Courses.dc.html" style="height:44px;padding:0 20px;display:flex;align-items:center;white-space:nowrap;border-radius:8px;background:#fff;color:#122046;font-size:14px;font-weight:600">View crash courses</a>
+    </section>
+  </div>
+</main>
+<dc-import name="SiteFooter" hint-size="100%,340px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const N = [
+  { cls: 12, subject: 'Physics', title: 'Electric Charges and Fields', meta: '18 pages · 2.4 MB', free: true },
+  { cls: 12, subject: 'Physics', title: 'Current Electricity — formula sheet', meta: '4 pages · 0.9 MB', free: true },
+  { cls: 12, subject: 'Chemistry', title: 'Solutions & Electrochemistry', meta: '22 pages · 3.1 MB' },
+  { cls: 12, subject: 'Mathematics', title: 'Integrals — important questions', meta: '16 pages · 1.6 MB' },
+  { cls: 12, subject: 'Biology', title: 'Reproduction in Organisms', meta: '20 pages · 2.8 MB', free: true },
+  { cls: 12, subject: 'Accountancy', title: 'Partnership Accounts', meta: '14 pages · 1.2 MB' },
+  { cls: 12, subject: 'Economics', title: 'Macroeconomics — National Income', meta: '12 pages · 1.1 MB', free: true },
+  { cls: 12, subject: 'All subjects', title: 'Bihar Board 2027 syllabus', meta: 'PDF · 0.6 MB', free: true },
+  { cls: 11, subject: 'Physics', title: 'Units and Measurements', meta: '10 pages · 1.0 MB', free: true },
+  { cls: 11, subject: 'Chemistry', title: 'Structure of Atom', meta: '16 pages · 2.0 MB' },
+  { cls: 11, subject: 'Mathematics', title: 'Sets and Functions', meta: '12 pages · 1.3 MB' },
+  { cls: 11, subject: 'Accountancy', title: 'Journal and Ledger', meta: '14 pages · 1.4 MB', free: true },
+];
+class Component extends DCLogic {
+  state = { cls: 12, subj: 'All' };
+  renderVals() {
+    const s = this.state;
+    const tab = on => ({ height: 44, padding: '0 16px', border: 0, background: 'none', font: 'inherit', fontSize: 14, whiteSpace: 'nowrap', fontWeight: on ? 600 : 500, color: on ? '#2962ff' : '#6b7a90', borderBottom: on ? '2px solid #2962ff' : '2px solid transparent', cursor: 'pointer' });
+    const subs = ['All', ...new Set(N.filter(n => n.cls === s.cls).map(n => n.subject))];
+    return {
+      classTabs: [[12, 'Class 12'], [11, 'Class 11']].map(([v, l]) => ({ label: l, style: tab(s.cls === v), pick: () => this.setState({ cls: v, subj: 'All' }) })),
+      subjects: subs.map(n => ({ name: n, pick: () => this.setState({ subj: n }), style: { height: 34, padding: '0 14px', borderRadius: 8, whiteSpace: 'nowrap', font: 'inherit', fontSize: 13, fontWeight: 500, cursor: 'pointer', border: s.subj === n ? '1px solid #122046' : '1px solid #e6ebf5', background: s.subj === n ? '#122046' : '#fff', color: s.subj === n ? '#fff' : '#4a5872' } })),
+      notes: N.filter(n => n.cls === s.cls && (s.subj === 'All' || n.subject === s.subj)).map(n => ({ ...n, access: n.free ? 'Free' : 'With crash course', cta: n.free ? 'Open PDF' : 'Unlock →', href: n.free ? 'Login.dc.html' : 'Courses.dc.html',
+        tag: { padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap', background: n.free ? '#e9f9ef' : '#f2f3f7', color: n.free ? '#16a34a' : '#4a5872' } })),
+    };
+  }
+}
+</script>
+</body>
+</html>

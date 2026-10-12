@@ -38,6 +38,28 @@ function teacherName(ref: TeacherRef): string | null {
   return ref.display_name ?? null;
 }
 
+/**
+ * Presentation the redesign gives each launch course — stream label, badge,
+ * tagline, teacher bio, curriculum preview — which the database does not
+ * store. Matched by slug; the database stays authoritative for price, title,
+ * description and whether the course is published. Courses added later in
+ * the admin console have no entry and fall back to their subjects.
+ */
+const catalogBySlug = new Map(mockCourses.map((c, index) => [c.slug, { c, index }]));
+
+function catalogRank(course: Course) {
+  return catalogBySlug.get(course.slug)?.index ?? Number.MAX_SAFE_INTEGER;
+}
+
+/** Catalog order (bestsellers first), then everything else by class and title. */
+function byCatalogOrder(a: Course, b: Course) {
+  return (
+    catalogRank(a) - catalogRank(b) ||
+    b.classLevel - a.classLevel ||
+    a.title.localeCompare(b.title)
+  );
+}
+
 function mapRow(row: CourseRow): Course {
   const primaryTeacher =
     teacherName(
@@ -46,7 +68,10 @@ function mapRow(row: CourseRow): Course {
     teacherName(row.course_teachers?.[0]?.teachers ?? null) ||
     "Faculty";
 
+  const preset = catalogBySlug.get(row.slug)?.c;
+
   return {
+    ...preset,
     id: row.id,
     slug: row.slug,
     title: row.title,
@@ -59,10 +84,10 @@ function mapRow(row: CourseRow): Course {
     originalPrice: row.original_price_inr ?? undefined,
     rating: Number(row.rating),
     lessons: row.lessons_count,
-    highlights: row.highlights ?? [],
     subjects: row.subjects ?? [],
+    highlights: row.highlights?.length ? row.highlights : (preset?.highlights ?? []),
     teacher: primaryTeacher,
-    batch: row.course_batches?.[0]?.name ?? "Current Batch",
+    batch: row.course_batches?.[0]?.name ?? preset?.batch ?? "Current Batch",
     isPublished: row.is_published,
   };
 }
@@ -100,7 +125,7 @@ export async function listCourses(classLevel?: number): Promise<Course[]> {
     return getMockByClass(classLevel);
   }
 
-  return (data as unknown as CourseRow[]).map(mapRow);
+  return (data as unknown as CourseRow[]).map(mapRow).sort(byCatalogOrder);
 }
 
 export async function fetchCourseBySlug(slug: string): Promise<Course | null> {

@@ -14,8 +14,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import * as mock from "./mock-store";
 import * as mockExtra from "./mock-extra";
 import type {
-  AdminCommunity,
-  AdminCommunityMessage,
+  AdminBanner,
   AdminCourse,
   AdminDoubt,
   AdminLesson,
@@ -23,6 +22,7 @@ import type {
   AdminPopup,
   AdminSession,
   AdminStudent,
+  AdminTransaction,
   AdminTicket,
   AudienceKind,
   LiveStatus,
@@ -72,8 +72,10 @@ export async function getDashboardCounts(): Promise<DashboardCounts> {
     table: string,
     build?: (q: ReturnType<typeof supabase.from>) => unknown,
   ) => {
+    // "id" rather than "*": students' column grants on some tables (lessons)
+    // leave columns out, and "*" would ask for them.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let q: any = supabase.from(table).select("*", { count: "exact", head: true });
+    let q: any = supabase.from(table).select("id", { count: "exact", head: true });
     if (build) q = build(q);
     const { count: n } = await q;
     return n ?? 0;
@@ -131,8 +133,8 @@ export async function listCourses(): Promise<AdminCourse[]> {
   const { data, error } = await supabase
     .from("courses")
     .select(
-      `id, title, class_level, board, language, price_inr, original_price_inr,
-       subjects, is_published,
+      `id, course_code, title, class_level, board, language, price_inr,
+       original_price_inr, subjects, description, highlights, is_published,
        course_teachers ( teachers ( display_name ) ),
        enrollments ( count )`,
     )
@@ -144,6 +146,7 @@ export async function listCourses(): Promise<AdminCourse[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((row: any) => ({
     id: row.id,
+    courseCode: row.course_code,
     title: row.title,
     classLevel: row.class_level,
     board: row.board,
@@ -155,6 +158,8 @@ export async function listCourses(): Promise<AdminCourse[]> {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((ct: any) => ct.teachers?.display_name)
       .filter(Boolean),
+    description: row.description ?? "",
+    highlights: row.highlights ?? [],
     isPublished: row.is_published,
     enrolledCount: row.enrollments?.[0]?.count ?? 0,
   }));
@@ -176,6 +181,8 @@ export async function saveCourse(input: {
   originalPriceInr: number;
   subjects: string[];
   teachers: string[];
+  description: string;
+  highlights: string[];
   isPublished: boolean;
 }): Promise<string> {
   if (isDemoMode()) return mock.saveCourse(input);
@@ -189,6 +196,8 @@ export async function saveCourse(input: {
     price_inr: input.priceInr,
     original_price_inr: input.originalPriceInr || null,
     subjects: input.subjects,
+    description: input.description,
+    highlights: input.highlights,
     is_published: input.isPublished,
   };
 
@@ -199,17 +208,40 @@ export async function saveCourse(input: {
     return input.id;
   }
 
+  // The slug is the website URL; add a short suffix if the title is taken.
+  const base = slugify(input.title) || "course";
+  const { data: taken } = await supabase
+    .from("courses")
+    .select("id")
+    .eq("slug", base)
+    .maybeSingle();
+  const slug = taken ? `${base}-${Math.random().toString(36).slice(2, 6)}` : base;
+
   const { data, error } = await supabase
     .from("courses")
-    .insert({ ...row, slug: slugify(input.title) })
+    .insert({ ...row, slug })
     .select("id")
     .single();
   if (error) throw new Error(`saveCourse: ${error.message}`);
 
   // Every course needs one batch; the curriculum hangs off it.
-  await supabase
+  const { data: batch } = await supabase
     .from("course_batches")
-    .insert({ course_id: data.id, name: "Current Batch", is_active: true });
+    .insert({ course_id: data.id, name: "Current Batch", is_active: true })
+    .select("id")
+    .single();
+
+  // One subject row per subject, so the Content page and the app's subject
+  // tabs have something to hang chapters on straight away.
+  if (batch && input.subjects.length > 0) {
+    await supabase.from("subjects").insert(
+      input.subjects.map((name, index) => ({
+        batch_id: batch.id,
+        name,
+        sort_order: index + 1,
+      })),
+    );
+  }
 
   await syncCourseTeachers(data.id, input.teachers);
   return data.id;
@@ -264,7 +296,7 @@ export async function listStudents(
   let query = supabase
     .from("profiles")
     .select(
-      `id, full_name, phone, email, role, created_at,
+      `id, student_code, full_name, phone, email, role, created_at,
        student_profiles ( class_level, board, medium, stream, school ),
        enrollments ( course_id, courses ( title ) )`,
     )
@@ -274,7 +306,9 @@ export async function listStudents(
 
   if (search) {
     const q = `%${search}%`;
-    query = query.or(`full_name.ilike.${q},phone.ilike.${q},email.ilike.${q}`);
+    query = query.or(
+      `full_name.ilike.${q},phone.ilike.${q},email.ilike.${q},student_code.ilike.${q}`,
+    );
   }
 
   const { data, error } = await query;
@@ -287,6 +321,7 @@ export async function listStudents(
       : row.student_profiles;
     return {
       id: row.id,
+      studentCode: row.student_code,
       fullName: row.full_name || "—",
       phone: row.phone,
       email: row.email,
@@ -460,15 +495,31 @@ export async function listLessons(courseId?: string): Promise<AdminLesson[]> {
     .from("lessons")
     .select(
       `id, title, lesson_type, sort_order, duration_seconds, video_provider,
-       video_ref, storage_path, is_demo, is_published, is_downloadable,
+       is_demo, is_published, is_downloadable,
        chapter_id,
        chapters ( id, title, subjects ( name, course_batches ( course_id, courses ( id, title ) ) ) ),
-       lesson_resources ( id, title, resource_type, storage_path, size_bytes, is_downloadable )`,
+       lesson_resources ( id, title, resource_type, source, size_bytes, is_downloadable )`,
     )
     .order("sort_order")
     .limit(500);
 
   if (error) throw new Error(`listLessons: ${error.message}`);
+
+  // Video ids and storage paths are not selectable directly (migration 6);
+  // staff get them through a security-definer function.
+  const { data: media, error: mediaError } = await supabase.rpc("staff_lesson_media");
+  if (mediaError) throw new Error(`listLessons/media: ${mediaError.message}`);
+  const mediaById = new Map<string, { video_ref: string | null; storage_path: string | null }>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (media ?? []).map((m: any) => [m.id, m]),
+  );
+  // Notes' storage paths and Drive ids are hidden the same way (migration 7).
+  const { data: notesMedia, error: notesError } = await supabase.rpc("staff_resource_media");
+  if (notesError) throw new Error(`listLessons/notes: ${notesError.message}`);
+  const noteById = new Map<string, { storage_path: string | null; drive_file_id: string | null }>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (notesMedia ?? []).map((m: any) => [m.id, m]),
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows = (data ?? []).map((row: any) => {
@@ -486,8 +537,8 @@ export async function listLessons(courseId?: string): Promise<AdminLesson[]> {
       courseTitle: course?.title ?? "—",
       durationSeconds: row.duration_seconds,
       videoProvider: row.video_provider,
-      videoRef: row.video_ref,
-      storagePath: row.storage_path,
+      videoRef: mediaById.get(row.id)?.video_ref ?? null,
+      storagePath: mediaById.get(row.id)?.storage_path ?? null,
       isDemo: row.is_demo,
       isPublished: row.is_published,
       isDownloadable: row.is_downloadable,
@@ -498,7 +549,9 @@ export async function listLessons(courseId?: string): Promise<AdminLesson[]> {
         lessonId: row.id,
         title: r.title,
         resourceType: r.resource_type,
-        storagePath: r.storage_path,
+        source: r.source === "gdrive" ? "gdrive" : "storage",
+        storagePath: noteById.get(r.id)?.storage_path ?? null,
+        driveFileId: noteById.get(r.id)?.drive_file_id ?? null,
         sizeBytes: r.size_bytes,
         isDownloadable: r.is_downloadable,
       })),
@@ -568,7 +621,9 @@ export async function deleteLesson(id: string): Promise<void> {
 export async function addResource(input: {
   lessonId: string;
   title: string;
-  storagePath: string;
+  /** Exactly one of these: an uploaded file's path or a Google Drive id. */
+  storagePath?: string;
+  driveFileId?: string;
   sizeBytes: number | null;
 }): Promise<void> {
   if (isDemoMode()) return mockExtra.addResource(input);
@@ -577,7 +632,9 @@ export async function addResource(input: {
     lesson_id: input.lessonId,
     title: input.title,
     resource_type: "PDF",
-    storage_path: input.storagePath,
+    source: input.driveFileId ? "gdrive" : "storage",
+    storage_path: input.storagePath ?? null,
+    drive_file_id: input.driveFileId ?? null,
     size_bytes: input.sizeBytes,
   });
   if (error) throw new Error(`addResource: ${error.message}`);
@@ -598,7 +655,7 @@ export async function deleteResource(
 
 /** Saves an uploaded file to a private bucket and returns its storage path. */
 export async function uploadToBucket(
-  bucket: "lesson-notes" | "lesson-videos" | "popup-images",
+  bucket: "lesson-notes" | "lesson-videos" | "popup-images" | "banner-images",
   file: File,
   prefix: string,
 ): Promise<string> {
@@ -860,130 +917,6 @@ export async function setDoubtResolved(
   if (error) throw new Error(`setDoubtResolved: ${error.message}`);
 }
 
-// ========================================================= communities
-
-export async function listCommunities(): Promise<AdminCommunity[]> {
-  if (isDemoMode()) return mock.listCommunities();
-
-  const supabase = await db();
-  const { data, error } = await supabase
-    .from("communities")
-    .select(
-      `id, name, course_id,
-       community_members ( count ),
-       community_messages ( count )`,
-    )
-    .order("name");
-
-  if (error) throw new Error(`listCommunities: ${error.message}`);
-
-  // The newest message per community needs its own query; a nested order+limit
-  // is not expressible in one PostgREST select.
-  const latest = await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (data ?? []).map(async (row: any) => {
-      const { data: msg } = await supabase
-        .from("community_messages")
-        .select("body, profiles:author_id ( full_name )")
-        .eq("community_id", row.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return { id: row.id, msg };
-    }),
-  );
-  const latestById = new Map(latest.map((l) => [l.id, l.msg]));
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data ?? []).map((row: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const msg = latestById.get(row.id) as any;
-    return {
-      id: row.id,
-      courseId: row.course_id,
-      name: row.name,
-      memberCount: row.community_members?.[0]?.count ?? 0,
-      messageCount: row.community_messages?.[0]?.count ?? 0,
-      lastMessage: msg?.body ?? "—",
-      lastAuthor: msg?.profiles?.full_name ?? "—",
-    };
-  });
-}
-
-export async function listCommunityMessages(
-  courseId: string,
-): Promise<AdminCommunityMessage[]> {
-  if (isDemoMode()) return mockExtra.listCommunityMessages(courseId);
-
-  const supabase = await db();
-  const { data: community } = await supabase
-    .from("communities")
-    .select("id")
-    .eq("course_id", courseId)
-    .maybeSingle();
-  if (!community) return [];
-
-  const { data, error } = await supabase
-    .from("community_messages")
-    .select("id, body, pinned, created_at, profiles:author_id ( full_name )")
-    .eq("community_id", community.id)
-    .order("pinned", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(100);
-
-  if (error) throw new Error(`listCommunityMessages: ${error.message}`);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data ?? []).map((row: any) => ({
-    id: row.id,
-    body: row.body,
-    authorName: row.profiles?.full_name ?? "Staff",
-    pinned: row.pinned,
-    createdAt: toLocalInput(row.created_at),
-  }));
-}
-
-export async function postCommunityMessage(
-  courseId: string,
-  body: string,
-  pinned: boolean,
-): Promise<void> {
-  if (isDemoMode()) return mockExtra.postCommunityMessage(courseId, body, pinned);
-
-  const supabase = await db();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: community } = await supabase
-    .from("communities")
-    .select("id")
-    .eq("course_id", courseId)
-    .maybeSingle();
-  if (!community) throw new Error("postCommunityMessage: no community");
-
-  const { error } = await supabase.from("community_messages").insert({
-    community_id: community.id,
-    author_id: user?.id,
-    body,
-    pinned,
-  });
-  if (error) throw new Error(`postCommunityMessage: ${error.message}`);
-}
-
-export async function deleteCommunityMessage(
-  courseId: string,
-  messageId: string,
-): Promise<void> {
-  if (isDemoMode()) return mockExtra.deleteCommunityMessage(courseId, messageId);
-  const supabase = await db();
-  const { error } = await supabase
-    .from("community_messages")
-    .delete()
-    .eq("id", messageId);
-  if (error) throw new Error(`deleteCommunityMessage: ${error.message}`);
-}
-
 // ============================================================= tickets
 
 export async function listTickets(): Promise<AdminTicket[]> {
@@ -1111,6 +1044,7 @@ export async function listNotifications(): Promise<AdminNotification[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((row: any) => ({
     id: row.id,
+    courseCode: row.course_code,
     title: row.title,
     body: row.body,
     audienceKind: row.audience,
@@ -1221,6 +1155,7 @@ export async function listPopups(): Promise<AdminPopup[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((row: any) => ({
     id: row.id,
+    courseCode: row.course_code,
     title: row.title,
     body: row.body,
     imagePath: row.image_path,
@@ -1325,4 +1260,154 @@ export async function deletePopup(id: string): Promise<void> {
   const supabase = await db();
   const { error } = await supabase.from("popups").delete().eq("id", id);
   if (error) throw new Error(`deletePopup: ${error.message}`);
+}
+
+// ============================================================= banners
+
+export async function listBanners(): Promise<AdminBanner[]> {
+  if (isDemoMode()) return mockExtra.listBanners();
+
+  const supabase = await db();
+  const { data, error } = await supabase
+    .from("course_banners")
+    .select(
+      `id, title, subtitle, image_path, course_id, cta_label, hue, sort_order,
+       is_active, starts_at, ends_at, courses ( title )`,
+    )
+    .order("sort_order")
+    .order("created_at");
+  if (error) throw new Error(`listBanners: ${error.message}`);
+
+  const publicBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/banner-images/`;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    courseCode: row.course_code,
+    title: row.title,
+    subtitle: row.subtitle,
+    imagePath: row.image_path,
+    imageUrl: row.image_path ? `${publicBase}${row.image_path}` : null,
+    courseId: row.course_id,
+    courseTitle: row.courses?.title ?? null,
+    ctaLabel: row.cta_label,
+    hue: row.hue,
+    sortOrder: row.sort_order,
+    isActive: row.is_active,
+    startsAt: toLocalInput(row.starts_at),
+    endsAt: row.ends_at ? toLocalInput(row.ends_at) : null,
+  }));
+}
+
+export async function saveBanner(input: {
+  id?: string;
+  title: string;
+  subtitle: string | null;
+  imagePath?: string | null;
+  courseId: string | null;
+  ctaLabel: string;
+  hue: number;
+  sortOrder: number;
+  isActive: boolean;
+  startsAt: string;
+  endsAt: string | null;
+}): Promise<string> {
+  if (isDemoMode()) {
+    const courses = mock.listCourses();
+    return mockExtra.saveBanner({
+      ...input,
+      courseTitle: courses.find((c) => c.id === input.courseId)?.title ?? null,
+    });
+  }
+
+  const supabase = await db();
+  const row: Record<string, unknown> = {
+    title: input.title,
+    subtitle: input.subtitle,
+    course_id: input.courseId,
+    cta_label: input.ctaLabel,
+    hue: input.hue,
+    sort_order: input.sortOrder,
+    is_active: input.isActive,
+    starts_at: new Date(input.startsAt).toISOString(),
+    ends_at: input.endsAt ? new Date(input.endsAt).toISOString() : null,
+  };
+  // Only overwrite the artwork when a new file was uploaded.
+  if (input.imagePath !== undefined) row.image_path = input.imagePath;
+
+  if (input.id) {
+    const { error } = await supabase.from("course_banners").update(row).eq("id", input.id);
+    if (error) throw new Error(`saveBanner: ${error.message}`);
+    return input.id;
+  }
+
+  const { data, error } = await supabase.from("course_banners").insert(row).select("id").single();
+  if (error) throw new Error(`saveBanner: ${error.message}`);
+  return data.id;
+}
+
+export async function deleteBanner(id: string): Promise<void> {
+  if (isDemoMode()) return mockExtra.deleteBanner(id);
+  const supabase = await db();
+  const { error } = await supabase.from("course_banners").delete().eq("id", id);
+  if (error) throw new Error(`deleteBanner: ${error.message}`);
+}
+
+// ======================================================== transactions
+
+/**
+ * The newest checkouts with their payments. RLS returns rows only to a super
+ * admin (migration 8); everyone else gets an empty list.
+ *
+ * Capped at 2,000 orders, which the analytics are computed over — enough for
+ * launch; move the sums into SQL once volume passes that.
+ */
+export async function listTransactions(): Promise<AdminTransaction[]> {
+  if (isDemoMode()) return mockExtra.listTransactions();
+
+  const supabase = await db();
+  const { data, error } = await supabase
+    .from("orders")
+    .select(
+      `id, student_id, course_id, amount_inr, status, razorpay_order_id,
+       razorpay_payment_id, coupon_code, created_at, paid_at,
+       profiles ( full_name, email, student_code ),
+       courses ( title, course_code ),
+       payments ( id, razorpay_payment_id, amount_inr, status, created_at )`,
+    )
+    .order("created_at", { ascending: false })
+    .limit(2000);
+
+  if (error) throw new Error(`listTransactions: ${error.message}`);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    razorpayOrderId: row.razorpay_order_id,
+    razorpayPaymentId: row.razorpay_payment_id,
+    studentId: row.student_id,
+    studentName: row.profiles?.full_name || row.profiles?.email || "Student",
+    studentEmail: row.profiles?.email ?? null,
+    studentCode: row.profiles?.student_code ?? null,
+    courseId: row.course_id,
+    courseTitle: row.courses?.title ?? "Deleted course",
+    courseCode: row.courses?.course_code ?? null,
+    amountInr: row.amount_inr,
+    status: row.status,
+    couponCode: row.coupon_code,
+    createdAt: row.created_at,
+    paidAt: row.paid_at,
+    payments: (row.payments ?? [])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((p: any) => ({
+        id: p.id,
+        razorpayPaymentId: p.razorpay_payment_id,
+        amountInr: p.amount_inr,
+        status: p.status,
+        createdAt: p.created_at,
+      }))
+      .sort((a: { createdAt: string }, b: { createdAt: string }) =>
+        a.createdAt.localeCompare(b.createdAt),
+      ),
+  }));
 }

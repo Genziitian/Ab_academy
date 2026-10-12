@@ -11,7 +11,7 @@ export default async function AdminLayout({
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <AdminSidebar />
+      <AdminSidebar role={admin.role} />
       <div className="flex min-w-0 flex-1 flex-col">
         {demo ? <DemoBanner /> : null}
         <header className="flex items-center justify-end gap-3 border-b border-border bg-surface px-6 py-3">

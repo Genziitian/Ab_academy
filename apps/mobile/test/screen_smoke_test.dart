@@ -13,36 +13,38 @@ const _routes = <(String, String)>[
   (Routes.setupClass, '04 Setup class'),
   (Routes.setupStream, '05 Setup stream'),
   (Routes.home, '06 Home'),
-  (Routes.courses, '07 My Courses'),
-  ('/course/class-10-complete-batch', '08 Course details'),
-  (Routes.curriculum, '09 Curriculum'),
-  ('/lesson/ch1-l3', '10 Lecture'),
+  (Routes.courses, '07 My courses'),
+  (Routes.curriculum, '08 Curriculum'),
+  ('/lesson/ch1-l3', '09 Lecture'),
   ('/pdf/att-1', '11 PDF viewer'),
   (Routes.live, '12 Live sessions'),
   (Routes.liveLobby, '13 Live lobby'),
   (Routes.liveRoom, '14 Live classroom'),
-  (Routes.community, '15 Community list'),
-  ('/community/comm-class-10', '16 Community feed'),
-  (Routes.tickets, '17 Tickets'),
-  ('/ticket/t1', '18 Ticket detail'),
-  (Routes.newTicket, '19 New ticket'),
-  (Routes.materials, '20 Study materials'),
-  (Routes.calendar, '21 Calendar'),
-  (Routes.notifications, '22 Notifications'),
-  (Routes.downloads, '23 Downloads'),
-  (Routes.profile, '24 Profile'),
-  ('/purchase/class-10-complete-batch', '25 Purchase'),
-  ('/checkout/class-10-complete-batch', '26 Checkout'),
-  (Routes.paymentSuccess, '27 Payment success'),
+  (Routes.calendar, '15 Calendar'),
+  (Routes.notes, '16 Notes'),
+  (Routes.downloads, '17 Downloads'),
+  (Routes.notifications, '18 Notifications'),
+  (Routes.profile, '19 Profile'),
+  (Routes.tickets, '20 Tickets'),
+  ('/ticket/t1', '21 Ticket detail'),
+  (Routes.newTicket, '22 New ticket'),
+  (Routes.store, '23 Courses store'),
+  (Routes.myCourses, '07 My courses section'),
+  ('/academics?tab=calendar', '15 Academics · calendar'),
+  ('/course/class-12-commerce-crash-course', '24 Course page'),
+  ('/checkout/class-12-commerce-crash-course', '25 Checkout'),
+  (Routes.paymentSuccess, '26 Payment success'),
 ];
 
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  testWidgets('every screen builds and lays out without errors', (tester) async {
+  testWidgets('every screen builds and lays out without errors', (
+    tester,
+  ) async {
     // Deliberately wider than the 390pt design. Widget tests substitute a font
     // whose every glyph is a full em square, so text measures about twice as
-    // wide here as in Plus Jakarta Sans; at 390 that reports overflows the
+    // wide here as in IBM Plex Sans; at 390 that reports overflows the
     // design does not have on a device. The generous surface keeps those false
     // positives out while still catching what this test is for: structural
     // layout errors (unbounded constraints, bad state, missing providers),
@@ -74,8 +76,16 @@ void main() {
         await tester.pump(const Duration(milliseconds: 100));
       }
 
-      expect(tester.takeException(), isNull, reason: '$label ($path) threw during layout');
-      expect(find.byType(Scaffold), findsWidgets, reason: '$label ($path) rendered nothing');
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: '$label ($path) threw during layout',
+      );
+      expect(
+        find.byType(Scaffold),
+        findsWidgets,
+        reason: '$label ($path) rendered nothing',
+      );
     }
 
     // Unmount so pending timers (splash redirect, OTP resend, lobby countdown)

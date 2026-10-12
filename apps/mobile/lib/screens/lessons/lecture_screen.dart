@@ -4,17 +4,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../data/mock/mock_data.dart';
 import '../../data/models/lesson_extras.dart';
+import '../../data/providers/app_providers.dart';
 import '../../data/providers/feature_providers.dart';
+import '../../data/providers/remote_providers.dart';
+import '../../data/remote/repositories.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/buttons.dart';
+import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
-import 'lecture_player.dart';
+import '../../widgets/secure_youtube_player.dart';
 
-/// The lecture: player on top, then About / Discussion / Notes / Feedback.
+/// 09 / 10 · Lecture — player, then About / Discussion / Notes / Feedback.
+/// Discussion is the doubt thread: questions land in the teacher's queue.
 class LectureScreen extends ConsumerStatefulWidget {
   const LectureScreen({super.key, required this.lessonId});
 
@@ -28,139 +34,331 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
   static const _tabs = ['About', 'Discussion', 'Notes', 'Feedback'];
 
   String _tab = 'About';
+  bool _fullscreen = false;
+
+  @override
+  void dispose() {
+    if (_fullscreen) _restoreOrientation();
+    super.dispose();
+  }
+
+  Future<void> _toggleFullscreen() async {
+    final next = !_fullscreen;
+    setState(() => _fullscreen = next);
+    if (next) {
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      await _restoreOrientation();
+    }
+  }
+
+  Future<void> _restoreOrientation() async {
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    await SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+  }
+
+  void _back() {
+    if (_fullscreen) {
+      _toggleFullscreen();
+    } else {
+      context.pop();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: AppColors.surface,
-        body: Column(
-          children: [
-            LecturePlayer(title: 'Quadratic Equations · 03', onBack: () => context.pop()),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(bottom: BorderSide(color: AppColors.divider)),
+    final size = MediaQuery.sizeOf(context);
+    final topInset = _fullscreen ? 0.0 : MediaQuery.paddingOf(context).top;
+    // The player stays the first child in both layouts, so going full screen
+    // resizes it instead of reloading the video.
+    final playerHeight = _fullscreen
+        ? size.height
+        : topInset + size.width * 9 / 16;
+
+    return PopScope(
+      canPop: !_fullscreen,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _fullscreen) _toggleFullscreen();
+      },
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: Scaffold(
+          backgroundColor: _fullscreen ? Colors.black : AppColors.surface,
+          body: Column(
+            children: [
+              Container(
+                height: playerHeight,
+                color: Colors.black,
+                padding: EdgeInsets.only(top: topInset),
+                child: _LecturePlayerArea(
+                  lessonId: widget.lessonId,
+                  fullscreen: _fullscreen,
+                  onToggleFullscreen: _toggleFullscreen,
+                  onBack: _back,
+                ),
               ),
-              child: UnderlineTabs(
-                tabs: _tabs,
-                selected: _tab,
-                gap: 20,
-                onSelected: (value) => setState(() => _tab = value),
-              ),
-            ),
-            Expanded(
-              child: switch (_tab) {
-                'Discussion' => _DiscussionTab(lessonId: widget.lessonId),
-                'Notes' => const _NotesTab(),
-                'Feedback' => _FeedbackTab(lessonId: widget.lessonId),
-                _ => const _AboutTab(),
-              },
-            ),
-          ],
+              if (!_fullscreen) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: AppColors.divider),
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: UnderlineTabs(
+                      tabs: _tabs,
+                      selected: _tab,
+                      gap: 20,
+                      onSelected: (value) => setState(() => _tab = value),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: switch (_tab) {
+                    'Discussion' => _DiscussionTab(lessonId: widget.lessonId),
+                    'Notes' => _NotesTab(lessonId: widget.lessonId),
+                    'Feedback' => _FeedbackTab(lessonId: widget.lessonId),
+                    _ => const _AboutTab(),
+                  },
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _AboutTab extends StatelessWidget {
+/// Fetches the lecture's YouTube id at play time and hands it to the secure
+/// player. The id lives only in this widget's memory.
+class _LecturePlayerArea extends ConsumerWidget {
+  const _LecturePlayerArea({
+    required this.lessonId,
+    required this.fullscreen,
+    required this.onToggleFullscreen,
+    required this.onBack,
+  });
+
+  final String lessonId;
+  final bool fullscreen;
+  final VoidCallback onToggleFullscreen;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final video = ref.watch(lessonYoutubeIdProvider(lessonId));
+    final student = ref.watch(studentProvider);
+
+    return video.when(
+      loading: () => _PlayerMessage(
+        onBack: onBack,
+        child: const SizedBox.square(
+          dimension: 30,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      error: (error, _) => _PlayerMessage(
+        onBack: onBack,
+        child: _MessageText(
+          error is PlaybackDenied
+              ? 'Enroll in this course to watch the lecture.'
+              : 'Could not load the lecture. Check your connection and try again.',
+          action: error is PlaybackDenied
+              ? null
+              : () => ref.invalidate(lessonYoutubeIdProvider(lessonId)),
+        ),
+      ),
+      data: (id) => id == null
+          ? _PlayerMessage(
+              onBack: onBack,
+              child: const _MessageText('This lecture has no video yet.'),
+            )
+          : SecureYouTubePlayer(
+              videoId: id,
+              watermark: student.phone,
+              fullscreen: fullscreen,
+              onToggleFullscreen: onToggleFullscreen,
+              onBack: onBack,
+            ),
+    );
+  }
+}
+
+class _PlayerMessage extends StatelessWidget {
+  const _PlayerMessage({required this.child, required this.onBack});
+
+  final Widget child;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Center(child: child),
+        Positioned(
+          left: 4,
+          top: 4,
+          child: IconButton(
+            tooltip: 'Back',
+            onPressed: onBack,
+            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MessageText extends StatelessWidget {
+  const _MessageText(this.text, {this.action});
+
+  final String text;
+  final VoidCallback? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: AppText.tabular(13, FontWeight.w500, color: Colors.white),
+          ),
+          if (action != null)
+            TextButton(
+              onPressed: action,
+              child: Text(
+                'Retry',
+                style: AppText.tabular(
+                  13,
+                  FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AboutTab extends StatefulWidget {
   const _AboutTab();
+
+  @override
+  State<_AboutTab> createState() => _AboutTabState();
+}
+
+class _AboutTabState extends State<_AboutTab> {
+  bool _saved = false;
+  bool _complete = false;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text('MATHEMATICS', style: AppText.eyebrow(color: AppColors.maths)),
-        const SizedBox(height: 10),
-        Text('Quadratic Equations — Class 03', style: AppText.h4),
-        const SizedBox(height: 10),
+        Text(
+          MockData.lectureEyebrow,
+          style: AppText.eyebrow(color: AppColors.primary, size: 12),
+        ),
+        const SizedBox(height: 8),
+        Text(MockData.lectureTitle, style: AppText.h5),
+        const SizedBox(height: 8),
         Row(
           children: [
-            const InitialsAvatar(
-              initials: 'AS',
-              size: 28,
-              fontSize: 10.5,
-              background: AppColors.mathsTint,
-              foreground: AppColors.maths,
-            ),
-            const SizedBox(width: 9),
-            Text('Amit Sir', style: AppText.label),
+            const InitialsAvatar(initials: 'AS', size: 26, fontSize: 10),
+            const SizedBox(width: 8),
+            Text('Amit Sir', style: AppText.tabular(14, FontWeight.w500)),
           ],
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 20),
         Row(
           children: [
             _LectureAction(
               icon: LucideIcons.download,
               label: 'Download',
-              onTap: () => showDemoSnack(context, 'Saved for offline use'),
+              onTap: () =>
+                  showDemoSnack(context, 'Downloading for offline use'),
             ),
-            const SizedBox(width: 9),
+            const SizedBox(width: 8),
             _LectureAction(
-              icon: LucideIcons.bookmark,
-              label: 'Save',
-              onTap: () => showDemoSnack(context, 'Added to your saved lessons'),
+              icon: _saved ? Icons.star_rounded : Icons.star_outline_rounded,
+              label: _saved ? 'Saved' : 'Save',
+              onTap: () => setState(() => _saved = !_saved),
             ),
-            const SizedBox(width: 9),
+            const SizedBox(width: 8),
             _LectureAction(
-              icon: LucideIcons.checkCircle,
-              label: 'Complete',
-              iconColor: AppColors.science,
-              onTap: () => showDemoSnack(context, 'Lesson marked complete'),
+              icon: LucideIcons.check,
+              label: _complete ? 'Completed' : 'Complete',
+              iconColor: AppColors.success,
+              highlighted: _complete,
+              onTap: () => setState(() => _complete = !_complete),
             ),
           ],
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 20),
         Text('About this lesson', style: AppText.cardTitle),
-        const SizedBox(height: 8),
-        Text(
-          'Solving quadratic equations by factorisation and by completing the square, with the '
-          'standard form ax² + bx + c = 0. Includes four board-pattern examples from the 2023 '
-          'and 2024 papers.',
-          style: AppText.body,
-        ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 6),
+        Text(MockData.lectureAbout, style: AppText.body),
+        const SizedBox(height: 20),
         Text('Next lesson', style: AppText.cardTitle),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         AppCard(
-          borderRadius: AppRadius.md,
-          padding: const EdgeInsets.all(14),
-          shadow: null,
+          padding: const EdgeInsets.all(12),
+          borderRadius: AppRadius.sm,
           onTap: () => context.push(Routes.liveLobby),
           child: Row(
             children: [
               Container(
-                width: 54,
-                height: 40,
+                width: 48,
+                height: 36,
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
-                  color: AppColors.mathsTint,
-                  borderRadius: BorderRadius.all(Radius.circular(9)),
+                  color: AppColors.liveTint,
+                  borderRadius: AppRadius.xs,
                 ),
-                child: const Icon(Icons.play_arrow_rounded, size: 18, color: AppColors.maths),
+                child: const LiveDot(color: AppColors.liveInk),
               ),
-              const SizedBox(width: 13),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Class 04 · Practice Session',
-                      style: AppText.tabular(13.5, FontWeight.w700),
+                      style: AppText.tabular(13, FontWeight.w600),
                     ),
-                    const SizedBox(height: 3),
                     Text(
-                      'Live today • 6:00 PM',
-                      style: AppText.tabular(11.5, FontWeight.w400, color: AppColors.live),
+                      'Live today · 6:00 PM',
+                      style: AppText.tabular(
+                        11,
+                        FontWeight.w400,
+                        color: AppColors.liveInk,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const Icon(LucideIcons.chevronRight, size: 16, color: AppColors.textSubtle),
+              const Icon(
+                LucideIcons.chevronRight,
+                size: 18,
+                color: AppColors.textSubtle,
+              ),
             ],
           ),
         ),
@@ -169,59 +367,85 @@ class _AboutTab extends StatelessWidget {
   }
 }
 
-class _DiscussionTab extends ConsumerStatefulWidget {
+class _LectureAction extends StatelessWidget {
+  const _LectureAction({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.iconColor = AppColors.primary,
+    this.highlighted = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color iconColor;
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Material(
+        color: highlighted ? AppColors.successTint : AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.sm,
+          side: BorderSide(
+            color: highlighted ? AppColors.successTint : AppColors.border,
+          ),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppRadius.sm,
+          child: SizedBox(
+            height: 62,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 17, color: iconColor),
+                const SizedBox(height: 4),
+                Text(label, style: AppText.tabular(11, FontWeight.w600)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DiscussionTab extends ConsumerWidget {
   const _DiscussionTab({required this.lessonId});
 
   final String lessonId;
 
   @override
-  ConsumerState<_DiscussionTab> createState() => _DiscussionTabState();
-}
-
-class _DiscussionTabState extends ConsumerState<_DiscussionTab> {
-  final _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _post() {
-    final body = _controller.text.trim();
-    if (body.isEmpty) return;
-    ref.read(lessonCommentsProvider(widget.lessonId).notifier).post(body);
-    _controller.clear();
-    FocusScope.of(context).unfocus();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final comments = ref.watch(lessonCommentsProvider(widget.lessonId));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final comments = ref.watch(lessonCommentsProvider(lessonId));
 
     return Column(
       children: [
         Expanded(
-          child: comments.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.all(20),
-                  child: EmptyState(
-                    icon: LucideIcons.messageSquare,
-                    title: 'No questions yet',
-                    body: 'Ask the first question about this lesson.',
-                  ),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: comments.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 18),
-                  itemBuilder: (context, index) => _CommentTile(comment: comments[index]),
-                ),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+            children: [
+              Text(
+                "Questions about this lesson go to your teacher's doubt queue.",
+                style: AppText.meta,
+              ),
+              const SizedBox(height: 16),
+              for (final comment in comments) ...[
+                _CommentTile(comment: comment),
+                const SizedBox(height: 16),
+              ],
+            ],
+          ),
         ),
-        _Composer(
-          controller: _controller,
+        MessageComposer(
           hint: 'Ask a question about this lesson…',
-          onSend: _post,
+          onSend: (body) {
+            ref.read(lessonCommentsProvider(lessonId).notifier).post(body);
+            FocusScope.of(context).unfocus();
+          },
         ),
       ],
     );
@@ -229,141 +453,166 @@ class _DiscussionTabState extends ConsumerState<_DiscussionTab> {
 }
 
 class _CommentTile extends StatelessWidget {
-  const _CommentTile({required this.comment, this.isReply = false});
+  const _CommentTile({required this.comment});
 
   final LessonComment comment;
-  final bool isReply;
 
   @override
   Widget build(BuildContext context) {
-    final avatar = comment.isTeacher
-        ? (AppColors.primary, Colors.white)
-        : (AppColors.primaryTint, AppColors.primary);
-
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            InitialsAvatar(
-              initials: comment.initials,
-              size: isReply ? 26 : 30,
-              fontSize: isReply ? 9.5 : 11,
-              background: avatar.$1,
-              foreground: avatar.$2,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+        InitialsAvatar(initials: comment.initials, size: 30, fontSize: 11),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: comment.isMe ? 'You' : comment.author,
+                      style: AppText.tabular(13, FontWeight.w600),
+                    ),
+                    TextSpan(
+                      text: ' · ${comment.timeLabel}',
+                      style: AppText.tabular(
+                        13,
+                        FontWeight.w400,
+                        color: AppColors.textSubtle,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                comment.body,
+                style: AppText.tabular(
+                  13,
+                  FontWeight.w400,
+                  color: AppColors.textBody,
+                ).copyWith(height: 1.55),
+              ),
+              for (final reply in comment.replies) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: AppColors.primarySoft,
+                    borderRadius: AppRadius.xs,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                        child: Text(
-                          comment.isMe ? 'You' : comment.author,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppText.tabular(12.5, FontWeight.w700),
+                      InitialsAvatar(
+                        initials: reply.initials,
+                        size: 24,
+                        fontSize: 9,
+                        background: AppColors.primary,
+                        foreground: Colors.white,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  reply.author,
+                                  style: AppText.tabular(12, FontWeight.w600),
+                                ),
+                                if (reply.isTeacher) ...[
+                                  const SizedBox(width: 6),
+                                  const StatusBadge.teacher(),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              reply.body,
+                              style: AppText.tabular(
+                                13,
+                                FontWeight.w400,
+                                color: AppColors.textBody,
+                              ).copyWith(height: 1.5),
+                            ),
+                          ],
                         ),
                       ),
-                      if (comment.isTeacher) ...[
-                        const SizedBox(width: 7),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.all(Radius.circular(5)),
-                          ),
-                          child: Text(
-                            'TEACHER',
-                            style: AppText.badge(
-                              color: Colors.white,
-                              size: 8.5,
-                            ).copyWith(letterSpacing: 0.6),
-                          ),
-                        ),
-                      ],
-                      const SizedBox(width: 8),
-                      Text(comment.timeLabel, style: AppText.metaSm.copyWith(fontSize: 11)),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    comment.body,
-                    style: AppText.tabular(
-                      13,
-                      FontWeight.w400,
-                      color: AppColors.textBodyAlt,
-                    ).copyWith(height: 1.55),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        if (comment.replies.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(left: 40, top: 14),
-            child: Column(
-              children: [
-                for (final reply in comment.replies)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _CommentTile(comment: reply, isReply: true),
-                  ),
+                ),
               ],
-            ),
+            ],
           ),
+        ),
       ],
     );
   }
 }
 
 class _NotesTab extends ConsumerWidget {
-  const _NotesTab();
+  const _NotesTab({required this.lessonId});
+
+  final String lessonId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final attachments = ref.watch(lessonAttachmentsProvider);
-
+    final notes = ref.watch(remoteLessonNotesProvider(lessonId));
+    final attachments = notes.value ?? const <LessonNote>[];
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
         Text('Attached notes', style: AppText.cardTitle),
         const SizedBox(height: 4),
-        Text('Open them here — no download needed.', style: AppText.metaSm),
+        Text('Open them here — no download needed.', style: AppText.meta),
         const SizedBox(height: 14),
+        if (notes.isLoading)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator()),
+          )
+        else if (attachments.isEmpty)
+          const EmptyState(
+            icon: LucideIcons.fileText,
+            title: 'No notes yet',
+            body: 'Your teacher has not attached notes to this lecture.',
+          ),
         for (final attachment in attachments) ...[
           AppCard(
-            borderRadius: AppRadius.md,
-            padding: const EdgeInsets.all(14),
-            shadow: null,
-            onTap: () => context.push(Routes.pdf(attachment.id)),
+            padding: const EdgeInsets.all(12),
+            borderRadius: AppRadius.sm,
+            onTap: () => context.push(
+              Routes.pdf(attachment.id),
+              extra: attachment.title,
+            ),
             child: Row(
               children: [
-                IconTile(
-                  background: AppColors.pdfTint,
-                  label: 'PDF',
-                  labelStyle: AppText.badge(
-                    color: const Color(0xFFC43B3B),
-                    size: 9.5,
-                  ).copyWith(letterSpacing: 0),
-                  size: 40,
-                  radius: 11,
-                ),
-                const SizedBox(width: 13),
+                const PdfBadge(),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(attachment.title, style: AppText.tabular(13.5, FontWeight.w700)),
-                      const SizedBox(height: 3),
-                      Text(attachment.sizeLabel, style: AppText.metaSm),
+                      Text(attachment.title, style: AppText.rowTitle),
+                      Text(attachment.meta, style: AppText.meta),
                     ],
                   ),
                 ),
-                Text('Open', style: AppText.tabular(12, FontWeight.w700, color: AppColors.primary)),
+                Text(
+                  'Open',
+                  style: AppText.tabular(
+                    13,
+                    FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -401,58 +650,70 @@ class _FeedbackTabState extends ConsumerState<_FeedbackTab> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        AppCard(
-          shadow: null,
-          child: Row(
-            children: [
-              Text(
-                feedback.averageRating.toStringAsFixed(1),
-                style: AppText.tabular(30, FontWeight.w800, letterSpacing: -1),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _Stars(rating: feedback.averageRating.round(), size: 16),
-                    const SizedBox(height: 5),
-                    Text('${feedback.ratingCount} ratings', style: AppText.metaSm),
-                  ],
+        Row(
+          children: [
+            Text(
+              feedback.averageRating.toStringAsFixed(1),
+              style: AppText.tabular(36, FontWeight.w700, letterSpacing: -0.6),
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '★★★★★',
+                  style: AppText.tabular(
+                    18,
+                    FontWeight.w400,
+                    color: const Color(0xFFE0A33A),
+                    letterSpacing: 2,
+                  ),
                 ),
-              ),
-            ],
-          ),
+                Text('${feedback.ratingCount} ratings', style: AppText.meta),
+              ],
+            ),
+          ],
         ),
-        const SizedBox(height: 22),
-        Text(feedback.hasRated ? 'Your rating' : 'Rate this lesson', style: AppText.cardTitle),
-        const SizedBox(height: 12),
+        const SizedBox(height: 24),
+        Text(
+          feedback.hasRated ? 'Your rating' : 'Rate this lesson',
+          style: AppText.cardTitle,
+        ),
+        const SizedBox(height: 10),
         Row(
           children: [
             for (var star = 1; star <= 5; star++)
-              GestureDetector(
-                onTap: () => setState(() => _pending = star),
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Icon(
-                    star <= selected ? Icons.star_rounded : Icons.star_outline_rounded,
-                    size: 34,
-                    color: star <= selected ? const Color(0xFFE0A33A) : AppColors.textDisabled,
+              Semantics(
+                button: true,
+                label: '$star star${star > 1 ? 's' : ''}',
+                child: GestureDetector(
+                  onTap: () => setState(() => _pending = star),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Icon(
+                      Icons.star_rounded,
+                      size: 34,
+                      color: star <= selected
+                          ? const Color(0xFFE0A33A)
+                          : AppColors.textDisabled,
+                    ),
                   ),
                 ),
               ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
         AppTextField(
           controller: _controller,
           hint: 'What worked, what could be clearer? (optional)',
           maxLines: 4,
           minLines: 3,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         PrimaryButton(
           label: feedback.hasRated ? 'Update feedback' : 'Submit feedback',
+          height: 46,
           enabled: selected > 0,
           onPressed: () {
             ref
@@ -463,137 +724,7 @@ class _FeedbackTabState extends ConsumerState<_FeedbackTab> {
             showDemoSnack(context, 'Thanks — your feedback reached Amit Sir');
           },
         ),
-        if (feedback.myComment != null && feedback.myComment!.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          Text('You wrote', style: AppText.cardTitleSm),
-          const SizedBox(height: 6),
-          Text(feedback.myComment!, style: AppText.body),
-        ],
       ],
     );
   }
-}
-
-class _Stars extends StatelessWidget {
-  const _Stars({required this.rating, this.size = 14});
-
-  final int rating;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        for (var star = 1; star <= 5; star++)
-          Icon(
-            star <= rating ? Icons.star_rounded : Icons.star_outline_rounded,
-            size: size,
-            color: star <= rating ? const Color(0xFFE0A33A) : AppColors.textDisabled,
-          ),
-      ],
-    );
-  }
-}
-
-/// Text field + send button, shared by the lecture discussion and community feed.
-class _Composer extends StatelessWidget {
-  const _Composer({required this.controller, required this.hint, required this.onSend});
-
-  final TextEditingController controller;
-  final String hint;
-  final VoidCallback onSend;
-
-  @override
-  Widget build(BuildContext context) {
-    final safeBottom = MediaQuery.viewPaddingOf(context).bottom;
-    return Container(
-      padding: EdgeInsets.fromLTRB(16, 10, 16, safeBottom > 0 ? safeBottom : 14),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.divider)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Expanded(
-            child: AppTextField(controller: controller, hint: hint, maxLines: 4, minLines: 1),
-          ),
-          const SizedBox(width: 10),
-          Material(
-            color: AppColors.primary,
-            borderRadius: AppRadius.sm,
-            child: InkWell(
-              onTap: onSend,
-              borderRadius: AppRadius.sm,
-              child: const SizedBox(
-                width: 46,
-                height: 46,
-                child: Icon(LucideIcons.send, size: 18, color: Colors.white),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LectureAction extends StatelessWidget {
-  const _LectureAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.iconColor = AppColors.primary,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final Color iconColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadius.sm,
-          child: Ink(
-            height: 64,
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.sm,
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 18, color: iconColor),
-                const SizedBox(height: 6),
-                Text(label, style: AppText.tabular(11, FontWeight.w600)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Exposed so the community feed can reuse the same composer.
-class MessageComposer extends StatelessWidget {
-  const MessageComposer({
-    super.key,
-    required this.controller,
-    required this.hint,
-    required this.onSend,
-  });
-
-  final TextEditingController controller;
-  final String hint;
-  final VoidCallback onSend;
-
-  @override
-  Widget build(BuildContext context) =>
-      _Composer(controller: controller, hint: hint, onSend: onSend);
 }

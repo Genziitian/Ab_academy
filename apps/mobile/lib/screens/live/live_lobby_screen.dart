@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../data/mock/mock_data.dart';
 import '../../router/app_router.dart';
@@ -10,9 +9,9 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/buttons.dart';
-import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 
+/// 13 · Live lobby — countdown to the next class, with a reminder.
 class LiveLobbyScreen extends StatefulWidget {
   const LiveLobbyScreen({super.key});
 
@@ -41,174 +40,187 @@ class _LiveLobbyScreenState extends State<LiveLobbyScreen> {
     super.dispose();
   }
 
-  String get _countdown {
-    final m = (_secondsLeft ~/ 60).toString().padLeft(2, '0');
-    final s = (_secondsLeft % 60).toString().padLeft(2, '0');
-    return '$m:$s';
-  }
-
   @override
   Widget build(BuildContext context) {
     const session = MockData.upcomingLive;
+    final started = _secondsLeft <= 0;
+    final chapter = (session.chapterLabel ?? '')
+        .split(' · ')
+        .first
+        .toUpperCase();
 
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SafeArea(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 52,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: SquareIconButton(
-                    icon: LucideIcons.chevronLeft,
-                    onPressed: () => context.pop(),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  tooltip: 'Back',
+                  onPressed: () => context.pop(),
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    size: 22,
+                    color: AppColors.ink,
                   ),
                 ),
               ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                child: Column(
-                  children: [
-                    const LivePill(),
-                    const SizedBox(height: 26),
-                    Text(
-                      session.subject,
-                      style: AppText.tabular(
-                        13,
-                        FontWeight.w600,
-                        color: AppColors.maths,
-                        letterSpacing: 0.4,
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      InitialsAvatar(
+                        initials: session.teacherInitials,
+                        size: 72,
+                        fontSize: 22,
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(session.title, style: AppText.h1),
-                    const SizedBox(height: 22),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const InitialsAvatar(
-                          initials: 'AS',
-                          size: 36,
-                          fontSize: 12,
-                          background: AppColors.mathsTint,
-                          foreground: AppColors.maths,
+                      const SizedBox(height: 16),
+                      Text(
+                        '${session.subject.toUpperCase()}${chapter.isEmpty ? '' : ' · $chapter'}',
+                        style: AppText.eyebrow(
+                          color: AppColors.primary,
+                          size: 12,
                         ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              session.teacherName,
-                              style: AppText.tabular(13.5, FontWeight.w700),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(session.scheduleLabel, style: AppText.metaSm),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 44),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: AppRadius.xl,
-                        border: Border.all(color: AppColors.border),
                       ),
-                      child: Column(
+                      const SizedBox(height: 6),
+                      Text(session.title, style: AppText.h3),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${session.teacherName} · ${session.scheduleLabel.replaceAll(' •', '')}',
+                        style: AppText.tabular(
+                          14,
+                          FontWeight.w400,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      const SizedBox(height: 36),
+                      Text(
+                        started ? 'Class has started' : 'Class starts in',
+                        style: AppText.label,
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            _secondsLeft > 0 ? 'STARTS IN' : 'STARTING NOW',
-                            style: AppText.eyebrow(size: 12, letterSpacing: 0.6),
+                          _CountdownBox(
+                            value: _secondsLeft ~/ 60,
+                            label: 'MIN',
                           ),
-                          const SizedBox(height: 10),
-                          Text(
-                            _secondsLeft > 0 ? _countdown : 'Live',
-                            style: AppText.tabular(46, FontWeight.w800, letterSpacing: -1.6),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            _secondsLeft > 0
-                                ? "We'll notify you when the class starts."
-                                : 'Your teacher is in the room.',
-                            style: AppText.metaSm.copyWith(fontSize: 12.5),
-                          ),
+                          const SizedBox(width: 10),
+                          _CountdownBox(value: _secondsLeft % 60, label: 'SEC'),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 22),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 62,
-                          height: 26,
-                          child: Stack(
-                            children: [
-                              for (final (index, entry) in [
-                                ('PS', AppColors.primaryTint, AppColors.primary),
-                                ('RK', AppColors.scienceTint, AppColors.scienceInk),
-                                ('AK', AppColors.hindiTint, AppColors.hindi),
-                              ].indexed)
-                                Positioned(
-                                  left: index * 18.0,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: Colors.white, width: 2),
-                                    ),
-                                    child: InitialsAvatar(
-                                      initials: entry.$1,
-                                      size: 22,
-                                      fontSize: 9,
-                                      background: entry.$2,
-                                      foreground: entry.$3,
-                                    ),
-                                  ),
+                      const SizedBox(height: 32),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius: AppRadius.card,
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Before class', style: AppText.rowTitle),
+                            const SizedBox(height: 6),
+                            for (final line in [
+                              'Revise the ${session.chapterLabel?.split(' · ').first ?? 'chapter'} formula sheet',
+                              'Keep a notebook ready for practice questions',
+                              '${session.studentsEnrolled} students enrolled',
+                            ])
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  '✓ $line',
+                                  style: AppText.tabular(
+                                    13,
+                                    FontWeight.w400,
+                                    color: AppColors.textBody,
+                                  ).copyWith(height: 1.6),
                                 ),
-                            ],
-                          ),
+                              ),
+                          ],
                         ),
-                        const SizedBox(width: 9),
-                        Text(
-                          '${session.studentsEnrolled} students enrolled',
-                          style: AppText.tabular(12.5, FontWeight.w500, color: AppColors.textMuted),
-                        ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                child: Column(
+                  children: [
+                    if (started)
+                      PrimaryButton(
+                        label: 'Join Live Class',
+                        onPressed: () =>
+                            context.pushReplacement(Routes.liveRoom),
+                      )
+                    else
+                      PrimaryButton(
+                        label: _reminderSet ? '✓ Reminder set' : 'Remind me',
+                        onPressed: () {
+                          setState(() => _reminderSet = !_reminderSet);
+                          if (_reminderSet) {
+                            showDemoSnack(
+                              context,
+                              "We'll notify you 5 minutes before class.",
+                            );
+                          }
+                        },
+                      ),
+                    const SizedBox(height: 10),
+                    SecondaryButton(
+                      label: 'Add to calendar',
+                      onPressed: () => context.push(Routes.calendar),
                     ),
-                    const SizedBox(height: 24),
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 36),
-              child: Column(
-                children: [
-                  PrimaryButton(
-                    label: 'Join Class',
-                    onPressed: () => context.push(Routes.liveRoom),
-                  ),
-                  const SizedBox(height: 12),
-                  SecondaryButton(
-                    label: _reminderSet ? 'Reminder set' : 'Remind me',
-                    icon: _reminderSet ? LucideIcons.checkCircle : LucideIcons.bell,
-                    onPressed: () {
-                      setState(() => _reminderSet = true);
-                      showDemoSnack(context, "We'll remind you 5 minutes before the class");
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _CountdownBox extends StatelessWidget {
+  const _CountdownBox({required this.value, required this.label});
+
+  final int value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 96,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceMuted,
+        borderRadius: AppRadius.card,
+      ),
+      child: Column(
+        children: [
+          Text(
+            value.toString().padLeft(2, '0'),
+            style: AppText.mono(34, weight: FontWeight.w400),
+          ),
+          Text(
+            label,
+            style: AppText.tabular(
+              11,
+              FontWeight.w400,
+              color: AppColors.textMuted,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,16 +1,18 @@
 // Demo-mode data for the slice 4 domains (students, content library, doubt
-// queue, popups, community threads). Same contract as mock-store.ts: writes
+// queue, popups). Same contract as mock-store.ts: writes
 // persist for the life of the server process.
 //
 // With Supabase env vars set, `lib/admin/data.ts` never touches this file.
 
 import { listCourses } from "./mock-store";
 import type {
-  AdminCommunityMessage,
   AdminDoubt,
+  AdminBanner,
   AdminLesson,
   AdminPopup,
   AdminStudent,
+  AdminTransaction,
+  OrderStatus,
   PopupPlacement,
 } from "./types";
 
@@ -24,6 +26,7 @@ const localStamp = (daysAgo = 0) => {
 let students: AdminStudent[] = [
   {
     id: "s-1",
+    studentCode: "ABA-S-4MZT8KQ2",
     fullName: "Rahul Kumar",
     phone: "+919876543210",
     email: "rahul.k@example.in",
@@ -38,6 +41,7 @@ let students: AdminStudent[] = [
   },
   {
     id: "s-2",
+    studentCode: "ABA-S-9RBX3HNV",
     fullName: "Priya Sharma",
     phone: "+919812345678",
     email: "priya.s@example.in",
@@ -52,6 +56,7 @@ let students: AdminStudent[] = [
   },
   {
     id: "s-3",
+    studentCode: "ABA-S-T2KW7YPC",
     fullName: "Ankit Kumar",
     phone: "+919700112233",
     email: null,
@@ -66,6 +71,7 @@ let students: AdminStudent[] = [
   },
   {
     id: "s-4",
+    studentCode: "ABA-S-H6DQ5MAE",
     fullName: "Sneha Verma",
     phone: "+919633445566",
     email: "sneha.v@example.in",
@@ -104,7 +110,9 @@ let lessons: AdminLesson[] = [
         lessonId: "l-1",
         title: "Chapter 01 notes",
         resourceType: "PDF",
+        source: "storage",
         storagePath: "lesson-notes/demo/chapter-01.pdf",
+        driveFileId: null,
         sizeBytes: 1_240_000,
         isDownloadable: true,
       },
@@ -152,7 +160,9 @@ let lessons: AdminLesson[] = [
         lessonId: "l-3",
         title: "Carbon compounds — summary sheet",
         resourceType: "PDF",
+        source: "storage",
         storagePath: "lesson-notes/demo/carbon-summary.pdf",
+        driveFileId: null,
         sizeBytes: 820_000,
         isDownloadable: true,
       },
@@ -250,34 +260,6 @@ let popups: AdminPopup[] = [
   },
 ];
 
-const communityThreads: Record<string, AdminCommunityMessage[]> = {
-  "class-10-complete-batch": [
-    {
-      id: "cm-1",
-      body: "Welcome to the Class 10 batch! Live classes run 6pm Mon–Sat.",
-      authorName: "Admin",
-      pinned: true,
-      createdAt: localStamp(30),
-    },
-    {
-      id: "cm-2",
-      body: "Same here. Sir explained it in the doubt session recording.",
-      authorName: "Rahul Kumar",
-      pinned: false,
-      createdAt: localStamp(1),
-    },
-  ],
-  "mathematics-board-booster": [
-    {
-      id: "cm-3",
-      body: "Thank you sir!",
-      authorName: "Sneha Verma",
-      pinned: false,
-      createdAt: localStamp(2),
-    },
-  ],
-};
-
 const slugify = (v: string) =>
   v.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -291,6 +273,7 @@ export const listStudents = (search?: string, classLevel?: number) => {
     rows = rows.filter(
       (s) =>
         s.fullName.toLowerCase().includes(q) ||
+        s.studentCode.toLowerCase().includes(q) ||
         (s.phone ?? "").includes(q) ||
         (s.email ?? "").toLowerCase().includes(q),
     );
@@ -319,11 +302,6 @@ export const listPopups = () =>
   );
 
 export const getPopup = (id: string) => popups.find((p) => p.id === id) ?? null;
-
-export const listCommunityMessages = (courseId: string) =>
-  [...(communityThreads[courseId] ?? [])].sort((a, b) =>
-    b.createdAt.localeCompare(a.createdAt),
-  );
 
 export const extraCounts = () => ({
   students: students.length,
@@ -407,7 +385,8 @@ export function deleteLesson(id: string) {
 export function addResource(input: {
   lessonId: string;
   title: string;
-  storagePath: string;
+  storagePath?: string;
+  driveFileId?: string;
   sizeBytes: number | null;
 }) {
   lessons = lessons.map((l) =>
@@ -421,7 +400,9 @@ export function addResource(input: {
               lessonId: l.id,
               title: input.title,
               resourceType: "PDF",
-              storagePath: input.storagePath,
+              source: input.driveFileId ? "gdrive" : "storage",
+              storagePath: input.storagePath ?? null,
+              driveFileId: input.driveFileId ?? null,
               sizeBytes: input.sizeBytes,
               isDownloadable: true,
             },
@@ -510,23 +491,109 @@ export function deletePopup(id: string) {
   popups = popups.filter((p) => p.id !== id);
 }
 
-export function postCommunityMessage(
-  courseId: string,
-  body: string,
-  pinned: boolean,
+// ------------------------------------------------------------- banners
+
+let banners: AdminBanner[] = [
+  {
+    id: "b-1",
+    title: "Class 12 Science Crash Course",
+    subtitle: "Finish the syllabus in 90 days · 50% off",
+    imagePath: null,
+    imageUrl: null,
+    courseId: "class-12-science-batch",
+    courseTitle: "Class 12 Science Batch",
+    ctaLabel: "Enroll now",
+    hue: 214,
+    sortOrder: 0,
+    isActive: true,
+    startsAt: localStamp(3),
+    endsAt: null,
+  },
+  {
+    id: "b-2",
+    title: "Board revision series",
+    subtitle: "Live doubt sessions every evening in January",
+    imagePath: null,
+    imageUrl: null,
+    courseId: null,
+    courseTitle: null,
+    ctaLabel: "See schedule",
+    hue: 320,
+    sortOrder: 1,
+    isActive: false,
+    startsAt: localStamp(1),
+    endsAt: null,
+  },
+];
+
+export const listBanners = () =>
+  [...banners].sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
+
+export function saveBanner(
+  input: Omit<AdminBanner, "id" | "imagePath" | "imageUrl" | "courseTitle"> & {
+    id?: string;
+    courseTitle: string | null;
+  },
 ) {
-  const thread = communityThreads[courseId] ?? (communityThreads[courseId] = []);
-  thread.push({
-    id: `cm-${Date.now()}`,
-    body,
-    authorName: "Admin",
-    pinned,
-    createdAt: localStamp(),
-  });
+  if (input.id) {
+    banners = banners.map((b) => (b.id === input.id ? { ...b, ...input, id: b.id } : b));
+    return input.id;
+  }
+  const id = `b-${Date.now()}`;
+  banners = [...banners, { ...input, id, imagePath: null, imageUrl: null }];
+  return id;
 }
 
-export function deleteCommunityMessage(courseId: string, messageId: string) {
-  communityThreads[courseId] = (communityThreads[courseId] ?? []).filter(
-    (m) => m.id !== messageId,
-  );
+export function deleteBanner(id: string) {
+  banners = banners.filter((b) => b.id !== id);
 }
+
+// ------------------------------------------------------------ transactions
+
+// A month of believable checkouts, generated once per server start so the
+// Transactions page has something to chart in demo mode.
+const transactions: AdminTransaction[] = (() => {
+  const courses = listCourses();
+  const statuses: OrderStatus[] = ["paid", "paid", "paid", "paid", "failed", "created", "paid"];
+  const rows: AdminTransaction[] = [];
+  for (let i = 0; i < 48; i++) {
+    const student = students[i % students.length];
+    const course = courses[i % courses.length];
+    const status = i === 5 ? "refunded" : statuses[i % statuses.length];
+    const created = new Date(Date.now() - (i * 14.5 + 2) * 3_600_000).toISOString();
+    const paid = status === "paid" || status === "refunded";
+    const payId = paid ? `pay_demo${String(i).padStart(6, "0")}` : null;
+    rows.push({
+      id: `o-${i + 1}`,
+      razorpayOrderId: `order_demo${String(i).padStart(6, "0")}`,
+      razorpayPaymentId: payId,
+      studentId: student.id,
+      studentName: student.fullName,
+      studentEmail: student.email,
+      studentCode: student.studentCode,
+      courseId: course.id,
+      courseTitle: course.title,
+      courseCode: course.courseCode,
+      amountInr: course.priceInr,
+      status,
+      couponCode: i % 9 === 0 ? "BOARD40" : null,
+      createdAt: created,
+      paidAt: paid ? new Date(Date.parse(created) + 90_000).toISOString() : null,
+      payments:
+        status === "created"
+          ? []
+          : [
+              {
+                id: `pm-${i + 1}`,
+                razorpayPaymentId: payId ?? `pay_demofail${i}`,
+                amountInr: course.priceInr,
+                status: status === "failed" ? "failed" : "captured",
+                createdAt: new Date(Date.parse(created) + 60_000).toISOString(),
+              },
+            ],
+    });
+  }
+  return rows;
+})();
+
+export const listTransactions = () => [...transactions];

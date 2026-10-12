@@ -4,42 +4,75 @@
   --background: #ffffff;
   --foreground: #0f1b2d;
   --navy: #122046;
+  --ink: #4a5872;
   --muted: #6b7a90;
+  --subtle: #98a3b6;
   --border: #e6ebf5;
+  --line: #eff1f5;
+  --field: #dde0e8;
+  --primary-line: #c9d6f5;
   --surface: #ffffff;
   --surface-soft: #f5f8ff;
+  --surface-grey: #f7f8fc;
+  --track: #edeff4;
   --primary: #2962ff;
   --primary-dark: #1a4de0;
   --primary-soft: #e8f0ff;
-  --success: #22c55e;
+  --success: #16a34a;
+  --success-soft: #e9f9ef;
+  --danger: #c43b3b;
+  --danger-soft: #fde8e8;
+  --pdf-soft: #fde9e9;
+  --amber: #c06a1a;
+  --amber-soft: #fff1e8;
   --orange: #ff8a3d;
   --violet: #7c5cff;
+  --violet-soft: #f1ecff;
   --pink: #ff5d8f;
   --teal: #14b8a6;
-  --radius: 16px;
-  --shadow-card: 0 10px 30px rgba(18, 32, 70, 0.06);
+  --teal-dark: #0f8f81;
+  --teal-soft: #e8fff6;
+  --shadow-card: 0 14px 40px rgba(18, 32, 70, 0.06);
   --shadow-soft: 0 14px 40px rgba(41, 98, 255, 0.1);
+  --shadow-float: 0 14px 40px rgba(18, 32, 70, 0.12);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-navy: var(--navy);
+  --color-ink: var(--ink);
   --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
   --color-border: var(--border);
+  --color-line: var(--line);
+  --color-field: var(--field);
+  --color-primary-line: var(--primary-line);
   --color-surface: var(--surface);
   --color-surface-soft: var(--surface-soft);
+  --color-surface-grey: var(--surface-grey);
+  --color-track: var(--track);
   --color-primary: var(--primary);
   --color-primary-dark: var(--primary-dark);
   --color-primary-soft: var(--primary-soft);
   --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-pdf-soft: var(--pdf-soft);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
   --color-orange: var(--orange);
   --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
   --color-pink: var(--pink);
   --color-teal: var(--teal);
-  --font-sans: var(--font-outfit);
-  --font-display: var(--font-outfit);
-  --font-hindi: var(--font-noto-devanagari);
+  --color-teal-dark: var(--teal-dark);
+  --color-teal-soft: var(--teal-soft);
+  --font-sans: var(--font-plex), var(--font-plex-devanagari), sans-serif;
+  --font-display: var(--font-plex), var(--font-plex-devanagari), sans-serif;
+  --font-hindi: var(--font-plex-devanagari), var(--font-plex), sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
 * {
@@ -53,7 +86,8 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-outfit), var(--font-noto-devanagari), sans-serif;
+  font-family: var(--font-plex), var(--font-plex-devanagari), sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
@@ -62,46 +96,26 @@ body {
 }
 
 .font-display {
-  font-family: var(--font-outfit), var(--font-noto-devanagari), sans-serif;
+  font-family: var(--font-plex), var(--font-plex-devanagari), sans-serif;
 }
 
 .font-hindi {
-  font-family: var(--font-noto-devanagari), var(--font-outfit), sans-serif;
+  font-family: var(--font-plex-devanagari), var(--font-plex), sans-serif;
 }
 
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.no-scrollbar {
+  scrollbar-width: none;
 }
 
-@keyframes float-soft {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-.animate-fade-up {
-  animation: fade-up 0.65s ease-out both;
-}
-
-.animate-fade-up-delay {
-  animation: fade-up 0.65s ease-out 0.12s both;
-}
-
-.animate-fade-up-delay-2 {
-  animation: fade-up 0.65s ease-out 0.24s both;
-}
-
-.animate-float {
-  animation: float-soft 5s ease-in-out infinite;
+/* Small uppercase label used above section headings across the site. */
+.eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
 }

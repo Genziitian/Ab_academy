@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF;font-family:'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#3A3F99;text-decoration:none}a:hover{color:#2A2E77}
+@keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(217,58,58,.55)}70%{box-shadow:0 0 0 7px rgba(217,58,58,0)}100%{box-shadow:0 0 0 0 rgba(217,58,58,0)}}
+</style>
+</helmet>
+
+<div style="width:100%;background:#FFFFFF;color:#14161C;font-family:'Plus Jakarta Sans',system-ui,sans-serif">
+
+<sc-if value="{{ showPromoBar }}" hint-placeholder-val="{{ true }}">
+<div style="background:#1C1F4A;color:#FFFFFF;padding:10px 24px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;text-align:center">
+  <span style="font:700 10.5px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1.1px;padding:4px 9px;border-radius:99px;background:rgba(224,122,47,.22);color:#F2B27A">2027 BATCH</span>
+  <span style="font:500 13px/1.4 'Plus Jakarta Sans',sans-serif;color:rgba(255,255,255,.82)">Early admission open for Class 9–12 · up to 40% off until 30 September</span>
+</div>
+</sc-if>
+
+<div style="position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid #EDEFF4">
+  <div style="max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:11px;margin-right:auto">
+      <svg width="38" height="38" viewBox="0 0 76 76" fill="none"><rect x="1.2" y="1.2" width="73.6" height="73.6" rx="22" stroke="#3A3F99" stroke-width="3"/><path d="M22 27h13a7 7 0 0 1 7 7v19a6 6 0 0 0-6-6H22z" fill="#3A3F99"/><path d="M54 27H41a7 7 0 0 0-7 7v19a6 6 0 0 1 6-6h14z" fill="#E07A2F"/></svg>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="font:800 16px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.3px">Akhand Bharat Academy</div>
+        <div style="font:500 10.5px/1 'Noto Sans Devanagari',sans-serif;color:#9AA0AE">बिहार बोर्ड • कक्षा 9–12</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap">
+      <a href="#courses" style="font:600 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#3A4050">Courses</a>
+      <a href="#features" style="font:600 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#3A4050">Features</a>
+      <a href="#teachers" style="font:600 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#3A4050">Teachers</a>
+      <a href="#faq" style="font:600 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#3A4050">FAQ</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="height:42px;padding:0 16px;border-radius:13px;border:1px solid #DDE0E8;display:flex;align-items:center;font:600 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#14161C;cursor:pointer" style-hover="background:#F6F7FA">Log in</div>
+      <div style="height:42px;padding:0 18px;border-radius:13px;background:#3A3F99;color:#FFFFFF;display:flex;align-items:center;font:700 13.5px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer;box-shadow:0 6px 16px rgba(58,63,153,.22)" style-active="transform:scale(.975)">Get the app</div>
+    </div>
+  </div>
+</div>
+
+<div style="background:linear-gradient(180deg,#F7F8FC 0%,#FFFFFF 100%);border-bottom:1px solid #EDEFF4">
+  <div style="max-width:1180px;margin:0 auto;padding:72px 24px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:56px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:22px;padding-bottom:72px;min-width:0">
+      <div style="display:inline-flex;align-items:center;gap:8px;align-self:flex-start;padding:7px 13px;border-radius:99px;background:#EEEFFA;border:1px solid #DCDEF2">
+        <span style="width:7px;height:7px;border-radius:50%;background:#D93A3A;animation:livePulse 1.8s infinite"></span>
+        <span style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:.8px;color:#3A3F99">LIVE CLASSES RUNNING TODAY</span>
+      </div>
+      <div style="font:800 clamp(34px,4.4vw,54px)/1.1 'Plus Jakarta Sans',sans-serif;letter-spacing:-1.4px;text-wrap:pretty">Bihar Board preparation, taught the way Bihar students learn</div>
+      <div style="font:400 16.5px/1.65 'Plus Jakarta Sans',sans-serif;color:#5A6070;max-width:520px;text-wrap:pretty">Live and recorded classes for Class 9 to 12, in Hindi and English medium. Chapter-wise notes, weekly tests, previous year papers and doubt solving — all inside one app that works on slow networks.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:4px">
+        <div style="height:54px;padding:0 24px;border-radius:15px;background:#3A3F99;color:#FFFFFF;display:flex;align-items:center;gap:9px;font:700 15px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer;box-shadow:0 8px 20px rgba(58,63,153,.25)" style-active="transform:scale(.975)">Start free trial
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
+        <div style="height:54px;padding:0 22px;border-radius:15px;border:1px solid #DDE0E8;background:#FFFFFF;display:flex;align-items:center;gap:9px;font:600 15px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="background:#F6F7FA">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3A3F99" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5.5v13l11-6.5z"/></svg>
+          Watch a demo class
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:28px;margin-top:14px;padding-top:24px;border-top:1px solid #E8EAF0">
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font:800 24px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.6px;font-variant-numeric:tabular-nums">1.2 लाख+</span><span style="font:500 12.5px/1 'Plus Jakarta Sans',sans-serif;color:#6A7080">Students enrolled</span></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font:800 24px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.6px;font-variant-numeric:tabular-nums">4,800+</span><span style="font:500 12.5px/1 'Plus Jakarta Sans',sans-serif;color:#6A7080">Recorded lessons</span></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><span style="font:800 24px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.6px;font-variant-numeric:tabular-nums">38</span><span style="font:500 12.5px/1 'Plus Jakarta Sans',sans-serif;color:#6A7080">Districts covered</span></div>
+      </div>
+    </div>
+
+    <sc-if value="{{ showAppPreview }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;justify-content:center;align-items:flex-end;min-width:0">
+      <div style="width:330px;height:660px;background:#FBFBFD;border-radius:34px;overflow:hidden;box-shadow:0 24px 60px rgba(20,22,28,.18);display:flex;flex-direction:column;border:1px solid #E4E6ED">
+        <dc-import name="StatusBar" hint-size="100%,44px"></dc-import>
+        <div style="flex:1;overflow:hidden;padding:8px 18px;display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding-top:6px">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="font:500 12.5px/1 'Plus Jakarta Sans',sans-serif;color:#6A7080">Good morning, Rahul</div>
+              <div style="font:700 15px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.2px">Class 10 • Bihar Board</div>
+            </div>
+            <div style="width:36px;height:36px;border-radius:50%;background:#EEEFFA;border:1px solid #DCDEF2;display:flex;align-items:center;justify-content:center;font:700 12px/1 'Plus Jakarta Sans',sans-serif;color:#3A3F99">RK</div>
+          </div>
+          <div style="border-radius:20px;background:#1C1F4A;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 10px 24px rgba(28,31,74,.22)">
+            <div style="display:flex;align-items:center;gap:7px;align-self:flex-start;padding:5px 10px;border-radius:99px;background:rgba(217,58,58,.16)">
+              <span style="width:6px;height:6px;border-radius:50%;background:#FF5A5A;animation:livePulse 1.8s infinite"></span>
+              <span style="font:800 10px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1.1px;color:#FF7A7A">LIVE NOW</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div style="font:600 11.5px/1 'Plus Jakarta Sans',sans-serif;color:#9BA2E8;letter-spacing:.3px">Mathematics</div>
+              <div style="font:800 21px/1.2 'Plus Jakarta Sans',sans-serif;color:#FFFFFF;letter-spacing:-.5px">Quadratic Equations</div>
+            </div>
+            <div style="height:42px;border-radius:13px;background:#FFFFFF;color:#1C1F4A;display:flex;align-items:center;justify-content:center;font:700 13.5px/1 'Plus Jakarta Sans',sans-serif">Join Live Class</div>
+          </div>
+          <div style="border:1px solid #E8EAF0;border-radius:16px;background:#FFFFFF;padding:13px;display:flex;gap:12px">
+            <div style="width:74px;height:74px;border-radius:12px;background:#E9F3EE;flex:none;display:flex;align-items:center;justify-content:center">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="#2E8B63"><path d="M8 5.5v13l11-6.5z"/></svg>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0">
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <div style="font:700 10.5px/1 'Plus Jakarta Sans',sans-serif;color:#2E8B63;letter-spacing:.5px">SCIENCE</div>
+                <div style="font:700 13px/1.35 'Plus Jakarta Sans',sans-serif">Chapter 4 · Carbon and its Compounds</div>
+              </div>
+              <div style="height:6px;border-radius:99px;background:#EDEFF4;overflow:hidden"><div style="width:68%;height:100%;border-radius:99px;background:#2E8B63"></div></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="border:1px solid #E8EAF0;border-radius:16px;background:#FFFFFF;padding:13px;display:flex;flex-direction:column;gap:7px">
+              <div style="width:32px;height:32px;border-radius:10px;background:#E8EEF9;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2C5FA8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+              <div style="font:700 12.5px/1 'Plus Jakarta Sans',sans-serif">Notes</div>
+            </div>
+            <div style="border:1px solid #E8EAF0;border-radius:16px;background:#FFFFFF;padding:13px;display:flex;flex-direction:column;gap:7px">
+              <div style="width:32px;height:32px;border-radius:10px;background:#FDF0E4;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B5701F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div>
+              <div style="font:700 12.5px/1 'Plus Jakarta Sans',sans-serif">Tests</div>
+            </div>
+          </div>
+        </div>
+        <dc-import name="BottomNav" hint-size="100%,74px"></dc-import>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+</div>
+
+<div id="features" style="max-width:1180px;margin:0 auto;padding:84px 24px">
+  <div style="display:flex;flex-direction:column;gap:10px;max-width:640px">
+    <div style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1.6px;color:#3A3F99;text-transform:uppercase">What you get</div>
+    <div style="font:800 clamp(26px,3vw,36px)/1.2 'Plus Jakarta Sans',sans-serif;letter-spacing:-.9px">Everything the board exam asks for, in one place</div>
+  </div>
+  <div style="margin-top:40px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px">
+    <div style="border:1px solid #E8EAF0;border-radius:18px;background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 2px rgba(20,22,28,.04)">
+      <div style="width:42px;height:42px;border-radius:13px;background:#EEEFFA;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3A3F99" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg></div>
+      <div style="font:700 16.5px/1.3 'Plus Jakarta Sans',sans-serif">Daily live classes</div>
+      <div style="font:400 14px/1.65 'Plus Jakarta Sans',sans-serif;color:#6A7080">Scheduled subject-wise every evening, with live doubt solving in chat and a recording posted the same night.</div>
+    </div>
+    <div style="border:1px solid #E8EAF0;border-radius:18px;background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 2px rgba(20,22,28,.04)">
+      <div style="width:42px;height:42px;border-radius:13px;background:#E9F3EE;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E8B63" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+      <div style="font:700 16.5px/1.3 'Plus Jakarta Sans',sans-serif">Chapter-wise notes</div>
+      <div style="font:400 14px/1.65 'Plus Jakarta Sans',sans-serif;color:#6A7080">PDF notes, formula sheets and NCERT + Bihar Board textbook solutions for every chapter in the syllabus.</div>
+    </div>
+    <div style="border:1px solid #E8EAF0;border-radius:18px;background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 2px rgba(20,22,28,.04)">
+      <div style="width:42px;height:42px;border-radius:13px;background:#FDF0E4;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B5701F" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg></div>
+      <div style="font:700 16.5px/1.3 'Plus Jakarta Sans',sans-serif">Weekly tests and PYQs</div>
+      <div style="font:400 14px/1.65 'Plus Jakarta Sans',sans-serif;color:#6A7080">Board-pattern papers with model answers, plus ten years of previous year questions sorted by chapter.</div>
+    </div>
+    <div style="border:1px solid #E8EAF0;border-radius:18px;background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 2px rgba(20,22,28,.04)">
+      <div style="width:42px;height:42px;border-radius:13px;background:#F0ECFA;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B4FB5" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <div style="font:700 16.5px/1.3 'Plus Jakarta Sans',sans-serif">Doubt support till 10 PM</div>
+      <div style="font:400 14px/1.65 'Plus Jakarta Sans',sans-serif;color:#6A7080">Send a photo of the question and get a written or voice explanation from a subject teacher, usually within an hour.</div>
+    </div>
+    <div style="border:1px solid #E8EAF0;border-radius:18px;background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 2px rgba(20,22,28,.04)">
+      <div style="width:42px;height:42px;border-radius:13px;background:#E4F1F1;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F7373" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/></svg></div>
+      <div style="font:700 16.5px/1.3 'Plus Jakarta Sans',sans-serif">Works offline</div>
+      <div style="font:400 14px/1.65 'Plus Jakarta Sans',sans-serif;color:#6A7080">Download classes and notes over Wi-Fi and study without data. Built for districts where the network drops.</div>
+    </div>
+    <div style="border:1px solid #E8EAF0;border-radius:18px;background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 2px rgba(20,22,28,.04)">
+      <div style="width:42px;height:42px;border-radius:13px;background:#E8EEF9;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2C5FA8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+      <div style="font:700 16.5px/1.3 'Plus Jakarta Sans',sans-serif">A timetable that adjusts</div>
+      <div style="font:400 14px/1.65 'Plus Jakarta Sans',sans-serif;color:#6A7080">Your syllabus is split across the year, and the plan reshuffles when you fall behind or exams move.</div>
+    </div>
+  </div>
+</div>
+
+<div id="courses" style="background:#F7F8FC;border-top:1px solid #EDEFF4;border-bottom:1px solid #EDEFF4">
+  <div style="max-width:1180px;margin:0 auto;padding:84px 24px">
+    <div style="display:flex;flex-direction:column;gap:10px;max-width:640px">
+      <div style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1.6px;color:#3A3F99;text-transform:uppercase">Batches for 2027</div>
+      <div style="font:800 clamp(26px,3vw,36px)/1.2 'Plus Jakarta Sans',sans-serif;letter-spacing:-.9px">Choose your class, we handle the rest</div>
+      <div style="font:400 15px/1.65 'Plus Jakarta Sans',sans-serif;color:#6A7080">One-time payment, full year access, Hindi and English medium in every batch.</div>
+    </div>
+    <div style="margin-top:40px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;align-items:stretch">
+      <div style="border:1px solid #E8EAF0;border-radius:20px;background:#FFFFFF;padding:26px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1px;color:#2C5FA8">FOUNDATION</div>
+          <div style="font:800 22px/1.25 'Plus Jakarta Sans',sans-serif;letter-spacing:-.5px">Class 9 Complete Batch</div>
+          <div style="font:400 13.5px/1.6 'Plus Jakarta Sans',sans-serif;color:#6A7080">Five subjects, concept-first teaching and monthly tests to build the base for Class 10.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B63" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span style="font:500 13.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#3A4050">120+ recorded classes</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B63" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span style="font:500 13.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#3A4050">Chapter-wise PDF notes</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B63" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span style="font:500 13.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#3A4050">Monthly tests with feedback</span></div>
+        </div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:baseline;gap:9px"><span style="font:800 26px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.7px;font-variant-numeric:tabular-nums">₹1,999</span><span style="font:500 13px/1 'Plus Jakarta Sans',sans-serif;color:#B0B5C0;text-decoration:line-through">₹3,499</span></div>
+          <div style="height:50px;border-radius:14px;border:1px solid #3A3F99;color:#3A3F99;display:flex;align-items:center;justify-content:center;font:700 14.5px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="background:#EEEFFA">View batch</div>
+        </div>
+      </div>
+
+      <div style="border:1.5px solid #3A3F99;border-radius:20px;background:#FFFFFF;padding:26px;display:flex;flex-direction:column;gap:18px;box-shadow:0 12px 30px rgba(58,63,153,.14);position:relative">
+        <div style="position:absolute;top:-12px;left:26px;padding:6px 12px;border-radius:99px;background:#3A3F99;color:#FFFFFF;font:700 10.5px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1px">MOST ENROLLED</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1px;color:#3A3F99">BOARD YEAR</div>
+          <div style="font:800 22px/1.25 'Plus Jakarta Sans',sans-serif;letter-spacing:-.5px">Class 10 Complete Batch</div>
+          <div style="font:400 13.5px/1.6 'Plus Jakarta Sans',sans-serif;color:#6A7080">One year of live classes, recordings, notes and tests for every subject, with the January revision series.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B63" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span style="font:500 13.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#3A4050">156+ recorded classes</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B63" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span style="font:500 13.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#3A4050">50+ live classes with doubt solving</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B63" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span style="font:500 13.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#3A4050">Weekly board-pattern papers</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B63" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span style="font:500 13.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#3A4050">Offline downloads</span></div>
+        </div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:baseline;gap:9px"><span style="font:800 26px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.7px;font-variant-numeric:tabular-nums">₹2,999</span><span style="font:500 13px/1 'Plus Jakarta Sans',sans-serif;color:#B0B5C0;text-decoration:line-through">₹4,999</span></div>
+          <div style="height:50px;border-radius:14px;background:#3A3F99;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font:700 14.5px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer;box-shadow:0 6px 16px rgba(58,63,153,.25)" style-active="transform:scale(.975)">Buy batch</div>
+        </div>
+      </div>
+
+      <div style="border:1px solid #E8EAF0;border-radius:20px;background:#FFFFFF;padding:26px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1px;color:#B5701F">SENIOR SECONDARY</div>
+          <div style="font:800 22px/1.25 'Plus Jakarta Sans',sans-serif;letter-spacing:-.5px">Class 11 &amp; 12 Batches</div>
+          <div style="font:400 13.5px/1.6 'Plus Jakarta Sans',sans-serif;color:#6A7080">Science, Commerce and Arts streams, with separate tracks for board exams and entrance preparation.</div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span style="padding:7px 12px;border-radius:10px;background:#E8EEF9;font:600 12px/1 'Plus Jakarta Sans',sans-serif;color:#2C5FA8">Science</span>
+          <span style="padding:7px 12px;border-radius:10px;background:#E4F1F1;font:600 12px/1 'Plus Jakarta Sans',sans-serif;color:#1F7373">Commerce</span>
+          <span style="padding:7px 12px;border-radius:10px;background:#F0ECFA;font:600 12px/1 'Plus Jakarta Sans',sans-serif;color:#6B4FB5">Arts</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B63" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span style="font:500 13.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#3A4050">Stream-wise full syllabus</span></div>
+          <div style="display:flex;align-items:center;gap:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E8B63" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg><span style="font:500 13.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#3A4050">10 years of previous papers</span></div>
+        </div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:baseline;gap:9px"><span style="font:800 26px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.7px;font-variant-numeric:tabular-nums">₹3,499</span><span style="font:500 13px/1 'Plus Jakarta Sans',sans-serif;color:#6A7080">onwards</span></div>
+          <div style="height:50px;border-radius:14px;border:1px solid #3A3F99;color:#3A3F99;display:flex;align-items:center;justify-content:center;font:700 14.5px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-hover="background:#EEEFFA">Compare streams</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="teachers" style="max-width:1180px;margin:0 auto;padding:84px 24px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:48px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1.6px;color:#3A3F99;text-transform:uppercase">The teachers</div>
+      <div style="font:800 clamp(26px,3vw,36px)/1.2 'Plus Jakarta Sans',sans-serif;letter-spacing:-.9px">Taught by Bihar Board specialists</div>
+      <div style="font:400 15px/1.7 'Plus Jakarta Sans',sans-serif;color:#6A7080;max-width:460px">Every faculty member has taught the Bihar Board syllabus for at least eight years. Classes follow the BSEB textbook order, not a generic national one, and the language stays close to how students speak at home.</div>
+      <div style="margin-top:6px;display:flex;align-items:center;gap:8px;font:700 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#3A3F99;cursor:pointer">Meet the full faculty
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;min-width:0">
+      <div style="border:1px solid #E8EAF0;border-radius:18px;background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="width:48px;height:48px;border-radius:50%;background:#EEEFFA;border:1px solid #DCDEF2;display:flex;align-items:center;justify-content:center;font:700 15px/1 'Plus Jakarta Sans',sans-serif;color:#3A3F99">AS</div>
+        <div style="display:flex;flex-direction:column;gap:4px"><div style="font:700 15px/1.3 'Plus Jakarta Sans',sans-serif">Amit Sir</div><div style="font:500 12.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#6A7080">Mathematics · 12 years</div></div>
+      </div>
+      <div style="border:1px solid #E8EAF0;border-radius:18px;background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="width:48px;height:48px;border-radius:50%;background:#E9F3EE;border:1px solid #D4E7DD;display:flex;align-items:center;justify-content:center;font:700 15px/1 'Plus Jakarta Sans',sans-serif;color:#2E7A58">PK</div>
+        <div style="display:flex;flex-direction:column;gap:4px"><div style="font:700 15px/1.3 'Plus Jakarta Sans',sans-serif">Priya Kumari</div><div style="font:500 12.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#6A7080">Science · 9 years</div></div>
+      </div>
+      <div style="border:1px solid #E8EAF0;border-radius:18px;background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="width:48px;height:48px;border-radius:50%;background:#FDF0E4;border:1px solid #F3DCC4;display:flex;align-items:center;justify-content:center;font:700 15px/1 'Plus Jakarta Sans',sans-serif;color:#B5701F">RS</div>
+        <div style="display:flex;flex-direction:column;gap:4px"><div style="font:700 15px/1.3 'Plus Jakarta Sans',sans-serif">Ravi Shankar</div><div style="font:500 12.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#6A7080">Hindi · 15 years</div></div>
+      </div>
+      <div style="border:1px solid #E8EAF0;border-radius:18px;background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div style="width:48px;height:48px;border-radius:50%;background:#E4F1F1;border:1px solid #CDE4E4;display:flex;align-items:center;justify-content:center;font:700 15px/1 'Plus Jakarta Sans',sans-serif;color:#1F7373">NV</div>
+        <div style="display:flex;flex-direction:column;gap:4px"><div style="font:700 15px/1.3 'Plus Jakarta Sans',sans-serif">Neha Verma</div><div style="font:500 12.5px/1.4 'Plus Jakarta Sans',sans-serif;color:#6A7080">Social Science · 8 years</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="background:#1C1F4A">
+  <div style="max-width:1180px;margin:0 auto;padding:72px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px">
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1.6px;color:#9BA2E8;text-transform:uppercase">From our students</div>
+      <div style="font:800 clamp(24px,2.6vw,32px)/1.25 'Plus Jakarta Sans',sans-serif;letter-spacing:-.8px;color:#FFFFFF">Results across 38 districts</div>
+    </div>
+    <div style="border:1px solid #33376E;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:14px;background:#22265A">
+      <div style="font:400 14.5px/1.7 'Plus Jakarta Sans',sans-serif;color:#E4E6F7">“I study after helping at the shop, so live class timings never worked for me. Downloading the recordings meant I could finish Science at 11 at night, without data.”</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:34px;height:34px;border-radius:50%;background:#33376E;display:flex;align-items:center;justify-content:center;font:700 12px/1 'Plus Jakarta Sans',sans-serif;color:#C7CBF5">SK</div>
+        <div style="display:flex;flex-direction:column;gap:3px"><span style="font:600 13px/1 'Plus Jakarta Sans',sans-serif;color:#FFFFFF">Sunil Kumar</span><span style="font:400 11.5px/1 'Plus Jakarta Sans',sans-serif;color:#9BA2E8">Class 10 · Muzaffarpur</span></div>
+      </div>
+    </div>
+    <div style="border:1px solid #33376E;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:14px;background:#22265A">
+      <div style="font:400 14.5px/1.7 'Plus Jakarta Sans',sans-serif;color:#E4E6F7">“The weekly tests are set exactly like the board paper. By February I had already written the pattern fifteen times, so the real exam felt routine.”</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:34px;height:34px;border-radius:50%;background:#33376E;display:flex;align-items:center;justify-content:center;font:700 12px/1 'Plus Jakarta Sans',sans-serif;color:#C7CBF5">AK</div>
+        <div style="display:flex;flex-direction:column;gap:3px"><span style="font:600 13px/1 'Plus Jakarta Sans',sans-serif;color:#FFFFFF">Anjali Kumari</span><span style="font:400 11.5px/1 'Plus Jakarta Sans',sans-serif;color:#9BA2E8">Class 12 Science · Gaya</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="faq" style="max-width:860px;margin:0 auto;padding:84px 24px">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1.6px;color:#3A3F99;text-transform:uppercase">Questions</div>
+    <div style="font:800 clamp(26px,3vw,34px)/1.2 'Plus Jakarta Sans',sans-serif;letter-spacing:-.9px">Before you enrol</div>
+  </div>
+  <div style="margin-top:32px;display:flex;flex-direction:column;gap:12px">
+    <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="5">
+      <div onClick="{{ f.tap }}" style="{{ f.wrap }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <div style="font:700 15.5px/1.45 'Plus Jakarta Sans',sans-serif;color:#14161C">{{ f.q }}</div>
+          <div style="{{ f.icon }}">+</div>
+        </div>
+        <div style="{{ f.body }}">{{ f.a }}</div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+
+<div style="background:#F7F8FC;border-top:1px solid #EDEFF4">
+  <div style="max-width:1180px;margin:0 auto;padding:72px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div style="font:800 clamp(26px,3vw,36px)/1.2 'Plus Jakarta Sans',sans-serif;letter-spacing:-.9px">Download Akhand Bharat Academy</div>
+      <div style="font:400 15px/1.7 'Plus Jakarta Sans',sans-serif;color:#6A7080;max-width:440px">Free for the first seven days. 42 MB, works on Android 8 and above, and keeps working when the network doesn't.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px">
+        <div style="height:54px;padding:0 22px;border-radius:15px;background:#14161C;color:#FFFFFF;display:flex;align-items:center;gap:11px;cursor:pointer" style-active="transform:scale(.975)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M3.6 2.3 13 11.6l-9.4 9.3A1.9 1.9 0 0 1 3 19.6V3.6c0-.5.2-1 .6-1.3zm11 10.7 2.6 2.6-9.6 5.3zM7.6 3.1l9.6 5.3-2.6 2.6zm11.8 6.6 2.4 1.3c1 .6 1 2 0 2.6l-2.4 1.3-3-3z"/></svg>
+          <div style="display:flex;flex-direction:column;gap:2px"><span style="font:500 9.5px/1 'Plus Jakarta Sans',sans-serif;color:rgba(255,255,255,.7);letter-spacing:.6px">GET IT ON</span><span style="font:700 14px/1 'Plus Jakarta Sans',sans-serif">Google Play</span></div>
+        </div>
+        <div style="height:54px;padding:0 22px;border-radius:15px;border:1px solid #DDE0E8;background:#FFFFFF;display:flex;align-items:center;gap:11px;cursor:pointer" style-hover="background:#F0F1F6">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#14161C"><path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.9-3.5.9s-1.8-.8-3-.8c-1.5 0-2.9.9-3.7 2.3-1.6 2.7-.4 6.8 1.1 9 .8 1.1 1.7 2.3 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7 2-1.1 2.8-2.2c.9-1.2 1.2-2.4 1.2-2.5 0 0-2.4-.9-2.4-3.7zM14.2 5.3c.6-.8 1-1.9.9-3-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-.9 2.9 1 .1 2-.5 2.7-1.3z"/></svg>
+          <div style="display:flex;flex-direction:column;gap:2px"><span style="font:500 9.5px/1 'Plus Jakarta Sans',sans-serif;color:#6A7080;letter-spacing:.6px">DOWNLOAD ON THE</span><span style="font:700 14px/1 'Plus Jakarta Sans',sans-serif">App Store</span></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;border:1px solid #E0E3EC;border-radius:20px;background:#FFFFFF;padding:26px;min-width:0">
+      <div style="font:700 16px/1.3 'Plus Jakarta Sans',sans-serif">Get the download link on WhatsApp</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px;display:flex;align-items:center;height:52px;padding:0 16px;border:1px solid #DDE0E8;border-radius:14px;font:600 15px/1 'Plus Jakarta Sans',sans-serif;color:#9AA0AE">+91 00000 00000</div>
+        <div style="height:52px;padding:0 22px;border-radius:14px;background:#3A3F99;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font:700 14.5px/1 'Plus Jakarta Sans',sans-serif;cursor:pointer" style-active="transform:scale(.975)">Send link</div>
+      </div>
+      <div style="font:400 12px/1.6 'Plus Jakarta Sans',sans-serif;color:#9AA0AE">We only use this number to send the app link and batch updates.</div>
+    </div>
+  </div>
+</div>
+
+<div style="background:#14161C;color:#FFFFFF">
+  <div style="max-width:1180px;margin:0 auto;padding:56px 24px 34px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:36px">
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="32" height="32" viewBox="0 0 76 76" fill="none"><rect x="1.2" y="1.2" width="73.6" height="73.6" rx="22" stroke="#7B80D6" stroke-width="3"/><path d="M22 27h13a7 7 0 0 1 7 7v19a6 6 0 0 0-6-6H22z" fill="#7B80D6"/><path d="M54 27H41a7 7 0 0 0-7 7v19a6 6 0 0 1 6-6h14z" fill="#E07A2F"/></svg>
+        <div style="font:800 15px/1.2 'Plus Jakarta Sans',sans-serif">Akhand Bharat<br>Academy</div>
+      </div>
+      <div style="font:400 12.5px/1.7 'Plus Jakarta Sans',sans-serif;color:#8B90A0;max-width:250px">Bihar Board coaching for Class 9 to 12, built for students studying at home.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:11px">
+      <div style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1.2px;color:#6A7080">COURSES</div>
+      <a href="#courses" style="font:500 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#C9CDD8">Class 9</a>
+      <a href="#courses" style="font:500 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#C9CDD8">Class 10</a>
+      <a href="#courses" style="font:500 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#C9CDD8">Class 11</a>
+      <a href="#courses" style="font:500 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#C9CDD8">Class 12</a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:11px">
+      <div style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1.2px;color:#6A7080">RESOURCES</div>
+      <a href="#features" style="font:500 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#C9CDD8">Previous year papers</a>
+      <a href="#features" style="font:500 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#C9CDD8">Free notes</a>
+      <a href="#features" style="font:500 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#C9CDD8">Exam timetable</a>
+      <a href="#faq" style="font:500 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#C9CDD8">Help centre</a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:11px">
+      <div style="font:700 11px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:1.2px;color:#6A7080">CONTACT</div>
+      <span style="font:500 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#C9CDD8">help@akhandbharat.academy</span>
+      <span style="font:500 13.5px/1 'Plus Jakarta Sans',sans-serif;color:#C9CDD8">+91 98765 43210</span>
+      <span style="font:400 12.5px/1.6 'Plus Jakarta Sans',sans-serif;color:#8B90A0">Boring Road, Patna, Bihar 800001</span>
+    </div>
+  </div>
+  <div style="max-width:1180px;margin:0 auto;padding:18px 24px 40px;border-top:1px solid #262A33;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between">
+    <span style="font:400 12px/1 'Plus Jakarta Sans',sans-serif;color:#6A7080">© 2026 Akhand Bharat Academy. Not affiliated with BSEB.</span>
+    <div style="display:flex;gap:20px"><a href="#faq" style="font:500 12px/1 'Plus Jakarta Sans',sans-serif;color:#8B90A0">Terms of Use</a><a href="#faq" style="font:500 12px/1 'Plus Jakarta Sans',sans-serif;color:#8B90A0">Privacy Policy</a><a href="#faq" style="font:500 12px/1 'Plus Jakarta Sans',sans-serif;color:#8B90A0">Refund Policy</a></div>
+  </div>
+</div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showPromoBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Page&quot;},&quot;showAppPreview&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Page&quot;}}">
+class Component extends DCLogic {
+  state = { open: 0 };
+  renderVals() {
+    const data = [
+      ["Are classes in Hindi or English?", "Every batch is taught in Hindi medium by default, and each subject also has a full English medium track. You can switch medium any time from your profile without paying again."],
+      ["What if I miss a live class?", "The recording is posted the same night and stays available for the full year. Notes and the class doubt thread are attached to it, so nothing is lost."],
+      ["Does the app work on slow internet?", "Yes. Classes play at 240p on weak networks, and anything you download over Wi-Fi plays with no connection at all."],
+      ["Is there a free trial?", "The first seven days are free, including live classes, notes and one weekly test. No payment details are needed to start."],
+      ["Can I get a refund?", "Full refund within 14 days of purchase if you have watched less than four hours of class content. Write to help@akhandbharat.academy and it is processed in five working days."]
+    ];
+    return {
+      showPromoBar: this.props.showPromoBar ?? true,
+      showAppPreview: this.props.showAppPreview ?? true,
+      faqs: data.map(([q, a], i) => {
+        const on = this.state.open === i;
+        return {
+          q, a,
+          tap: () => this.setState(s => ({ open: s.open === i ? -1 : i })),
+          wrap: `border:1px solid ${on ? "#C9CCEC" : "#E8EAF0"};border-radius:18px;background:${on ? "#FBFBFF" : "#FFFFFF"};padding:20px 22px;display:flex;flex-direction:column;gap:${on ? "12px" : "0px"};cursor:pointer;transition:border-color .15s ease,background .15s ease`,
+          icon: `width:26px;height:26px;flex:none;border-radius:8px;background:${on ? "#3A3F99" : "#F2F3F8"};color:${on ? "#FFFFFF" : "#6A7080"};display:flex;align-items:center;justify-content:center;font:600 17px/1 'Plus Jakarta Sans',sans-serif;transform:rotate(${on ? "45deg" : "0deg"});transition:transform .18s ease`,
+          body: on
+            ? "font:400 14.5px/1.7 'Plus Jakarta Sans',sans-serif;color:#5A6070;max-width:620px"
+            : "display:none"
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

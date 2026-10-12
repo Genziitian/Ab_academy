@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 28px;font-family:'Plus Jakarta Sans',system-ui,sans-serif">
+  <div style="font-size:13px;font-weight:700;letter-spacing:.2px;color:{{ ink }}">9:41</div>
+  <div style="display:flex;align-items:center;gap:6px;color:{{ ink }}">
+    <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="7" width="3" height="4" rx="1" fill="currentColor"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="currentColor"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="currentColor"/></svg>
+    <svg width="16" height="11" viewBox="0 0 16 12" fill="none"><path d="M1 4.2a10 10 0 0 1 14 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3.8 7a6 6 0 0 1 8.4 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="10" r="1.3" fill="currentColor"/></svg>
+    <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.6" y="0.6" width="20" height="10.8" rx="3.2" stroke="currentColor" stroke-opacity=".4" stroke-width="1.2"/><rect x="2.4" y="2.4" width="14.5" height="7.2" rx="2" fill="currentColor"/><path d="M22.4 4.2v3.6a2 2 0 0 0 0-3.6Z" fill="currentColor" fill-opacity=".5"/></svg>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:44},&quot;dark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() { return { ink: this.props.dark ? '#FFFFFF' : '#14161C' }; }
+}
+</script>
+</body>
+</html>

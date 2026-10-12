@@ -11,6 +11,14 @@ import '../../widgets/buttons.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 
+const _categories = [
+  TicketCategory.payment,
+  TicketCategory.technical,
+  TicketCategory.content,
+  TicketCategory.other,
+];
+
+/// 22 · Raise a ticket.
 class NewTicketScreen extends ConsumerStatefulWidget {
   const NewTicketScreen({super.key});
 
@@ -37,79 +45,93 @@ class _NewTicketScreenState extends ConsumerState<NewTicketScreen> {
     super.dispose();
   }
 
-  bool get _canSubmit => _subject.text.trim().isNotEmpty && _body.text.trim().isNotEmpty;
+  bool get _canSubmit =>
+      _subject.text.trim().isNotEmpty && _body.text.trim().isNotEmpty;
 
   void _submit() {
     if (!_canSubmit) return;
     final id = ref
         .read(ticketsProvider.notifier)
-        .open(subject: _subject.text.trim(), category: _category, body: _body.text.trim());
+        .open(
+          subject: _subject.text.trim(),
+          category: _category,
+          body: _body.text.trim(),
+        );
     // Replace this screen so Back from the ticket lands on the list.
     context.pushReplacement(Routes.ticket(id));
   }
 
   @override
   Widget build(BuildContext context) {
+    final label = AppText.tabular(13, FontWeight.w500);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            const AppTopBar(title: 'New ticket'),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                children: [
-                  Text('What is this about?', style: AppText.cardTitle),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final category in TicketCategory.values)
-                        FilterChipPill(
-                          label: category.label,
-                          selected: _category == category,
-                          onTap: () => setState(() => _category = category),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 22),
-                  Text('Subject', style: AppText.cardTitle),
-                  const SizedBox(height: 10),
-                  AppTextField(controller: _subject, hint: 'Summarise the problem in one line'),
-                  const SizedBox(height: 22),
-                  Text('Details', style: AppText.cardTitle),
-                  const SizedBox(height: 10),
-                  AppTextField(
-                    controller: _body,
-                    hint: 'Tell us what happened, and what you expected instead.',
-                    maxLines: 8,
-                    minLines: 5,
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Our support team replies within one working day.',
-                    style: AppText.metaSm.copyWith(height: 1.5),
-                  ),
-                ],
+      backgroundColor: AppColors.surface,
+      appBar: const AppTopBar(title: 'Raise a ticket', closeIcon: true),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Text('Category', style: label),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final c in _categories)
+                ChoiceChipPill(
+                  label: c.label,
+                  selected: _category == c,
+                  onTap: () => setState(() => _category = c),
+                ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Text('Subject', style: label),
+          const SizedBox(height: 6),
+          AppTextField(
+            controller: _subject,
+            hint: 'Briefly describe the issue',
+          ),
+          const SizedBox(height: 18),
+          Text('Details', style: label),
+          const SizedBox(height: 6),
+          AppTextField(
+            controller: _body,
+            hint: 'Include order ID, course name or screenshots where helpful',
+            maxLines: 7,
+            minLines: 5,
+          ),
+          const SizedBox(height: 18),
+          OutlinedButton(
+            onPressed: () =>
+                showDemoSnack(context, 'Screenshot upload is coming soon.'),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(48),
+              side: const BorderSide(color: AppColors.primaryTintBorder),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
               ),
             ),
-            Container(
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(top: BorderSide(color: AppColors.divider)),
-              ),
-              padding: EdgeInsets.fromLTRB(
-                20,
+            child: Text(
+              '+ Attach screenshot',
+              style: AppText.tabular(
                 14,
-                20,
-                MediaQuery.viewPaddingOf(context).bottom + 14,
+                FontWeight.w600,
+                color: AppColors.primary,
               ),
-              child: PrimaryButton(label: 'Submit ticket', enabled: _canSubmit, onPressed: _submit),
             ),
-          ],
+          ),
+        ],
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+        child: SafeArea(
+          top: false,
+          child: PrimaryButton(
+            label: 'Submit ticket',
+            enabled: _canSubmit,
+            onPressed: _submit,
+          ),
         ),
       ),
     );

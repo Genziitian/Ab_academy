@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans',sans-serif;color:#0f1b2d;background:#f7f8fc;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="display:flex;min-height:100vh;font-family:'IBM Plex Sans',sans-serif">
+  <dc-import name="PortalSidebar" active="courses" hint-size="248px,100vh"></dc-import>
+  <div style="flex:1;min-width:0">
+    <dc-import name="PortalTopbar" title="My Courses" crumb="Student portal" hint-size="100%,68px"></dc-import>
+    <div style="padding:28px 32px 48px;max-width:1280px">
+      <div style="display:flex;gap:12px">
+        <sc-for list="{{ courses }}" as="c" hint-placeholder-count="2">
+          <button onClick="{{ c.pick }}" style="{{ c.style }}">
+            <span style="display:block;font-size:11px;font-weight:600;letter-spacing:0.06em;color:#6b7a90">{{ c.batch }}</span>
+            <span style="display:block;margin-top:4px;font-size:16px;font-weight:600;color:#122046">{{ c.title }}</span>
+            <span style="display:flex;align-items:center;gap:10px;margin-top:12px"><span style="flex:1;height:6px;border-radius:3px;background:#edeff4;overflow:hidden"><span style="{{ c.bar }}"></span></span><span style="font-size:13px;font-weight:700;color:#2962ff">{{ c.pct }}%</span></span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="margin-top:24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,300px);gap:24px;align-items:start">
+        <section style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+          <div style="padding:20px 24px;border-bottom:1px solid #e6ebf5;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px 16px">
+            <div><h2 style="margin:0;font-size:18px;font-weight:600;color:#122046">Curriculum</h2><p style="margin:3px 0 0;font-size:13px;color:#6b7a90">{{ sel.chapters }} · {{ sel.next }}</p></div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ subjects }}" as="s" hint-placeholder-count="5"><button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.name }}</button></sc-for></div>
+          </div>
+          <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="6">
+            <div style="border-bottom:1px solid #eff1f5">
+              <button onClick="{{ ch.toggle }}" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px 24px;border:0;background:#fff;font:inherit;text-align:left;cursor:pointer">
+                <span style="{{ ch.numStyle }}">{{ ch.num }}</span>
+                <span style="flex:1;min-width:0"><span style="display:block;font-size:15px;font-weight:600;color:{{ ch.titleColor }}">{{ ch.title }}</span><span style="font-size:13px;color:#6b7a90;white-space:nowrap">{{ ch.meta }}</span></span>
+                <span style="width:72px;flex-shrink:0;height:4px;border-radius:2px;background:#edeff4;overflow:hidden"><span style="{{ ch.bar }}"></span></span>
+                <span style="width:16px;font-size:16px;color:#6b7a90">{{ ch.sign }}</span>
+              </button>
+              <sc-if value="{{ ch.open }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:0 24px 16px 70px;display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ ch.lessons }}" as="l" hint-placeholder-count="5">
+                    <a href="{{ l.href }}" style="{{ l.rowStyle }}">
+                      <span style="{{ l.iconStyle }}">{{ l.icon }}</span>
+                      <span style="flex:1;min-width:0"><span style="display:block;font-size:14px;font-weight:600;color:#122046">{{ l.title }}</span><span style="font-size:12px;color:{{ l.metaColor }}">{{ l.meta }}</span></span>
+                      <span style="font-size:13px;font-weight:600;color:{{ l.ctaColor }}">{{ l.cta }}</span>
+                    </a>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </section>
+
+        <aside style="display:flex;flex-direction:column;gap:16px">
+          <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:20px">
+            <h3 style="margin:0;font-size:15px;font-weight:600;color:#122046">Course details</h3>
+            <div style="margin-top:14px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center">
+              <div style="padding:12px 4px;border-radius:8px;background:#f5f8ff"><p style="margin:0;font-size:18px;font-weight:700;color:#122046">{{ sel.lessons }}</p><p style="margin:0;font-size:11px;color:#6b7a90">Lessons</p></div>
+              <div style="padding:12px 4px;border-radius:8px;background:#f5f8ff"><p style="margin:0;font-size:18px;font-weight:700;color:#122046">{{ sel.notes }}</p><p style="margin:0;font-size:11px;color:#6b7a90">Notes</p></div>
+              <div style="padding:12px 4px;border-radius:8px;background:#f5f8ff"><p style="margin:0;font-size:18px;font-weight:700;color:#122046">{{ sel.live }}</p><p style="margin:0;font-size:11px;color:#6b7a90">Live</p></div>
+            </div>
+            <p style="margin:14px 0 0;font-size:13px;line-height:1.55;color:#6b7a90">{{ sel.validity }}</p>
+          </div>
+          <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:20px">
+            <h3 style="margin:0;font-size:15px;font-weight:600;color:#122046">Teachers</h3>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;gap:10px;align-items:center"><span style="width:36px;height:36px;border-radius:50%;background:#e8f0ff;color:#2962ff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">AS</span><div><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Amit Sir</p><p style="margin:0;font-size:12px;color:#6b7a90">Mathematics · 11 yrs</p></div></div>
+              <div style="display:flex;gap:10px;align-items:center"><span style="width:36px;height:36px;border-radius:50%;background:#e8fff6;color:#0f8f81;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">NM</span><div><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Neha Ma'am</p><p style="margin:0;font-size:12px;color:#6b7a90">Science · 8 yrs</p></div></div>
+            </div>
+          </div>
+          <a href="Study Materials.dc.html" style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-radius:12px;background:#e8f0ff;font-size:14px;font-weight:600">All notes for this course <span>→</span></a>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const COURSES = [
+  { batch: 'BIHAR BOARD · 2027 BATCH', title: 'Class 10 Complete Batch', pct: 42, chapters: '12 / 28 chapters', next: 'Next: Mathematics · Quadratic Equations', lessons: 156, notes: 38, live: 24, validity: 'Access until 31 March 2027, including the full board revision series in January.' },
+  { batch: 'BIHAR BOARD · 2027 BATCH', title: 'Mathematics Board Booster', pct: 65, chapters: '13 / 20 chapters', next: 'Next: Trigonometry revision', lessons: 84, notes: 22, live: 16, validity: 'Access until 31 March 2027.' },
+];
+const CH = [
+  { title: 'Real Numbers', done: 3, total: 4, lessons: [
+    { title: 'Class 1 · Introduction to Real Numbers', meta: 'Recorded · 32 min', k: 'done' },
+    { title: "Class 2 · Euclid's Division Lemma", meta: 'Recorded · 48 min', k: 'done' },
+    { title: 'Class 3 · Fundamental Theorem of Arithmetic', meta: 'Recorded · 52 min · Resume at 38:14', k: 'current' },
+    { title: 'Class 4 · Practice Session', meta: 'LIVE · Today 6:00 PM', k: 'live' },
+    { title: 'Chapter 01 Notes', meta: 'PDF · 2.4 MB', k: 'notes' }] },
+  { title: 'Polynomials', done: 1, total: 5 },
+  { title: 'Pair of Linear Equations', done: 0, total: 6 },
+  { title: 'Quadratic Equations', done: 0, total: 5, note: '0 / 5 lessons · live today' },
+  { title: 'Arithmetic Progressions', done: 0, total: 4 },
+  { title: 'Triangles', done: 0, total: 5, locked: 'Unlocks 22 Sept' },
+];
+class Component extends DCLogic {
+  state = { c: 0, open: 0, subj: 'Mathematics' };
+  renderVals() {
+    const s = this.state;
+    const L = {
+      done: { icon: '✓', ib: '#e9f9ef', ic: '#16a34a', cta: 'Rewatch', cc: '#6b7a90', href: 'Lecture.dc.html' },
+      current: { icon: '▶', ib: '#2962ff', ic: '#fff', cta: 'Resume', cc: '#2962ff', href: 'Lecture.dc.html', row: '#f5f8ff' },
+      live: { icon: '●', ib: '#fde8e8', ic: '#c43b3b', cta: 'Join', cc: '#c43b3b', href: 'Live Classroom.dc.html', mc: '#c43b3b' },
+      notes: { icon: 'PDF', ib: '#fde9e9', ic: '#c43b3b', cta: 'Open', cc: '#2962ff', href: 'Study Materials.dc.html' },
+    };
+    return {
+      sel: COURSES[s.c],
+      courses: COURSES.map((c, i) => ({ ...c, pick: () => this.setState({ c: i }), bar: { display: 'block', width: c.pct + '%', height: '100%', background: '#2962ff' },
+        style: { flex: 1, textAlign: 'left', padding: 18, borderRadius: 12, font: 'inherit', cursor: 'pointer', background: '#fff', border: s.c === i ? '2px solid #2962ff' : '1px solid #e6ebf5' } })),
+      subjects: ['Mathematics', 'Science', 'Hindi', 'English', 'Social Science'].map(n => ({ name: n, pick: () => this.setState({ subj: n }),
+        style: { height: 30, padding: '0 10px', whiteSpace: 'nowrap', borderRadius: 6, font: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 0, background: s.subj === n ? '#122046' : '#f2f3f7', color: s.subj === n ? '#fff' : '#4a5872' } })),
+      chapters: CH.map((c, i) => {
+        const open = s.open === i && !!c.lessons;
+        return { ...c, num: c.locked ? '🔒' : String(i + 1).padStart(2, '0'), open, sign: c.lessons ? (open ? '−' : '+') : '',
+          meta: c.locked || c.note || `${c.done} / ${c.total} lessons`, titleColor: c.locked ? '#98a3b6' : '#122046',
+          numStyle: { width: 32, height: 32, borderRadius: 8, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: c.done === c.total ? '#e9f9ef' : '#e8f0ff', color: c.done === c.total ? '#16a34a' : '#2962ff' },
+          bar: { display: 'block', width: (c.done / c.total * 100) + '%', height: '100%', background: '#2962ff' },
+          toggle: () => this.setState({ open: s.open === i ? -1 : i }),
+          lessons: (c.lessons || []).map(l => { const t = L[l.k]; return { ...l, icon: t.icon, cta: t.cta, ctaColor: t.cc, href: t.href, metaColor: t.mc || '#6b7a90',
+            rowStyle: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 8, background: t.row || '#f7f8fc', border: t.row ? '1px solid #c9d6f5' : '1px solid transparent' },
+            iconStyle: { width: 28, height: 28, borderRadius: 6, background: t.ib, color: t.ic, fontSize: l.k === 'notes' ? 9 : 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }; }) };
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>

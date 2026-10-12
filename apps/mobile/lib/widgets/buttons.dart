@@ -4,13 +4,13 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 
-/// Filled indigo CTA. Scales down slightly while pressed, like the design.
+/// Filled blue CTA. Scales down slightly while pressed.
 class PrimaryButton extends StatefulWidget {
   const PrimaryButton({
     super.key,
     required this.label,
     this.onPressed,
-    this.height = 54,
+    this.height = 52,
     this.trailingIcon,
     this.enabled = true,
     this.expand = true,
@@ -39,6 +39,7 @@ class _PrimaryButtonState extends State<PrimaryButton> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         height: widget.height,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
           color: enabled ? AppColors.primary : AppColors.trackMuted,
           borderRadius: AppRadius.button,
@@ -73,21 +74,23 @@ class _PrimaryButtonState extends State<PrimaryButton> {
       onTapUp: enabled ? (_) => setState(() => _pressed = false) : null,
       onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
       onTap: enabled ? widget.onPressed : null,
-      child: widget.expand ? SizedBox(width: double.infinity, child: button) : button,
+      child: widget.expand
+          ? SizedBox(width: double.infinity, child: button)
+          : button,
     );
   }
 }
 
-/// Hairline-outlined button used as the secondary action.
+/// Blue-outlined button used as the secondary action.
 class SecondaryButton extends StatelessWidget {
   const SecondaryButton({
     super.key,
     required this.label,
     this.onPressed,
-    this.height = 50,
+    this.height = 48,
     this.icon,
-    this.foreground = AppColors.ink,
-    this.borderColor = AppColors.borderStrong,
+    this.foreground = AppColors.primary,
+    this.borderColor = AppColors.primaryTintBorder,
   });
 
   final String label;
@@ -108,18 +111,21 @@ class SecondaryButton extends StatelessWidget {
           height: height,
           decoration: BoxDecoration(
             borderRadius: AppRadius.button,
-            border: Border.all(color: borderColor, width: 1.5),
+            border: Border.all(color: borderColor),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[
-                Icon(icon, size: 16, color: AppColors.textMuted),
+                Icon(icon, size: 16, color: foreground),
                 const SizedBox(width: 8),
               ],
               Text(
                 label,
-                style: AppText.button.copyWith(fontWeight: FontWeight.w600, color: foreground),
+                style: AppText.button.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: foreground,
+                ),
               ),
             ],
           ),
@@ -129,7 +135,7 @@ class SecondaryButton extends StatelessWidget {
   }
 }
 
-/// 40x40 hairline square holding a single icon — back buttons, search, overflow.
+/// 40x40 hairline square holding a single icon — notifications, search, overflow.
 class SquareIconButton extends StatelessWidget {
   const SquareIconButton({
     super.key,
@@ -138,7 +144,7 @@ class SquareIconButton extends StatelessWidget {
     this.size = 40,
     this.iconSize = 18,
     this.color = AppColors.ink,
-    this.background,
+    this.background = AppColors.surface,
     this.borderColor = AppColors.border,
     this.badge = false,
   });
@@ -158,13 +164,13 @@ class SquareIconButton extends StatelessWidget {
       dimension: size,
       child: Material(
         color: background ?? Colors.transparent,
-        borderRadius: AppRadius.xs,
+        borderRadius: AppRadius.sm,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: AppRadius.xs,
+          borderRadius: AppRadius.sm,
           child: Ink(
             decoration: BoxDecoration(
-              borderRadius: AppRadius.xs,
+              borderRadius: AppRadius.sm,
               border: Border.all(color: borderColor),
             ),
             child: Stack(
@@ -194,14 +200,14 @@ class SquareIconButton extends StatelessWidget {
   }
 }
 
-/// Indigo text link, e.g. "Continue →", "See all", "View Calendar →".
+/// Blue text link, e.g. "Continue →", "See all", "Calendar →".
 class TextActionButton extends StatelessWidget {
   const TextActionButton({
     super.key,
     required this.label,
     this.onPressed,
     this.color = AppColors.primary,
-    this.fontSize = 12.5,
+    this.fontSize = 13,
   });
 
   final String label;
@@ -214,7 +220,10 @@ class TextActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onPressed,
       behavior: HitTestBehavior.opaque,
-      child: Text(label, style: AppText.tabular(fontSize, FontWeight.w700, color: color)),
+      child: Text(
+        label,
+        style: AppText.tabular(fontSize, FontWeight.w600, color: color),
+      ),
     );
   }
 }

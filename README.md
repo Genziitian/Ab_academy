@@ -35,13 +35,17 @@ To run either against a real project, see **[docs/RELEASE.md](docs/RELEASE.md)**
 
 ### Database — `supabase/migrations`
 
-27 tables with row-level security on every one of them, 62 policies, 4 storage
-buckets. Three migrations, applied in order:
+Row-level security on every table. Ten migrations, applied in order (the full
+list is in `docs/RELEASE.md` step 2):
 
 1. `20260315000100` — profiles, courses, curriculum, enrolments, orders
 2. `20260917000100` — notifications, communities, tickets, lecture discussion
 3. `20261006000100` — popups, device tokens, push log, doubt queue, storage
    buckets, **every staff write policy**, and a privilege-escalation fix
+4. `20261009000100` → `20261014000100` — profile email, app slider, Razorpay
+   orders, hidden video ids, Google Drive notes
+5. `20261015000100` → `20261015000300` — random course and student codes,
+   super-admin-only transactions, and the launch catalog with demo lectures
 
 > Migration 3 is not optional. Migrations 1 and 2 enable RLS but define
 > `select` policies only, so without it every admin write is denied. It also
@@ -49,30 +53,43 @@ buckets. Three migrations, applied in order:
 
 ### Website + admin console
 
+The public site (Home, Courses, Course page, Notes, For Students, About,
+Contact, Privacy, Terms) and a student portal (Dashboard, My Courses, Lecture,
+Live Classes, Live Classroom, Calendar, Study Materials, Downloads,
+Notifications, Help & Support, Profile, Checkout) follow the 2026 redesign in
+`EdTech Platform Website Redesign/`. Portal pages require sign-in when Supabase
+is configured; their course, schedule and notes content is still sample data
+(`apps/web/src/lib/portal/data.ts`) until it is wired to enrolments.
+
 Real Supabase auth. `/admin` is gated by middleware and by `requireAdmin()`,
-and enforced a third time by RLS in Postgres. Ten sections:
+and enforced a third time by RLS in Postgres. Eleven sections:
 
 | Section | Does |
 |---|---|
 | Dashboard | live counts across every domain |
-| Courses | create, price, publish, assign teachers |
-| Students | search, edit class/medium/school, grant course access by hand |
+| Courses | create, edit, price, publish, assign teachers; shows each course's random code |
+| Students | search (also by student code), edit class/medium/school, grant course access by hand |
 | Content | lessons with YouTube or uploaded video, notes PDFs per lesson |
 | Schedule | live classes, mapped onto `live_sessions` |
 | Doubts | queue of lecture questions, reply and mark answered |
-| Communities | one per course, post and pin announcements, delete messages |
 | Tickets | support queue with replies and status |
 | Notifications | compose, target, deep link, send as push |
 | Popups | scheduled interstitials with targeting and view/click counts |
+| App slider | course slides for the app's Home and Courses store — artwork, link, order, schedule |
+| Transactions | **super admin only** — every checkout with its Razorpay payments, revenue by day and by course, conversion, CSV export |
 
-Teachers (`is_staff`) can manage content, schedule, doubts and communities.
+Teachers (`is_staff`) can manage content, schedule and doubts.
 Courses, pricing and enrolments are admin-only (`is_admin`).
 
 ### Mobile app
 
-27 screens. Supabase is wired for auth (phone OTP + Google), the catalog,
-curriculum, recordings and notes over signed URLs, lecture discussion,
-communities with realtime, tickets, notifications and popups. FCM push
+26 screens, redesigned to match the website (IBM Plex, blue/navy). The
+community feature was removed; students ask doubts under each lecture and get
+help through support tickets. Bottom tabs are Home, Courses (store + My
+courses), Academics (live, calendar, notes) and Profile. Paid courses are sold
+in the app through Razorpay via the `checkout` Edge Function. Supabase is wired for auth (phone OTP + Google), the catalog, My
+Courses, the course page and curriculum, recordings and notes over signed URLs,
+tickets, notifications and popups. FCM push
 registers a device token on launch and claims it at sign-in.
 
 Without `--dart-define` values the app falls back to mock data, so the test

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { deleteCourse, saveCourse } from "@/lib/admin/data";
 import { requireFullAdmin } from "@/lib/admin/auth";
 
@@ -27,11 +28,18 @@ export async function saveCourseAction(formData: FormData) {
     originalPriceInr: Number(formData.get("originalPriceInr") ?? 0),
     subjects,
     teachers,
+    description: String(formData.get("description") ?? "").trim(),
+    highlights: String(formData.get("highlights") ?? "")
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean),
     isPublished: formData.get("isPublished") === "on",
   });
 
   revalidatePath("/admin/courses");
   revalidatePath("/admin");
+  revalidatePath("/courses");
+  if (id) redirect("/admin/courses");
 }
 
 export async function deleteCourseAction(formData: FormData) {

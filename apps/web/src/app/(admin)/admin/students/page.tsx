@@ -37,7 +37,7 @@ export default async function AdminStudentsPage({
           <input
             name="q"
             defaultValue={q ?? ""}
-            placeholder="Name, phone or email"
+            placeholder="Name, phone, email or student code"
             className="mt-1 w-64 rounded-xl border border-border bg-surface px-3 py-2 text-sm text-navy outline-none focus:border-primary"
           />
         </label>
@@ -97,6 +97,7 @@ export default async function AdminStudentsPage({
                     <tr key={student.id}>
                       <td className="py-3 pr-3">
                         <p className="font-medium text-navy">{student.fullName}</p>
+                        <p className="font-mono text-xs text-primary">{student.studentCode}</p>
                         <p className="text-xs text-muted">
                           {student.phone ?? student.email ?? "no contact"}
                         </p>
@@ -153,8 +154,10 @@ export default async function AdminStudentsPage({
                   Edit {editing.fullName}
                 </h2>
                 <p className="mb-4 text-xs text-muted">
-                  Phone and email come from the sign-in provider and cannot be
-                  changed here.
+                  Student code{" "}
+                  <span className="font-mono text-primary">{editing.studentCode}</span>.
+                  It, the phone and the email are fixed and cannot be changed
+                  here.
                 </p>
                 <form action={saveStudentAction} className="space-y-3">
                   <input type="hidden" name="id" value={editing.id} />

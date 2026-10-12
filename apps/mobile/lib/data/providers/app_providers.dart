@@ -44,7 +44,11 @@ class SessionNotifier extends Notifier<Student?> {
     }
   }
 
-  Future<void> applySetup({int? classLevel, String? stream, String? medium}) async {
+  Future<void> applySetup({
+    int? classLevel,
+    String? stream,
+    String? medium,
+  }) async {
     state = (state ?? MockData.student).copyWith(
       classLevel: classLevel,
       stream: stream,
@@ -67,10 +71,14 @@ class SessionNotifier extends Notifier<Student?> {
   }
 }
 
-final sessionProvider = NotifierProvider<SessionNotifier, Student?>(SessionNotifier.new);
+final sessionProvider = NotifierProvider<SessionNotifier, Student?>(
+  SessionNotifier.new,
+);
 
 /// The mock user, whether or not they've "signed in" — screens always have data to render.
-final studentProvider = Provider<Student>((ref) => ref.watch(sessionProvider) ?? MockData.student);
+final studentProvider = Provider<Student>(
+  (ref) => ref.watch(sessionProvider) ?? MockData.student,
+);
 
 // ------------------------------------------------------------- onboarding
 
@@ -78,7 +86,7 @@ class OnboardingState {
   const OnboardingState({
     this.phone = '',
     this.otp = '',
-    this.classLevel = 10,
+    this.classLevel = 12,
     this.stream = 'Science',
     this.medium = 'Hindi',
   });
@@ -126,6 +134,14 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
 
   void clearOtp() => state = state.copyWith(otp: '');
 
+  /// Replaces the whole code, e.g. from the system keyboard or an SMS autofill.
+  void setOtp(String value) {
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    state = state.copyWith(
+      otp: digits.length > 6 ? digits.substring(0, 6) : digits,
+    );
+  }
+
   void setClassLevel(int value) => state = state.copyWith(classLevel: value);
 
   void setStream(String value) => state = state.copyWith(stream: value);
@@ -133,33 +149,32 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   void setMedium(String value) => state = state.copyWith(medium: value);
 }
 
-final onboardingProvider = NotifierProvider<OnboardingNotifier, OnboardingState>(
-  OnboardingNotifier.new,
-);
+final onboardingProvider =
+    NotifierProvider<OnboardingNotifier, OnboardingState>(
+      OnboardingNotifier.new,
+    );
 
 // ---------------------------------------------------------------- catalog
 
 final coursesProvider = Provider<List<Course>>((ref) => MockData.courses);
 
 final courseByIdProvider = Provider.family<Course, String>((ref, id) {
-  return MockData.courses.firstWhere((c) => c.id == id, orElse: () => MockData.completeBatch);
+  return MockData.catalog.firstWhere(
+    (c) => c.id == id,
+    orElse: () => MockData.scienceCrash,
+  );
 });
 
 /// "All" | "In Progress" | "Completed" chips on My Courses.
+/// "Enrolled" | "Completed" segmented control on My Courses.
 final courseFilterProvider = NotifierProvider<SelectionNotifier, String>(
-  () => SelectionNotifier('All'),
+  () => SelectionNotifier('Enrolled'),
 );
 
-final filteredCoursesProvider = Provider<List<Course>>((ref) {
-  final filter = ref.watch(courseFilterProvider);
-  final courses = ref.watch(coursesProvider);
-  return switch (filter) {
-    'In Progress' =>
-      courses.where((c) => c.progressPercent > 0 && c.progressPercent < 100).toList(),
-    'Completed' => courses.where((c) => c.progressPercent >= 100).toList(),
-    _ => courses,
-  };
-});
+/// Class and stream chips on the Explore screen.
+final exploreFilterProvider = NotifierProvider<SelectionNotifier, String>(
+  () => SelectionNotifier('All'),
+);
 
 /// Overview / Classes / Notes / Tests tabs on Course details.
 final courseDetailTabProvider = NotifierProvider<SelectionNotifier, String>(
@@ -168,7 +183,7 @@ final courseDetailTabProvider = NotifierProvider<SelectionNotifier, String>(
 
 /// Subject chips on the Curriculum screen.
 final curriculumSubjectProvider = NotifierProvider<SelectionNotifier, String>(
-  () => SelectionNotifier('Mathematics'),
+  () => SelectionNotifier('Physics'),
 );
 
 /// Chat / Questions / Notes tabs in the live classroom panel.
@@ -194,26 +209,41 @@ final materialsFilterProvider = NotifierProvider<SelectionNotifier, String>(
   () => SelectionNotifier('All'),
 );
 
-final filteredMaterialsProvider = Provider<List<StudyMaterial>>((ref) {
-  final filter = ref.watch(materialsFilterProvider);
-  if (filter == 'All') return MockData.materials;
-  return MockData.materials.where((m) => m.subject == filter).toList();
-});
-
 // --------------------------------------------------------------- calendar
 
 final calendarFilterProvider = NotifierProvider<SelectionNotifier, String>(
   () => SelectionNotifier('All'),
 );
 
-class CalendarDayNotifier extends Notifier<int> {
+/// Selected calendar date (midnight, local time). Defaults to today.
+class CalendarDayNotifier extends Notifier<DateTime> {
   @override
-  int build() => 14;
+  DateTime build() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
 
-  void select(int day) => state = day;
+  void select(DateTime day) => state = DateTime(day.year, day.month, day.day);
 }
 
-final calendarDayProvider = NotifierProvider<CalendarDayNotifier, int>(CalendarDayNotifier.new);
+final calendarDayProvider = NotifierProvider<CalendarDayNotifier, DateTime>(
+  CalendarDayNotifier.new,
+);
+
+/// First day of the month the calendar grid is showing.
+class CalendarMonthNotifier extends Notifier<DateTime> {
+  @override
+  DateTime build() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month);
+  }
+
+  void shift(int months) => state = DateTime(state.year, state.month + months);
+}
+
+final calendarMonthProvider = NotifierProvider<CalendarMonthNotifier, DateTime>(
+  CalendarMonthNotifier.new,
+);
 
 // ---------------------------------------------------------- notifications
 
@@ -243,9 +273,10 @@ class NotificationsNotifier extends Notifier<List<AppNotification>> {
   }
 }
 
-final notificationsProvider = NotifierProvider<NotificationsNotifier, List<AppNotification>>(
-  NotificationsNotifier.new,
-);
+final notificationsProvider =
+    NotifierProvider<NotificationsNotifier, List<AppNotification>>(
+      NotificationsNotifier.new,
+    );
 
 final unreadCountProvider = Provider<int>(
   (ref) => ref.watch(notificationsProvider).where((n) => n.isUnread).length,
@@ -260,9 +291,10 @@ class DownloadsNotifier extends Notifier<List<DownloadItem>> {
   void remove(String id) => state = state.where((d) => d.id != id).toList();
 }
 
-final downloadsProvider = NotifierProvider<DownloadsNotifier, List<DownloadItem>>(
-  DownloadsNotifier.new,
-);
+final downloadsProvider =
+    NotifierProvider<DownloadsNotifier, List<DownloadItem>>(
+      DownloadsNotifier.new,
+    );
 
 // --------------------------------------------------------------- checkout
 
@@ -279,7 +311,9 @@ class PushToggleNotifier extends Notifier<bool> {
   void toggle() => state = !state;
 }
 
-final pushEnabledProvider = NotifierProvider<PushToggleNotifier, bool>(PushToggleNotifier.new);
+final pushEnabledProvider = NotifierProvider<PushToggleNotifier, bool>(
+  PushToggleNotifier.new,
+);
 
 // ------------------------------------------------------------------ utils
 
