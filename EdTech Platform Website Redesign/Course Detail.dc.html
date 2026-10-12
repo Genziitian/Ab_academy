@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500;600&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',sans-serif;color:#0f1b2d;background:#f7f8fc;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<dc-import name="SiteHeader" active="courses" hint-size="100%,68px"></dc-import>
+<main style="font-family:'IBM Plex Sans',sans-serif">
+  <section style="background:#122046;color:#fff">
+    <div style="max-width:1200px;margin:0 auto;padding:32px 24px 48px;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,360px);gap:40px">
+      <div>
+        <nav style="font-size:13px;color:#9aa7c2;display:flex;gap:8px"><a href="Courses.dc.html" style="color:#9aa7c2">Courses</a><span>›</span><span>Class 12</span><span>›</span><span style="color:#fff">Class 12 Science Crash Course 2027</span></nav>
+        <div style="margin-top:24px;display:flex;flex-wrap:wrap;gap:8px"><span style="white-space:nowrap;padding:4px 10px;border-radius:6px;background:#2962ff;font-size:12px;font-weight:600">90-day crash course</span><span style="white-space:nowrap;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,0.1);font-size:12px;font-weight:600">Bihar Board · Hindi + English</span><span style="white-space:nowrap;padding:4px 10px;border-radius:6px;background:#ff8a3d;font-size:12px;font-weight:600;color:#122046">Bestseller</span></div>
+        <h1 style="margin:18px 0 0;font-size:40px;line-height:1.15;font-weight:700;letter-spacing:-0.02em">Class 12 Science Crash Course 2027</h1>
+        <p style="margin:14px 0 0;font-family:'IBM Plex Sans Devanagari',sans-serif;font-size:16px;line-height:1.6;color:#c8d1e4">कक्षा 12 विज्ञान — 90 दिनों में पूरा सिलेबस, लाइव कक्षाएँ, रिकॉर्डिंग और नोट्स।</p>
+        <div style="margin-top:18px;display:flex;align-items:center;gap:12px;font-size:14px;color:#c8d1e4"><span style="font-weight:700;color:#ffc56b">★ 4.8</span><span>(1,260 reviews)</span><span>·</span><span style="font-weight:600;color:#fff">Senior Faculty</span><span>PCM / PCB Mentors</span></div>
+        <div style="margin-top:28px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid rgba(255,255,255,0.12);border-radius:10px">
+          <div style="padding:14px 18px;border-right:1px solid rgba(255,255,255,0.12)"><p style="margin:0;font-size:20px;font-weight:700">120+</p><p style="margin:2px 0 0;font-size:12px;color:#9aa7c2">Lectures</p></div>
+          <div style="padding:14px 18px;border-right:1px solid rgba(255,255,255,0.12)"><p style="margin:0;font-size:20px;font-weight:700">90</p><p style="margin:2px 0 0;font-size:12px;color:#9aa7c2">Day plan</p></div>
+          <div style="padding:14px 18px;border-right:1px solid rgba(255,255,255,0.12)"><p style="margin:0;font-size:20px;font-weight:700">3,000+</p><p style="margin:2px 0 0;font-size:12px;color:#9aa7c2">Questions</p></div>
+          <div style="padding:14px 18px"><p style="margin:0;font-size:20px;font-weight:700">Bilingual</p><p style="margin:2px 0 0;font-size:12px;color:#9aa7c2">Language</p></div>
+        </div>
+      </div>
+      <div></div>
+    </div>
+  </section>
+
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px 72px;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,360px);gap:40px;align-items:start">
+    <div style="padding-top:40px">
+      <div style="position:relative;border-radius:12px;overflow:hidden;aspect-ratio:16/9;background:#122046"><img src="apps/web/public/images/feature-live-class.png" alt="Course preview" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.9"><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><span style="width:64px;height:64px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,0.25)"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#2962ff"></path></svg></span></div><span style="position:absolute;left:16px;bottom:16px;padding:4px 10px;border-radius:6px;background:rgba(18,32,70,0.8);color:#fff;font-size:12px;font-weight:600">Watch free preview · 4:12</span></div>
+
+      <section style="margin-top:48px">
+        <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-0.01em;color:#122046">Course Highlights &amp; Deliverables</h2>
+        <div style="margin-top:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+          <sc-for list="{{ deliverables }}" as="d" hint-placeholder-count="6">
+            <div style="display:flex;gap:14px;padding:18px;background:#fff;border:1px solid #e6ebf5;border-radius:10px"><svg width="20" height="20" viewBox="0 0 18 18" fill="none" style="flex-shrink:0;margin-top:1px"><circle cx="9" cy="9" r="9" fill="#e8f0ff"></circle><path d="M5 9.2 7.6 11.7 13 6.4" stroke="#2962ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg><div><h3 style="margin:0;font-size:15px;font-weight:600;color:#122046">{{ d.title }}</h3><p style="margin:4px 0 0;font-size:14px;line-height:1.55;color:#6b7a90">{{ d.body }}</p></div></div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="margin-top:48px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end"><div><h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-0.01em;color:#122046">Curriculum Structure</h2><p style="margin:6px 0 0;font-size:14px;color:#6b7a90">Physics · 4 units shown · 20 lectures · 9 notes</p></div><button onClick="{{ toggleAll }}" style="border:0;background:none;font:inherit;font-size:14px;font-weight:600;color:#2962ff;cursor:pointer">{{ expandLabel }}</button></div>
+        <div style="margin-top:20px;background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+          <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="4">
+            <div style="border-top:1px solid #e6ebf5">
+              <button onClick="{{ ch.toggle }}" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px 20px;border:0;background:#fff;font:inherit;text-align:left;cursor:pointer">
+                <span style="width:34px;height:34px;border-radius:8px;background:#e8f0ff;color:#2962ff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ ch.num }}</span>
+                <span style="flex:1"><span style="display:block;font-size:15px;font-weight:600;color:#122046">{{ ch.title }}</span><span style="font-size:13px;color:#6b7a90">{{ ch.lectures }} lectures · {{ ch.notes }} notes</span></span>
+                <span style="font-size:18px;color:#6b7a90">{{ ch.sign }}</span>
+              </button>
+              <sc-if value="{{ ch.open }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:4px 20px 16px 68px;display:flex;flex-direction:column;gap:2px">
+                  <sc-for list="{{ ch.lessons }}" as="l" hint-placeholder-count="2">
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;background:#f7f8fc;font-size:14px"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#6b7a90"></path></svg><span style="flex:1;color:#122046">{{ l.title }}</span><span style="font-size:13px;color:#6b7a90">{{ l.duration }}</span><span style="{{ l.noteStyle }}">Notes PDF</span></div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section style="margin-top:48px;padding:28px;background:#fff;border:1px solid #e6ebf5;border-radius:12px;display:grid;grid-template-columns:120px minmax(0,1fr);gap:28px;align-items:center">
+        <div style="width:120px;height:120px;border-radius:12px;background:#2962ff;color:#fff;font-size:34px;font-weight:700;display:flex;align-items:center;justify-content:center">SF</div>
+        <div>
+          <p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#2962ff">Master Faculty</p>
+          <h2 style="margin:4px 0 0;font-size:20px;font-weight:700;color:#122046">Senior Faculty</h2>
+          <p style="margin:2px 0 0;font-size:14px;color:#6b7a90">PCM / PCB Mentors</p>
+          <p style="margin:10px 0 0;font-size:14px;line-height:1.6;color:#4a5872">Subject specialists for Physics, Chemistry, Mathematics and Biology, teaching to the Bihar Board Class 12 pattern.</p>
+          <div style="margin-top:16px;display:flex;gap:28px"><div><p style="margin:0;font-size:18px;font-weight:700;color:#122046">40+</p><p style="margin:0;font-size:12px;color:#6b7a90">Toppers guided</p></div><div><p style="margin:0;font-size:18px;font-weight:700;color:#122046">2k+</p><p style="margin:0;font-size:12px;color:#6b7a90">Alumni</p></div><div><p style="margin:0;font-size:18px;font-weight:700;color:#122046">Board</p><p style="margin:0;font-size:12px;color:#6b7a90">Pass focus</p></div></div>
+        </div>
+      </section>
+
+      <section style="margin-top:48px">
+        <h2 style="margin:0;font-size:24px;font-weight:700;letter-spacing:-0.01em;color:#122046">Frequently Asked Questions</h2>
+        <div style="margin-top:20px;background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+          <sc-for list="{{ faqs }}" as="f" hint-placeholder-count="4">
+            <div style="border-top:1px solid #e6ebf5">
+              <button onClick="{{ f.toggle }}" style="width:100%;display:flex;justify-content:space-between;gap:16px;padding:18px 20px;border:0;background:#fff;font:inherit;font-size:15px;font-weight:600;color:#122046;text-align:left;cursor:pointer">{{ f.q }}<span style="color:#6b7a90">{{ f.sign }}</span></button>
+              <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}"><p style="margin:0;padding:0 20px 18px;font-size:14px;line-height:1.6;color:#6b7a90">{{ f.a }}</p></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+
+    <aside style="position:sticky;top:88px;margin-top:-260px;background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:24px;box-shadow:0 14px 40px rgba(18,32,70,0.1)">
+      <p style="margin:0;padding:8px 12px;border-radius:6px;background:#fff1f0;font-size:13px;font-weight:600;color:#c62828">Special offer available on this batch</p>
+      <div style="margin-top:18px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px"><span style="font-size:34px;font-weight:700;color:#122046;letter-spacing:-0.02em">₹2,499</span><span style="font-size:15px;color:#6b7a90;text-decoration:line-through">₹4,999</span><span style="white-space:nowrap;padding:2px 8px;border-radius:4px;background:#e9f9ef;font-size:12px;font-weight:700;color:#16a34a">50% OFF</span></div>
+      <a href="Checkout.dc.html" style="margin-top:20px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2962ff;color:#fff;font-size:15px;font-weight:600" style-hover="background:#1a4de0;color:#fff">Enroll in Batch Now</a>
+      <a href="Contact.dc.html" style="margin-top:10px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid #c9d6f5;font-size:14px;font-weight:600">Download Syllabus PDF</a>
+      <div style="margin-top:22px;display:flex;flex-direction:column;gap:10px;font-size:14px;color:#4a5872">
+        <div style="display:flex;justify-content:space-between"><span>Live classes</span><span style="font-weight:600;color:#122046">As per batch schedule</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Validity</span><span style="font-weight:600;color:#122046">Until 31 March 2027</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Medium</span><span style="font-weight:600;color:#122046">Hindi + English</span></div>
+      </div>
+      <div style="margin-top:18px;padding-top:18px;border-top:1px solid #e6ebf5;display:flex;flex-direction:column;gap:8px;font-size:14px;color:#4a5872"><span>✓ Board-aligned content</span><span>✓ Access on web and mobile app</span><span>✓ Notes &amp; recordings included</span></div>
+      <div style="margin-top:18px;padding:14px;border-radius:8px;background:#f5f8ff;font-size:14px"><p style="margin:0;font-weight:600;color:#122046">Call student support</p><p style="margin:2px 0 0;color:#6b7a90">+91 90000 00000</p></div>
+    </aside>
+  </div>
+</main>
+<dc-import name="SiteFooter" hint-size="100%,340px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CH = [
+  { title: 'Electric Charges and Fields', lectures: 5, notes: 2, lessons: [{ title: "Coulomb's Law", duration: '22:10', n: 1 }, { title: 'Electric Field Lines', duration: '19:40', n: 1 }, { title: "Gauss's Law", duration: '28:05' }, { title: 'Board Practice Set', duration: '30:40', n: 1 }] },
+  { title: 'Electrostatic Potential and Capacitance', lectures: 5, notes: 2, lessons: [{ title: 'Potential due to a Point Charge', duration: '21:00', n: 1 }, { title: 'Capacitors in Series and Parallel', duration: '26:15' }] },
+  { title: 'Current Electricity', lectures: 6, notes: 3, lessons: [{ title: "Ohm's Law and Resistivity", duration: '20:30', n: 1 }, { title: "Kirchhoff's Rules", duration: '27:00' }] },
+  { title: 'Moving Charges and Magnetism', lectures: 4, notes: 2, lessons: [{ title: 'Biot–Savart Law', duration: '23:45', n: 1 }, { title: "Ampere's Circuital Law", duration: '24:10' }] },
+];
+const FAQ = [
+  { q: 'What is the medium of teaching?', a: 'Most batches are bilingual (Hindi + English). Check each course page for the exact medium.' },
+  { q: 'Can I download lectures?', a: 'Recordings stay inside your enrolled classroom. Offline download for selected content will roll out based on licensing.' },
+  { q: 'Are live classes mandatory?', a: 'No. You can join live or watch the recording later from the same chapter.' },
+  { q: 'Will this work for boards beyond Bihar Board?', a: 'We are launching with Bihar Board first. More boards and domain courses will be added under Akhand Bharat Academy soon.' },
+];
+class Component extends DCLogic {
+  state = { open: [0], all: false, faq: 0 };
+  renderVals() {
+    const s = this.state;
+    const tag = { padding: '2px 8px', borderRadius: 4, background: '#e8f0ff', color: '#2962ff', fontSize: 12, fontWeight: 600 };
+    return {
+      deliverables: [
+        { title: '120+ live crash-course lectures', body: 'Daily live classes across Physics, Chemistry, Maths and Biology with recordings for every chapter.' },
+        { title: '90-day board plan', body: 'Chapter flow mapped to the Class 12 Bihar Board pattern with weekly revision checkpoints.' },
+        { title: 'Practice & OMR-style drills', body: 'Question banks and practice sets to build exam speed and accuracy.' },
+        { title: 'Hand-crafted notes', body: 'PDF notes and important questions for quick revision before exams.' },
+        { title: 'Past paper discussions', body: 'Walkthroughs of previous patterns so students know what examiners expect.' },
+        { title: 'Doubt-clearing support', body: 'Ask doubts during live sessions and through classroom Q&A.' },
+      ],
+      expandLabel: s.all ? 'Collapse all' : 'Expand all chapters',
+      toggleAll: () => this.setState({ all: !s.all, open: s.all ? [] : [0] }),
+      chapters: CH.map((c, i) => { const open = s.all || s.open.includes(i); return { ...c, num: String(i + 1).padStart(2, '0'), open, sign: open ? '−' : '+',
+        toggle: () => this.setState({ open: s.open.includes(i) ? s.open.filter(x => x !== i) : [...s.open, i] }),
+        lessons: c.lessons.map(l => ({ ...l, noteStyle: l.n ? tag : { ...tag, visibility: 'hidden' } })) }; }),
+      faqs: FAQ.map((f, i) => ({ ...f, open: s.faq === i, sign: s.faq === i ? '−' : '+', toggle: () => this.setState({ faq: s.faq === i ? -1 : i }) })),
+    };
+  }
+}
+</script>
+</body>
+</html>

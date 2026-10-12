@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans',sans-serif;color:#0f1b2d;background:#fff;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="min-height:100vh;display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));font-family:'IBM Plex Sans',sans-serif">
+  <div style="background:#122046;color:#fff;padding:40px 56px;display:flex;flex-direction:column">
+    <a href="Home.dc.html" style="display:flex;align-items:center;gap:10px;color:#fff"><span style="width:36px;height:36px;border-radius:8px;background:#2962ff;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3 2 8l10 5 10-5-10-5Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"></path><path d="M5 10.5V16c0 .8 3.1 3 7 3s7-2.2 7-3v-5.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path><path d="M22 8v6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path></svg></span><span style="font-size:16px;font-weight:700">Akhand Bharat Academy</span></a>
+    <div style="margin-top:auto;padding-top:48px">
+      <p style="margin:0;font-family:'IBM Plex Sans Devanagari',sans-serif;font-size:16px;color:#9fb8ff">आज शुरू करें — कल का आत्मविश्वास बनाएँ।</p>
+      <h1 style="margin:14px 0 0;font-size:40px;line-height:1.15;font-weight:700;letter-spacing:-0.02em;max-width:460px">Class 11 &amp; 12 crash courses — live, recorded and notes.</h1>
+      <div style="margin-top:32px;border-radius:12px;overflow:hidden;aspect-ratio:16/10;max-width:520px;background:#1c2c5c"><img src="apps/web/public/images/feature-live-class.png" alt="Live class" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+    </div>
+    <p style="margin:40px 0 0;font-size:13px;color:#8592ad">© 2026 Akhand Bharat Academy</p>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:center;padding:40px">
+    <div style="width:100%;max-width:400px">
+      <sc-if value="{{ isStudent }}" hint-placeholder-val="{{ true }}">
+        <h2 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-0.02em;color:#122046">{{ stepTitle }}</h2>
+        <p style="margin:8px 0 0;font-size:15px;color:#6b7a90">{{ stepSub }}</p>
+        <sc-if value="{{ phoneStep }}" hint-placeholder-val="{{ true }}">
+          <label style="margin-top:28px;display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:500;color:#122046">Mobile number<div style="display:flex;height:48px;border:1px solid #dde0e8;border-radius:8px;overflow:hidden"><span style="padding:0 14px;display:flex;align-items:center;background:#f7f8fc;border-right:1px solid #dde0e8;font-size:15px;color:#4a5872">+91</span><input placeholder="98765 43210" style="flex:1;min-width:0;border:0;padding:0 12px;font:inherit;font-size:15px;outline:none"></div></label>
+          <button onClick="{{ sendOtp }}" style="margin-top:14px;width:100%;height:48px;border:0;border-radius:8px;background:#2962ff;color:#fff;font:inherit;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#1a4de0">Send OTP</button>
+          <div style="margin:22px 0;display:flex;align-items:center;gap:12px"><span style="flex:1;height:1px;background:#e6ebf5"></span><span style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7a90">or</span><span style="flex:1;height:1px;background:#e6ebf5"></span></div>
+          <a href="Dashboard.dc.html" style="width:100%;height:48px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid #dde0e8;border-radius:8px;background:#fff;font-size:15px;font-weight:600;color:#122046;box-sizing:border-box" style-hover="background:#f7f8fc;color:#122046"><svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62Z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.84.86-3.05.86-2.34 0-4.32-1.58-5.03-3.71H.96v2.34A9 9 0 0 0 9 18Z"></path><path fill="#FBBC05" d="M3.97 10.71a5.41 5.41 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.09l3.01-2.34Z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58Z"></path></svg>Continue with Google</a>
+          <p style="margin:18px 0 0;font-size:12px;line-height:1.5;color:#6b7a90;text-align:center">By continuing you agree to our <a href="Legal.dc.html">Terms</a> and <a href="Legal.dc.html">Privacy Policy</a>.</p>
+        </sc-if>
+        <sc-if value="{{ otpStep }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:28px;display:flex;gap:8px"><sc-for list="{{ otpBoxes }}" as="b" hint-placeholder-count="6"><input maxlength="1" value="{{ b.v }}" style="flex:1;min-width:0;height:56px;border:1px solid #dde0e8;border-radius:8px;text-align:center;font:inherit;font-size:22px;font-weight:600;outline:none" style-focus="border-color:#2962ff"></sc-for></div>
+          <p style="margin:12px 0 0;font-size:13px;color:#6b7a90">Didn't get it? <a href="#" style="font-weight:600">Resend in 0:24</a></p>
+          <a href="Dashboard.dc.html" style="margin-top:16px;width:100%;height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:#2962ff;color:#fff;font-size:15px;font-weight:600">Verify &amp; continue</a>
+          <button onClick="{{ back }}" style="margin-top:10px;width:100%;border:0;background:none;font:inherit;font-size:14px;color:#6b7a90;cursor:pointer">Change number</button>
+        </sc-if>
+        <p style="margin:32px 0 0;padding-top:20px;border-top:1px solid #e6ebf5;text-align:center;font-size:13px;color:#6b7a90">Teacher or admin? <button onClick="{{ toStaff }}" style="border:0;background:none;padding:0;font:inherit;font-size:13px;font-weight:600;color:#2962ff;cursor:pointer">Staff sign in</button></p>
+      </sc-if>
+      <sc-if value="{{ isStaff }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ toStudent }}" style="border:0;background:none;padding:0;font:inherit;font-size:14px;color:#6b7a90;cursor:pointer">← Student login</button>
+        <h2 style="margin:20px 0 0;font-size:28px;font-weight:700;letter-spacing:-0.02em;color:#122046">Staff sign in</h2>
+        <p style="margin:8px 0 0;font-size:15px;color:#6b7a90">Teachers and admins reach the admin console here.</p>
+        <label style="margin-top:28px;display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:500;color:#122046">Email<input placeholder="you@akhandbharatacademy.in" style="height:46px;padding:0 12px;border:1px solid #dde0e8;border-radius:8px;font:inherit;font-size:15px;outline:none"></label>
+        <label style="margin-top:14px;display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:500;color:#122046">Password<input type="password" style="height:46px;padding:0 12px;border:1px solid #dde0e8;border-radius:8px;font:inherit;font-size:15px;outline:none"></label>
+        <button style="margin-top:20px;width:100%;height:48px;border:0;border-radius:8px;background:#2962ff;color:#fff;font:inherit;font-size:15px;font-weight:600;cursor:pointer">Sign in</button>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { tab: 'student', step: 'phone' };
+  renderVals() {
+    const s = this.state;
+    return {
+      isStudent: s.tab === 'student', isStaff: s.tab === 'staff',
+      toStaff: () => this.setState({ tab: 'staff' }), toStudent: () => this.setState({ tab: 'student' }),
+      phoneStep: s.step === 'phone', otpStep: s.step === 'otp',
+      stepTitle: s.step === 'phone' ? 'Log in or sign up' : 'Enter the 6-digit OTP',
+      stepSub: s.step === 'phone' ? 'Use your mobile number or Google account.' : 'Sent to +91 98765 43210',
+      sendOtp: () => this.setState({ step: 'otp' }), back: () => this.setState({ step: 'phone' }),
+      otpBoxes: ['4', '8', '1', '', '', ''].map(v => ({ v })),
+    };
+  }
+}
+</script>
+</body>
+</html>

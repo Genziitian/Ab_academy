@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500;600&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',sans-serif;color:#0f1b2d;background:#e9edf4;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="padding:64px;font-family:'IBM Plex Sans',sans-serif">
+  <div style="display:flex;align-items:baseline;gap:16px"><h1 style="margin:0;font-size:32px;font-weight:700;color:#122046">Mobile app · Onboarding</h1><span style="white-space:nowrap;font-size:15px;color:#6b7a90">Splash → Login (phone or Google) → OTP → Class → Stream</span></div>
+  <div style="margin-top:12px;display:flex;gap:16px;font-size:14px"><a href="Mobile App - Learn.dc.html">Learn →</a><a href="Mobile App - Live.dc.html">Live →</a><a href="Mobile App - Library and Account.dc.html">Library &amp; Account →</a><a href="Mobile App - Purchase.dc.html">Purchase →</a></div>
+  <div style="margin-top:40px;display:flex;flex-wrap:wrap;gap:48px">
+
+    <div data-screen-label="01 Splash" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">01 · Splash</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#2962ff;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" dark="{{ true }}" hint-size="100%,44px"></dc-import>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:0 40px">
+          <span style="white-space:nowrap;width:84px;height:84px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center"><svg width="42" height="42" viewBox="0 0 24 24" fill="none"><path d="M12 3 2 8l10 5 10-5-10-5Z" stroke="#2962ff" stroke-width="1.8" stroke-linejoin="round"></path><path d="M5 10.5V16c0 .8 3.1 3 7 3s7-2.2 7-3v-5.5" stroke="#2962ff" stroke-width="1.8" stroke-linecap="round"></path><path d="M22 8v6" stroke="#2962ff" stroke-width="1.8" stroke-linecap="round"></path></svg></span>
+          <p style="margin:24px 0 0;font-size:24px;font-weight:700;letter-spacing:-0.01em">Akhand Bharat Academy</p>
+          <p style="margin:8px 0 0;font-size:15px;color:#dbe6ff">Class 11 &amp; 12 Crash Courses</p>
+        </div>
+        <p style="margin:0 0 48px;text-align:center;font-family:'IBM Plex Sans Devanagari',sans-serif;font-size:14px;color:#c7d6ff">आज शुरू करें — कल का आत्मविश्वास बनाएँ।</p>
+      </div>
+    </div>
+
+    <div data-screen-label="02 Login" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">02 · Login</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#fff;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" hint-size="100%,44px"></dc-import>
+        <div style="flex:1;padding:24px 24px 0;display:flex;flex-direction:column">
+          <div style="border-radius:16px;overflow:hidden;aspect-ratio:16/11;background:#e8f0ff"><img src="apps/web/public/images/hero-students.png" alt="Students" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+          <h2 style="margin:28px 0 0;font-size:26px;font-weight:700;letter-spacing:-0.02em;color:#122046">Log in or sign up</h2>
+          <p style="margin:6px 0 0;font-size:15px;color:#6b7a90">Use your mobile number or Google account.</p>
+          <p style="margin:24px 0 6px;font-size:13px;font-weight:500;color:#122046">Mobile number</p>
+          <div style="display:flex;height:52px;border:1.5px solid #2962ff;border-radius:10px;overflow:hidden"><span style="white-space:nowrap;padding:0 14px;display:flex;align-items:center;background:#f7f8fc;border-right:1px solid #dde0e8;font-size:16px;color:#4a5872">+91</span><span style="white-space:nowrap;flex:1;display:flex;align-items:center;padding:0 12px;font-size:16px;color:#122046">98765 43210</span></div>
+          <div style="margin-top:14px;height:52px;border-radius:10px;background:#2962ff;color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center">Send OTP</div>
+          <div style="margin:20px 0;display:flex;align-items:center;gap:12px"><span style="white-space:nowrap;flex:1;height:1px;background:#e6ebf5"></span><span style="white-space:nowrap;font-size:12px;letter-spacing:0.08em;color:#6b7a90">OR</span><span style="white-space:nowrap;flex:1;height:1px;background:#e6ebf5"></span></div>
+          <div style="height:52px;border-radius:10px;border:1px solid #dde0e8;display:flex;align-items:center;justify-content:center;gap:10px;font-size:16px;font-weight:600;color:#122046"><svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.91c1.7-1.57 2.69-3.88 2.69-6.62Z"></path><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.26c-.81.54-1.84.86-3.05.86-2.34 0-4.32-1.58-5.03-3.71H.96v2.34A9 9 0 0 0 9 18Z"></path><path fill="#FBBC05" d="M3.97 10.71a5.41 5.41 0 0 1 0-3.42V4.96H.96a9 9 0 0 0 0 8.09l3.01-2.34Z"></path><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.96l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58Z"></path></svg>Continue with Google</div>
+          <p style="margin:auto 0 36px;font-size:12px;line-height:1.5;color:#6b7a90;text-align:center">By continuing you agree to our <span style="white-space:nowrap;color:#2962ff">Terms</span> and <span style="white-space:nowrap;color:#2962ff">Privacy Policy</span>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="03 OTP" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">03 · Verify OTP</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#fff;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" hint-size="100%,44px"></dc-import>
+        <div style="flex:1;padding:16px 24px 0;display:flex;flex-direction:column">
+          <span style="white-space:nowrap;width:40px;height:40px;border-radius:10px;border:1px solid #e6ebf5;display:flex;align-items:center;justify-content:center;font-size:18px;color:#122046">←</span>
+          <h2 style="margin:28px 0 0;font-size:26px;font-weight:700;letter-spacing:-0.02em;color:#122046">Enter the 6-digit OTP</h2>
+          <p style="margin:6px 0 0;font-size:15px;color:#6b7a90">Sent to +91 98765 43210 · <span style="white-space:nowrap;color:#2962ff;font-weight:600">Edit</span></p>
+          <div style="margin-top:32px;display:flex;gap:8px">
+            <span style="white-space:nowrap;flex:1;height:58px;border:1px solid #dde0e8;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#122046">4</span>
+            <span style="white-space:nowrap;flex:1;height:58px;border:1px solid #dde0e8;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#122046">8</span>
+            <span style="white-space:nowrap;flex:1;height:58px;border:1px solid #dde0e8;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#122046">1</span>
+            <span style="white-space:nowrap;flex:1;height:58px;border:1.5px solid #2962ff;border-radius:10px;background:#f5f8ff"></span>
+            <span style="white-space:nowrap;flex:1;height:58px;border:1px solid #dde0e8;border-radius:10px"></span>
+            <span style="white-space:nowrap;flex:1;height:58px;border:1px solid #dde0e8;border-radius:10px"></span>
+          </div>
+          <p style="margin:16px 0 0;font-size:14px;color:#6b7a90">Didn't get it? Resend in <span style="white-space:nowrap;font-weight:600;color:#122046">0:24</span></p>
+          <div style="margin-top:auto;margin-bottom:36px;height:52px;border-radius:10px;background:#2962ff;color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center">Verify &amp; continue</div>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="04 Setup Class" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">04 · Choose class</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#fff;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" hint-size="100%,44px"></dc-import>
+        <div style="padding:12px 24px 0"><div style="display:flex;justify-content:space-between;font-size:13px;color:#6b7a90"><span>Step 1 of 2</span><span>Bihar Board</span></div><div style="margin-top:10px;height:4px;border-radius:2px;background:#edeff4"><div style="width:50%;height:100%;border-radius:2px;background:#2962ff"></div></div></div>
+        <div style="flex:1;padding:32px 24px 0;display:flex;flex-direction:column">
+          <h2 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-0.02em;color:#122046">Which class are you in?</h2>
+          <p style="margin:6px 0 0;font-size:15px;color:#6b7a90">We'll show crash courses for your class.</p>
+          <div style="margin-top:28px;display:flex;flex-direction:column;gap:12px">
+            <div style="padding:20px;border-radius:12px;border:1.5px solid #2962ff;background:#e8f0ff;display:flex;align-items:center;gap:16px"><span style="white-space:nowrap;font-size:36px;font-weight:700;color:#2962ff;width:52px">12</span><div style="flex:1"><p style="margin:0;font-size:17px;font-weight:600;color:#122046">Class 12</p><p style="margin:2px 0 0;font-size:13px;color:#4a5872">Board 2027 crash courses</p></div><span style="white-space:nowrap;width:22px;height:22px;border-radius:50%;border:7px solid #2962ff;box-sizing:border-box;background:#fff"></span></div>
+            <div style="padding:20px;border-radius:12px;border:1px solid #e4e7ee;display:flex;align-items:center;gap:16px"><span style="white-space:nowrap;font-size:36px;font-weight:700;color:#7c5cff;width:52px">11</span><div style="flex:1"><p style="margin:0;font-size:17px;font-weight:600;color:#122046">Class 11</p><p style="margin:2px 0 0;font-size:13px;color:#6b7a90">Build a strong base for Class 12</p></div><span style="white-space:nowrap;width:22px;height:22px;border-radius:50%;border:1.5px solid #d2d6e0;box-sizing:border-box"></span></div>
+          </div>
+          <div style="margin-top:auto;margin-bottom:36px;height:52px;border-radius:10px;background:#2962ff;color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center">Continue</div>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="05 Setup Stream" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">05 · Stream &amp; medium</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#fff;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" hint-size="100%,44px"></dc-import>
+        <div style="padding:12px 24px 0"><div style="display:flex;justify-content:space-between;font-size:13px;color:#6b7a90"><span>Step 2 of 2</span><span>Class 12</span></div><div style="margin-top:10px;height:4px;border-radius:2px;background:#2962ff"></div></div>
+        <div style="flex:1;padding:32px 24px 0;display:flex;flex-direction:column">
+          <h2 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-0.02em;color:#122046">Choose your stream</h2>
+          <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">
+            <div style="padding:16px 18px;border-radius:12px;border:1.5px solid #2962ff;background:#e8f0ff;display:flex;align-items:center;gap:12px"><div style="flex:1"><p style="margin:0;font-size:16px;font-weight:600;color:#122046">Science</p><p style="margin:2px 0 0;font-size:13px;color:#4a5872">Physics · Chemistry · Biology · Maths</p></div><span style="white-space:nowrap;width:22px;height:22px;border-radius:50%;border:7px solid #2962ff;box-sizing:border-box;background:#fff"></span></div>
+            <div style="padding:16px 18px;border-radius:12px;border:1px solid #e4e7ee;display:flex;align-items:center;gap:12px"><div style="flex:1"><p style="margin:0;font-size:16px;font-weight:600;color:#122046">Commerce</p><p style="margin:2px 0 0;font-size:13px;color:#6b7a90">Accountancy · Business Studies · Economics</p></div><span style="white-space:nowrap;width:22px;height:22px;border-radius:50%;border:1.5px solid #d2d6e0;box-sizing:border-box"></span></div>
+            <div style="padding:16px 18px;border-radius:12px;border:1px solid #e4e7ee;display:flex;align-items:center;gap:12px"><div style="flex:1"><p style="margin:0;font-size:16px;font-weight:600;color:#122046">Arts</p><p style="margin:2px 0 0;font-size:13px;color:#6b7a90">History · Political Science · Geography</p></div><span style="white-space:nowrap;width:22px;height:22px;border-radius:50%;border:1.5px solid #d2d6e0;box-sizing:border-box"></span></div>
+          </div>
+          <p style="margin:28px 0 12px;font-size:16px;font-weight:600;color:#122046">Medium of study</p>
+          <div style="display:flex;gap:12px">
+            <div style="flex:1;height:80px;border-radius:12px;border:1.5px solid #2962ff;background:#e8f0ff;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="white-space:nowrap;font-size:15px;font-weight:600;color:#1a4de0">Hindi Medium</span><span style="white-space:nowrap;margin-top:4px;font-family:'IBM Plex Sans Devanagari',sans-serif;font-size:12px;color:#4a5872">हिंदी माध्यम</span></div>
+            <div style="flex:1;height:80px;border-radius:12px;border:1px solid #e4e7ee;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="white-space:nowrap;font-size:15px;font-weight:600;color:#122046">English Medium</span><span style="white-space:nowrap;margin-top:4px;font-family:'IBM Plex Sans Devanagari',sans-serif;font-size:12px;color:#6b7a90">अंग्रेज़ी माध्यम</span></div>
+          </div>
+          <div style="margin-top:auto;margin-bottom:36px;height:52px;border-radius:10px;background:#2962ff;color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center">Start learning</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

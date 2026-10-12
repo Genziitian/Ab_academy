@@ -1,5 +1,4 @@
 import type {
-  AdminCommunity,
   AdminCourse,
   AdminNotification,
   AdminSession,
@@ -127,24 +126,6 @@ let notifications: AdminNotification[] = [
   },
 ];
 
-// Communities are derived from courses: the schema creates one per course by
-// trigger, so the admin console lists rather than creates them.
-const communityStats: Record<string, { members: number; messages: number; last: string; author: string }> = {
-  "class-10-complete-batch": {
-    members: 327,
-    messages: 1284,
-    last: "Same here. Sir explained it in the doubt session recording.",
-    author: "Rahul Kumar",
-  },
-  "mathematics-board-booster": {
-    members: 184,
-    messages: 412,
-    last: "Thank you sir!",
-    author: "Sneha Verma",
-  },
-  "class-12-science-batch": { members: 0, messages: 0, last: "—", author: "—" },
-};
-
 let tickets: AdminTicket[] = [
   {
     id: "t1",
@@ -199,7 +180,7 @@ let tickets: AdminTicket[] = [
   {
     id: "t3",
     reference: "ABA-T-1051",
-    subject: "Cannot join the community group",
+    subject: "Cannot see my course after signing in",
     category: "Account",
     status: "open",
     studentName: "Ankit Kumar",
@@ -207,7 +188,7 @@ let tickets: AdminTicket[] = [
     messages: [
       {
         id: "tm5",
-        body: "I enrolled yesterday but the Class 10 community does not appear in my app.",
+        body: "I enrolled yesterday but the course does not appear in my app.",
         fromSupport: false,
         authorName: "Ankit Kumar",
         at: "2026-09-17T08:10",
@@ -241,24 +222,6 @@ export const listNotifications = () =>
 export const listTickets = () => [...tickets];
 export const getTicket = (id: string) => tickets.find((t) => t.id === id) ?? null;
 
-export const listCommunities = (): AdminCommunity[] =>
-  courses.map((course) => {
-    const stats = communityStats[course.id] ?? {
-      members: course.enrolledCount,
-      messages: 0,
-      last: "—",
-      author: "—",
-    };
-    return {
-      id: `comm-${course.id}`,
-      courseId: course.id,
-      name: course.title,
-      memberCount: stats.members,
-      messageCount: stats.messages,
-      lastMessage: stats.last,
-      lastAuthor: stats.author,
-    };
-  });
 
 export const dashboardCounts = () => ({
   courses: courses.length,

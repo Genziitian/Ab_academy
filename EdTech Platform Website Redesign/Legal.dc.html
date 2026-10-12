@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans',sans-serif;color:#0f1b2d;background:#fff;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<dc-import name="SiteHeader" active="" hint-size="100%,68px"></dc-import>
+<main style="font-family:'IBM Plex Sans',sans-serif;max-width:1200px;margin:0 auto;padding:64px 24px 96px;display:grid;grid-template-columns:220px minmax(0,720px);gap:64px">
+  <nav style="display:flex;flex-direction:column;gap:2px;position:sticky;top:96px;align-self:start">
+    <p style="margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#6b7a90">Legal</p>
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2"><button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for>
+    <a href="Contact.dc.html" style="margin-top:6px;padding:8px 12px;font-size:14px;font-weight:500;color:#4a5872">Refund / Grievance</a>
+  </nav>
+  <article>
+    <h1 style="margin:0;font-size:40px;font-weight:700;letter-spacing:-0.02em;color:#122046">{{ title }}</h1>
+    <p style="margin:10px 0 0;font-size:14px;color:#6b7a90">Draft · Last updated October 2026</p>
+    <div style="margin-top:32px;padding-top:32px;border-top:1px solid #e6ebf5;display:flex;flex-direction:column;gap:18px">
+      <sc-for list="{{ paras }}" as="p" hint-placeholder-count="3"><p style="margin:0;font-size:16px;line-height:1.75;color:#4a5872">{{ p }}</p></sc-for>
+    </div>
+  </article>
+</main>
+<dc-import name="SiteFooter" hint-size="100%,340px"></dc-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const DOCS = {
+  privacy: { title: 'Privacy Policy', paras: [
+    'Akhand Bharat Academy collects account details such as name, phone number, class, board and learning progress to deliver courses.',
+    'Payment data is processed by Razorpay. We do not store full card details on our servers.',
+    'This is placeholder policy text for V1 website launch. A complete privacy policy will be published before production enrollment.'] },
+  terms: { title: 'Terms of Service', paras: [
+    "These placeholder terms apply to Akhand Bharat Academy's website and learning services. Final legal copy will be reviewed before production launch.",
+    'By accessing courses you agree to use content for personal learning only, not to redistribute recordings, notes or live stream links.',
+    'Payments, refunds and enrollment rules will follow the published refund policy once Razorpay checkout is enabled.'] },
+};
+class Component extends DCLogic {
+  state = { doc: 'privacy' };
+  renderVals() {
+    const d = this.state.doc;
+    const st = on => ({ textAlign: 'left', padding: '8px 12px', border: 0, borderRadius: 6, font: 'inherit', fontSize: 14, cursor: 'pointer', fontWeight: on ? 600 : 500, background: on ? '#e8f0ff' : 'transparent', color: on ? '#2962ff' : '#4a5872' });
+    return { ...DOCS[d], tabs: [['privacy', 'Privacy Policy'], ['terms', 'Terms of Service']].map(([v, l]) => ({ label: l, style: st(d === v), pick: () => this.setState({ doc: v }) })) };
+  }
+}
+</script>
+</body>
+</html>

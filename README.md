@@ -49,8 +49,16 @@ buckets. Three migrations, applied in order:
 
 ### Website + admin console
 
+The public site (Home, Courses, Course page, Notes, For Students, About,
+Contact, Privacy, Terms) and a student portal (Dashboard, My Courses, Lecture,
+Live Classes, Live Classroom, Calendar, Study Materials, Downloads,
+Notifications, Help & Support, Profile, Checkout) follow the 2026 redesign in
+`EdTech Platform Website Redesign/`. Portal pages require sign-in when Supabase
+is configured; their course, schedule and notes content is still sample data
+(`apps/web/src/lib/portal/data.ts`) until it is wired to enrolments.
+
 Real Supabase auth. `/admin` is gated by middleware and by `requireAdmin()`,
-and enforced a third time by RLS in Postgres. Ten sections:
+and enforced a third time by RLS in Postgres. Nine sections:
 
 | Section | Does |
 |---|---|
@@ -60,19 +68,21 @@ and enforced a third time by RLS in Postgres. Ten sections:
 | Content | lessons with YouTube or uploaded video, notes PDFs per lesson |
 | Schedule | live classes, mapped onto `live_sessions` |
 | Doubts | queue of lecture questions, reply and mark answered |
-| Communities | one per course, post and pin announcements, delete messages |
 | Tickets | support queue with replies and status |
 | Notifications | compose, target, deep link, send as push |
 | Popups | scheduled interstitials with targeting and view/click counts |
 
-Teachers (`is_staff`) can manage content, schedule, doubts and communities.
+Teachers (`is_staff`) can manage content, schedule and doubts.
 Courses, pricing and enrolments are admin-only (`is_admin`).
 
 ### Mobile app
 
-27 screens. Supabase is wired for auth (phone OTP + Google), the catalog,
-curriculum, recordings and notes over signed URLs, lecture discussion,
-communities with realtime, tickets, notifications and popups. FCM push
+26 screens, redesigned to match the website (IBM Plex, blue/navy). The
+community feature was removed; students ask doubts under each lecture and get
+help through support tickets. Bottom tabs are Home, Courses, Live, Notes and
+Profile. Supabase is wired for auth (phone OTP + Google), the catalog, My
+Courses, the course page and curriculum, recordings and notes over signed URLs,
+tickets, notifications and popups. FCM push
 registers a device token on launch and claims it at sign-in.
 
 Without `--dart-define` values the app falls back to mock data, so the test

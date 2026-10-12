@@ -1,12 +1,11 @@
 // Demo-mode data for the slice 4 domains (students, content library, doubt
-// queue, popups, community threads). Same contract as mock-store.ts: writes
+// queue, popups). Same contract as mock-store.ts: writes
 // persist for the life of the server process.
 //
 // With Supabase env vars set, `lib/admin/data.ts` never touches this file.
 
 import { listCourses } from "./mock-store";
 import type {
-  AdminCommunityMessage,
   AdminDoubt,
   AdminLesson,
   AdminPopup,
@@ -250,34 +249,6 @@ let popups: AdminPopup[] = [
   },
 ];
 
-const communityThreads: Record<string, AdminCommunityMessage[]> = {
-  "class-10-complete-batch": [
-    {
-      id: "cm-1",
-      body: "Welcome to the Class 10 batch! Live classes run 6pm Mon–Sat.",
-      authorName: "Admin",
-      pinned: true,
-      createdAt: localStamp(30),
-    },
-    {
-      id: "cm-2",
-      body: "Same here. Sir explained it in the doubt session recording.",
-      authorName: "Rahul Kumar",
-      pinned: false,
-      createdAt: localStamp(1),
-    },
-  ],
-  "mathematics-board-booster": [
-    {
-      id: "cm-3",
-      body: "Thank you sir!",
-      authorName: "Sneha Verma",
-      pinned: false,
-      createdAt: localStamp(2),
-    },
-  ],
-};
-
 const slugify = (v: string) =>
   v.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -319,11 +290,6 @@ export const listPopups = () =>
   );
 
 export const getPopup = (id: string) => popups.find((p) => p.id === id) ?? null;
-
-export const listCommunityMessages = (courseId: string) =>
-  [...(communityThreads[courseId] ?? [])].sort((a, b) =>
-    b.createdAt.localeCompare(a.createdAt),
-  );
 
 export const extraCounts = () => ({
   students: students.length,
@@ -508,25 +474,4 @@ export function savePopup(input: {
 
 export function deletePopup(id: string) {
   popups = popups.filter((p) => p.id !== id);
-}
-
-export function postCommunityMessage(
-  courseId: string,
-  body: string,
-  pinned: boolean,
-) {
-  const thread = communityThreads[courseId] ?? (communityThreads[courseId] = []);
-  thread.push({
-    id: `cm-${Date.now()}`,
-    body,
-    authorName: "Admin",
-    pinned,
-    createdAt: localStamp(),
-  });
-}
-
-export function deleteCommunityMessage(courseId: string, messageId: string) {
-  communityThreads[courseId] = (communityThreads[courseId] ?? []).filter(
-    (m) => m.id !== messageId,
-  );
 }

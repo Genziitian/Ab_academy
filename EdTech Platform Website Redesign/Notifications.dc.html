@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans',sans-serif;color:#0f1b2d;background:#f7f8fc;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="display:flex;min-height:100vh;font-family:'IBM Plex Sans',sans-serif">
+  <dc-import name="PortalSidebar" active="notifications" hint-size="248px,100vh"></dc-import>
+  <div style="flex:1;min-width:0">
+    <dc-import name="PortalTopbar" title="Notifications" crumb="Student portal" hint-size="100%,68px"></dc-import>
+    <div style="padding:28px 32px 48px;max-width:860px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span style="font-size:14px;color:#6b7a90">{{ unreadLabel }}</span><button onClick="{{ markAll }}" style="border:0;background:none;font:inherit;font-size:14px;font-weight:600;color:#2962ff;cursor:pointer">Mark all as read</button></div>
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+        <p style="margin:20px 0 10px;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#6b7a90">{{ g.name }}</p>
+        <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+          <sc-for list="{{ g.items }}" as="n" hint-placeholder-count="2">
+            <div style="{{ n.row }}">
+              <span style="{{ n.icon }}">{{ n.glyph }}</span>
+              <div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:12px"><p style="margin:0;font-size:15px;font-weight:600;color:#122046">{{ n.title }}</p><span style="font-size:12px;color:#98a3b6">{{ n.time }}</span></div><p style="margin:3px 0 0;font-size:14px;color:#4a5872">{{ n.body }}</p><sc-if value="{{ n.hasAction }}" hint-placeholder-val="{{ false }}"><a href="{{ n.href }}" style="margin-top:8px;display:inline-flex;font-size:13px;font-weight:600">{{ n.action }}</a></sc-if></div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const K = { live: ['#fde8e8', '#c43b3b', '●'], test: ['#fff1e8', '#c06a1a', '✎'], recording: ['#e8f0ff', '#2962ff', '▶'], notes: ['#f1ecff', '#6b4fd8', '≡'], result: ['#e9f9ef', '#16a34a', '✓'] };
+const N = [
+  { g: 'Today', title: 'Live class starting soon', body: 'Mathematics starts in 5 minutes.', kind: 'live', time: '5m', action: 'Join Class →', href: 'Live Classroom.dc.html', unread: true },
+  { g: 'Today', title: 'Test reminder', body: 'Your Physics test is due today.', kind: 'test', time: '2h', unread: true },
+  { g: 'Yesterday', title: 'New recording available', body: "Yesterday's Science class recording is now available.", kind: 'recording', time: '', action: 'Watch Now →', href: 'Lecture.dc.html' },
+  { g: 'Yesterday', title: 'New notes uploaded', body: 'Chapter 04 notes — Carbon and its Compounds.', kind: 'notes', time: '' },
+  { g: 'Earlier', title: 'Weekly test result', body: 'Maths Weekly Test 06 — you scored 17 / 20.', kind: 'result', time: '' },
+];
+class Component extends DCLogic {
+  state = { read: false };
+  renderVals() {
+    const r = this.state.read;
+    const groups = ['Today', 'Yesterday', 'Earlier'].map(name => ({ name, items: N.filter(n => n.g === name).map(n => { const un = n.unread && !r; const k = K[n.kind]; return { ...n, hasAction: !!n.action, glyph: k[2],
+      row: { display: 'flex', gap: 14, padding: '16px 20px', borderBottom: '1px solid #eff1f5', background: un ? '#f5f8ff' : '#fff', borderLeft: un ? '3px solid #2962ff' : '3px solid transparent' },
+      icon: { width: 38, height: 38, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, background: k[0], color: k[1] } }; }) }));
+    return { groups, unreadLabel: r ? 'All caught up' : '2 unread', markAll: () => this.setState({ read: true }) };
+  }
+}
+</script>
+</body>
+</html>

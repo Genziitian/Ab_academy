@@ -8,23 +8,15 @@ type CoursesPageProps = {
 export const metadata = {
   title: "Courses",
   description:
-    "Explore all batches and courses at Akhand Bharat Academy. Bihar Board Classes 9–12 available now.",
+    "Class 11 & 12 crash courses for Bihar Board — Science, Commerce and Arts with live classes, recordings and notes.",
 };
 
 export default async function CoursesPage({ searchParams }: CoursesPageProps) {
   const params = await searchParams;
-  const classFilter = params.class ? Number(params.class) : undefined;
-  const initialClass =
-    classFilter === 9 ||
-    classFilter === 10 ||
-    classFilter === 11 ||
-    classFilter === 12
-      ? classFilter
-      : undefined;
+  const classFilter = Number(params.class);
+  const initialClass = classFilter === 11 || classFilter === 12 ? classFilter : undefined;
 
   const courses = await listCourses();
 
-  return (
-    <CoursesCatalog initialCourses={courses} initialClass={initialClass} />
-  );
+  return <CoursesCatalog initialCourses={courses} initialClass={initialClass} />;
 }

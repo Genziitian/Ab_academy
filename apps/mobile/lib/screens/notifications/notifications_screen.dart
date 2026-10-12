@@ -9,67 +9,174 @@ import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/buttons.dart';
-import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 
+const _groupLabels = {
+  NotificationGroup.today: 'TODAY',
+  NotificationGroup.yesterday: 'YESTERDAY',
+  NotificationGroup.earlier: 'EARLIER',
+};
+
+/// 18 · Notifications, grouped by day; unread rows are tinted.
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifications = ref.watch(notificationsProvider);
+    final unread = notifications.any((n) => n.isUnread);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
+      appBar: AppTopBar(
+        title: 'Notifications',
+        actions: [
+          TextButton(
+            onPressed: unread
+                ? () => ref.read(notificationsProvider.notifier).markAllRead()
+                : null,
+            child: Text(
+              'Mark all read',
+              style: AppText.tabular(
+                13,
+                FontWeight.w600,
+                color: unread ? AppColors.primary : AppColors.textSubtle,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: notifications.isEmpty
+          ? const Padding(
+              padding: EdgeInsets.all(20),
+              child: EmptyState(
+                icon: LucideIcons.bellOff,
+                title: 'All caught up',
+                body:
+                    'Class reminders, new notes and results will show up here.',
+              ),
+            )
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+              children: [
+                for (final group in NotificationGroup.values)
+                  if (notifications.any((n) => n.group == group)) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16, bottom: 8),
+                      child: Text(
+                        _groupLabels[group]!,
+                        style: AppText.eyebrow(letterSpacing: 0.9),
+                      ),
+                    ),
+                    ListCard(
+                      children: [
+                        for (final n in notifications.where(
+                          (n) => n.group == group,
+                        ))
+                          _NotificationRow(notification: n),
+                      ],
+                    ),
+                  ],
+              ],
+            ),
+    );
+  }
+}
+
+class _NotificationRow extends StatelessWidget {
+  const _NotificationRow({required this.notification});
+
+  final AppNotification notification;
+
+  void _act(BuildContext context) => switch (notification.kind) {
+    NotificationKind.live => context.push(Routes.liveRoom),
+    NotificationKind.recording => context.push(Routes.lesson('ch1-l3')),
+    NotificationKind.notes => context.go(Routes.notes),
+    NotificationKind.test ||
+    NotificationKind.result => context.push(Routes.calendar),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final (bg, fg, glyph) = switch (notification.kind) {
+      NotificationKind.live => (AppColors.liveTint, AppColors.liveInk, '●'),
+      NotificationKind.test => (AppColors.amberTint, AppColors.warningInk, '✎'),
+      NotificationKind.recording => (
+        AppColors.primaryTint,
+        AppColors.primary,
+        '▶',
+      ),
+      NotificationKind.notes => (AppColors.mathsTint, AppColors.maths, '≡'),
+      NotificationKind.result => (
+        AppColors.successTint,
+        AppColors.success,
+        '✓',
+      ),
+    };
+
+    return InkWell(
+      onTap: () => _act(context),
+      child: Container(
+        color: notification.isUnread
+            ? AppColors.surfaceMuted
+            : AppColors.surface,
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              height: 56,
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(bottom: BorderSide(color: AppColors.divider)),
+              width: 34,
+              height: 34,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(color: bg, borderRadius: AppRadius.xs),
+              child: Text(
+                glyph,
+                style: AppText.tabular(13, FontWeight.w700, color: fg),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      SquareIconButton(
-                        icon: LucideIcons.chevronLeft,
-                        onPressed: () => context.pop(),
+                      Expanded(
+                        child: Text(
+                          notification.title,
+                          style: AppText.rowTitle,
+                        ),
                       ),
-                      const SizedBox(width: 12),
-                      Text('Notifications', style: AppText.tabular(17, FontWeight.w700)),
+                      if (notification.timeAgo != null)
+                        Text(
+                          notification.timeAgo!,
+                          style: AppText.tabular(
+                            11,
+                            FontWeight.w400,
+                            color: AppColors.textSubtle,
+                          ),
+                        ),
                     ],
                   ),
-                  TextActionButton(
-                    label: 'Mark all read',
-                    onPressed: () {
-                      ref.read(notificationsProvider.notifier).markAllRead();
-                      showDemoSnack(context, 'All notifications marked as read');
-                    },
+                  const SizedBox(height: 2),
+                  Text(
+                    notification.body,
+                    style: AppText.tabular(
+                      13,
+                      FontWeight.w400,
+                      color: AppColors.textBody,
+                    ),
                   ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-                children: [
-                  for (final group in NotificationGroup.values) ...[
-                    if (notifications.any((n) => n.group == group)) ...[
-                      GroupLabel(_groupLabel(group)),
-                      const SizedBox(height: 10),
-                      for (final item in notifications.where((n) => n.group == group)) ...[
-                        _NotificationCard(notification: item),
-                        const SizedBox(height: 10),
-                      ],
-                      const SizedBox(height: 10),
-                    ],
+                  if (notification.actionLabel != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      notification.actionLabel!,
+                      style: AppText.tabular(
+                        12,
+                        FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -78,122 +185,5 @@ class NotificationsScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _groupLabel(NotificationGroup group) => switch (group) {
-    NotificationGroup.today => 'TODAY',
-    NotificationGroup.yesterday => 'YESTERDAY',
-    NotificationGroup.earlier => 'EARLIER',
-  };
-}
-
-class _NotificationCard extends StatelessWidget {
-  const _NotificationCard({required this.notification});
-
-  final AppNotification notification;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      borderRadius: AppRadius.md,
-      padding: const EdgeInsets.all(14),
-      shadow: null,
-      color: notification.isUnread ? const Color(0xFFF7F8FD) : AppColors.surface,
-      borderColor: notification.isUnread ? const Color(0xFFE3E5F6) : AppColors.border,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _NotificationIcon(kind: notification.kind),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(notification.title, style: AppText.cardTitleSm),
-                const SizedBox(height: 4),
-                Text(
-                  notification.body,
-                  style: AppText.tabular(
-                    12.5,
-                    FontWeight.w400,
-                    color: AppColors.textMuted,
-                  ).copyWith(height: 1.5),
-                ),
-                if (notification.actionLabel != null) ...[
-                  const SizedBox(height: 10),
-                  TextActionButton(
-                    label: notification.actionLabel!,
-                    onPressed: () => switch (notification.kind) {
-                      NotificationKind.live => context.push(Routes.liveLobby),
-                      NotificationKind.recording => context.push(Routes.lesson('ch1-l3')),
-                      _ => showDemoSnack(context, notification.title),
-                    },
-                  ),
-                ],
-              ],
-            ),
-          ),
-          if (notification.timeAgo != null) ...[
-            const SizedBox(width: 8),
-            Text(
-              notification.timeAgo!,
-              style: AppText.tabular(11, FontWeight.w400, color: AppColors.textFaint),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _NotificationIcon extends StatelessWidget {
-  const _NotificationIcon({required this.kind});
-
-  final NotificationKind kind;
-
-  @override
-  Widget build(BuildContext context) {
-    return switch (kind) {
-      NotificationKind.live => Container(
-        width: 38,
-        height: 38,
-        alignment: Alignment.center,
-        decoration: const BoxDecoration(
-          color: AppColors.liveTint,
-          borderRadius: BorderRadius.all(Radius.circular(11)),
-        ),
-        child: const LiveDot(size: 8),
-      ),
-      NotificationKind.test => const IconTile(
-        background: AppColors.warningTint,
-        icon: LucideIcons.fileText,
-        iconColor: AppColors.warningInk,
-        iconSize: 17,
-        radius: 11,
-      ),
-      NotificationKind.recording => const IconTile(
-        background: AppColors.scienceTint,
-        icon: Icons.play_arrow_rounded,
-        iconColor: AppColors.science,
-        iconSize: 19,
-        radius: 11,
-      ),
-      NotificationKind.notes => IconTile(
-        background: AppColors.pdfTint,
-        label: 'PDF',
-        labelStyle: AppText.badge(
-          color: const Color(0xFFC43B3B),
-          size: 9,
-        ).copyWith(letterSpacing: 0),
-        radius: 11,
-      ),
-      NotificationKind.result => const IconTile(
-        background: AppColors.primaryTint,
-        icon: LucideIcons.checkCircle,
-        iconColor: AppColors.primary,
-        iconSize: 17,
-        radius: 11,
-      ),
-    };
   }
 }

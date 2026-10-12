@@ -42,16 +42,6 @@ export type AdminSession = {
   status: LiveStatus;
 };
 
-export type AdminCommunity = {
-  id: string;
-  courseId: string;
-  name: string;
-  memberCount: number;
-  messageCount: number;
-  lastMessage: string;
-  lastAuthor: string;
-};
-
 export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
 
 export type AdminTicketMessage = {
@@ -173,14 +163,6 @@ export type AdminPopup = {
   /** Impression + click counters from popup_views. */
   viewCount: number;
   clickCount: number;
-  createdAt: string;
-};
-
-export type AdminCommunityMessage = {
-  id: string;
-  body: string;
-  authorName: string;
-  pinned: boolean;
   createdAt: string;
 };
 

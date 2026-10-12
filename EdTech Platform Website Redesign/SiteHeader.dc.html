@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',sans-serif;color:#0f1b2d;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<header style="position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.97);border-bottom:1px solid #e6ebf5;font-family:'IBM Plex Sans',sans-serif">
+  <div style="max-width:1200px;margin:0 auto;height:68px;padding:0 24px;display:flex;align-items:center;gap:20px">
+    <a href="Home.dc.html" style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <span style="width:36px;height:36px;border-radius:8px;background:#2962ff;color:#fff;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3 2 8l10 5 10-5-10-5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><path d="M5 10.5V16c0 .8 3.1 3 7 3s7-2.2 7-3v-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path><path d="M22 8v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></span>
+      <span style="display:flex;flex-direction:column;line-height:1.15;white-space:nowrap"><span style="font-size:15px;font-weight:700;color:#122046;letter-spacing:-0.01em">Akhand Bharat Academy</span><span style="font-size:11px;font-weight:500;color:#6b7a90;letter-spacing:0.02em">Class 11 &amp; 12 Crash Courses</span></span>
+    </a>
+    <nav style="display:flex;align-items:center;gap:2px;flex:1;min-width:0;overflow:hidden">
+      <a href="Courses.dc.html" style="{{ st.courses }}">Courses</a>
+      <a href="Notes.dc.html" style="{{ st.notes }}">Notes</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <a href="Courses.dc.html" title="Search courses" style="width:38px;height:38px;flex-shrink:0;border:1px solid #e6ebf5;border-radius:8px;background:#f7f8fc;color:#6b7a90;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"></circle><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></a>
+      <a href="Login.dc.html" style="height:38px;padding:0 14px;display:flex;align-items:center;white-space:nowrap;border:1px solid #c9d6f5;border-radius:8px;font-size:14px;font-weight:600;color:#2962ff" style-hover="background:#e8f0ff;border-color:#2962ff">Log in</a>
+      <a href="Login.dc.html" style="height:38px;padding:0 14px;display:flex;align-items:center;white-space:nowrap;border-radius:8px;background:#2962ff;font-size:14px;font-weight:600;color:#fff" style-hover="background:#1a4de0;color:#fff">Sign up free</a>
+    </div>
+  </div>
+</header>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:80},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;&quot;,&quot;courses&quot;,&quot;notes&quot;],&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const a = this.props.active;
+    const base = { padding: '8px 10px', whiteSpace: 'nowrap', borderRadius: 6, fontSize: 14, fontWeight: 500, color: '#4a5872' };
+    const on = { ...base, color: '#2962ff', background: '#e8f0ff', fontWeight: 600 };
+    const st = {};
+    ['courses', 'notes'].forEach(k => st[k] = a === k ? on : base);
+    return { st };
+  }
+}
+</script>
+</body>
+</html>

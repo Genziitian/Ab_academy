@@ -10,223 +10,192 @@ import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/app_bottom_nav.dart';
-import '../../widgets/buttons.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 
-class StudyMaterialsScreen extends ConsumerWidget {
+/// 16 · Notes — every chapter PDF from the student's courses, searchable.
+/// This is the fourth bottom-nav tab (it replaced Community).
+class StudyMaterialsScreen extends ConsumerStatefulWidget {
   const StudyMaterialsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<StudyMaterialsScreen> createState() =>
+      _StudyMaterialsScreenState();
+}
+
+class _StudyMaterialsScreenState extends ConsumerState<StudyMaterialsScreen> {
+  String _query = '';
+  late final Set<String> _offline = {
+    for (final m in MockData.materials)
+      if (m.isOffline) m.id,
+  };
+
+  @override
+  Widget build(BuildContext context) {
     final filter = ref.watch(materialsFilterProvider);
-    final materials = ref.watch(filteredMaterialsProvider);
+    final q = _query.trim().toLowerCase();
+    final materials = ref
+        .watch(filteredMaterialsProvider)
+        .where(
+          (m) =>
+              q.isEmpty ||
+              m.title.toLowerCase().contains(q) ||
+              m.subject.toLowerCase().contains(q),
+        )
+        .toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      // Reached from within the Courses section, so that tab stays highlighted.
-      bottomNavigationBar: AppBottomNav(
-        active: AppTab.courses,
-        onSelected: (tab) => context.go(_tabRoute(tab)),
-      ),
       body: SafeArea(
         bottom: false,
-        child: Column(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
           children: [
-            Container(
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(bottom: BorderSide(color: AppColors.divider)),
-              ),
-              padding: const EdgeInsets.fromLTRB(0, 8, 0, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      children: [
-                        SquareIconButton(
-                          icon: LucideIcons.chevronLeft,
-                          onPressed: () => context.pop(),
-                        ),
-                        const SizedBox(width: 12),
-                        Text('Study Materials', style: AppText.h3.copyWith(fontSize: 22)),
-                      ],
+            Text('Notes', style: AppText.h2),
+            const SizedBox(height: 14),
+            SizedBox(
+              height: 44,
+              child: TextField(
+                onChanged: (value) => setState(() => _query = value),
+                cursorColor: AppColors.primary,
+                style: AppText.tabular(14, FontWeight.w400),
+                decoration: InputDecoration(
+                  hintText: 'Search notes',
+                  hintStyle: AppText.tabular(
+                    14,
+                    FontWeight.w400,
+                    color: AppColors.textSubtle,
+                  ),
+                  prefixIcon: const Icon(
+                    LucideIcons.search,
+                    size: 17,
+                    color: AppColors.textSubtle,
+                  ),
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  contentPadding: EdgeInsets.zero,
+                  enabledBorder: const OutlineInputBorder(
+                    borderRadius: AppRadius.sm,
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderRadius: AppRadius.sm,
+                    borderSide: BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  ChipRow(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    children: [
-                      for (final label in ['All', ...MockData.allSubjects.take(4)])
-                        FilterChipPill(
-                          label: label,
-                          selected: filter == label,
-                          onTap: () => ref.read(materialsFilterProvider.notifier).select(label),
-                        ),
-                    ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            ChipRow(
+              children: [
+                for (final label in ['All', ...MockData.scienceSubjects])
+                  FilterChipPill(
+                    label: label == 'Mathematics' ? 'Maths' : label,
+                    selected: filter == label,
+                    onTap: () => ref
+                        .read(materialsFilterProvider.notifier)
+                        .select(label),
                   ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            if (materials.isEmpty)
+              EmptyState(
+                icon: LucideIcons.fileSearch,
+                title: 'No notes found',
+                body: q.isEmpty
+                    ? 'Teachers have not uploaded $filter notes yet.'
+                    : 'Nothing matches “$_query”.',
+              )
+            else
+              ListCard(
+                children: [
+                  for (final m in materials)
+                    _NoteRow(
+                      material: m,
+                      offline: _offline.contains(m.id),
+                      onToggleOffline: () => setState(() {
+                        if (!_offline.remove(m.id)) {
+                          _offline.add(m.id);
+                        }
+                      }),
+                    ),
                 ],
               ),
-            ),
-            Expanded(
-              child: materials.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No materials for this subject yet.',
-                        style: AppText.metaSm.copyWith(fontSize: 13),
-                      ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                      itemCount: materials.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) => _MaterialCard(material: materials[index]),
-                    ),
-            ),
           ],
         ),
       ),
     );
   }
-
-  String _tabRoute(AppTab tab) => switch (tab) {
-    AppTab.home => Routes.home,
-    AppTab.courses => Routes.courses,
-    AppTab.live => Routes.live,
-    AppTab.community => Routes.community,
-    AppTab.profile => Routes.profile,
-  };
 }
 
-class _MaterialCard extends StatelessWidget {
-  const _MaterialCard({required this.material});
+class _NoteRow extends StatelessWidget {
+  const _NoteRow({
+    required this.material,
+    required this.offline,
+    required this.onToggleOffline,
+  });
 
   final StudyMaterial material;
+  final bool offline;
+  final VoidCallback onToggleOffline;
 
   @override
   Widget build(BuildContext context) {
     final palette = SubjectPalette.fromName(material.subject);
-    final isHindi = material.subject == 'Hindi';
-    final badgeTint = switch (material.kind) {
-      MaterialKind.pdf => isHindi ? AppColors.hindiTint : AppColors.pdfTint,
-      MaterialKind.doc => AppColors.englishTint,
-    };
-    final badgeInk = switch (material.kind) {
-      MaterialKind.pdf => isHindi ? AppColors.hindi : const Color(0xFFC43B3B),
-      MaterialKind.doc => AppColors.english,
-    };
-
-    final leading = IconTile(
-      background: badgeTint,
-      label: isHindi ? 'हि' : material.badge,
-      labelStyle: isHindi
-          ? AppText.devanagari(13, FontWeight.w700, color: badgeInk)
-          : AppText.badge(color: badgeInk, size: 10).copyWith(letterSpacing: 0),
-      size: 44,
-      radius: 13,
-    );
-
-    // Simple rows just get a download affordance; the richer cards show actions.
-    if (!material.showActions && !material.isOffline) {
-      return AppCard(
-        onTap: () => showDemoSnack(context, 'Downloading ${material.title}'),
+    return InkWell(
+      // Every note opens the bundled sample until notes come from storage.
+      onTap: () =>
+          context.push(Routes.pdf(MockData.lessonAttachments.first.id)),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            leading,
-            const SizedBox(width: 13),
+            const PdfBadge(),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(material.title, style: AppText.cardTitle),
-                  const SizedBox(height: 4),
-                  Text(material.sizeLabel, style: AppText.metaSm),
+                  Text(
+                    material.subject.toUpperCase(),
+                    style: AppText.tabular(
+                      11,
+                      FontWeight.w600,
+                      color: palette.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(material.title, style: AppText.rowTitle),
+                  const SizedBox(height: 1),
+                  Text(
+                    material.metaLine.replaceAll('•', '·'),
+                    style: AppText.meta,
+                  ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(LucideIcons.download, size: 18, color: AppColors.primary),
+            GestureDetector(
+              onTap: onToggleOffline,
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Text(
+                  offline ? '✓ Offline' : 'Open',
+                  style: AppText.tabular(
+                    12,
+                    FontWeight.w600,
+                    color: offline ? AppColors.success : AppColors.primary,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
-      );
-    }
-
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              leading,
-              const SizedBox(width: 13),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      material.subject.toUpperCase(),
-                      style: AppText.eyebrow(color: palette.ink, letterSpacing: 0.7),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(material.title, style: AppText.cardTitle),
-                    const SizedBox(height: 4),
-                    Text(material.metaLine, style: AppText.metaSm),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          if (material.isOffline)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
-              decoration: const BoxDecoration(color: Color(0xFFEDF6F1), borderRadius: AppRadius.xs),
-              child: Row(
-                children: [
-                  const Icon(LucideIcons.check, size: 15, color: AppColors.scienceInk),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Available offline',
-                      style: AppText.tabular(12.5, FontWeight.w600, color: AppColors.scienceInk),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => showDemoSnack(context, 'Removed from offline downloads'),
-                    child: Text(
-                      'Remove',
-                      style: AppText.tabular(12, FontWeight.w600, color: AppColors.textSubtle),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            Row(
-              children: [
-                Expanded(
-                  child: PrimaryButton(
-                    label: 'View',
-                    height: 42,
-                    onPressed: () => showDemoSnack(context, 'Opening ${material.title}'),
-                  ),
-                ),
-                const SizedBox(width: 9),
-                Expanded(
-                  child: SecondaryButton(
-                    label: 'Download',
-                    height: 42,
-                    icon: LucideIcons.download,
-                    onPressed: () => showDemoSnack(context, 'Saved for offline use'),
-                  ),
-                ),
-              ],
-            ),
-        ],
       ),
     );
   }

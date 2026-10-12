@@ -52,9 +52,13 @@ class Chapter {
     this.isLocked = false,
     this.unlockLabel,
     this.trailingNote,
+    this.subject = 'Physics',
   });
 
   final int number;
+
+  /// Subject the chapter belongs to — drives the Curriculum subject tabs.
+  final String subject;
   final String title;
   final int lessonsCompleted;
   final int lessonsTotal;
@@ -70,9 +74,11 @@ class Chapter {
   /// "CHAPTER 01"
   String get label => 'CHAPTER ${number.toString().padLeft(2, '0')}';
 
-  String get progressLabel => trailingNote ?? '$lessonsCompleted / $lessonsTotal lessons';
+  String get progressLabel =>
+      trailingNote ?? '$lessonsCompleted / $lessonsTotal lessons';
 
-  double get progress => lessonsTotal == 0 ? 0 : lessonsCompleted / lessonsTotal;
+  double get progress =>
+      lessonsTotal == 0 ? 0 : lessonsCompleted / lessonsTotal;
 }
 
 /// Mirrors `public.courses` + `public.course_batches`.
@@ -99,6 +105,15 @@ class Course {
     this.liveClassesCount = 0,
     this.highlights = const [],
     this.validityNote,
+    this.stream,
+    this.tagline,
+    this.badge,
+    this.language = 'Hindi + English',
+    this.rating,
+    this.reviewCount,
+    this.questionsCount,
+    this.thumbnailHue = 214,
+    this.planDay,
   });
 
   final String id;
@@ -129,11 +144,37 @@ class Course {
   final List<String> highlights;
   final String? validityNote;
 
+  /// Short stream label for thumbnails, e.g. "Science · PCM + PCB".
+  final String? stream;
+
+  /// "Physics · Chemistry · Maths · Biology"
+  final String? tagline;
+
+  /// "Bestseller", "Top rated", "New"
+  final String? badge;
+  final String language;
+  final double? rating;
+  final int? reviewCount;
+  final int? questionsCount;
+
+  /// Hue for the course thumbnail gradient — matches `thumbnail_hue` in the DB.
+  final int thumbnailHue;
+
+  /// Day of the 90-day plan the student is on, for enrolled crash courses.
+  final int? planDay;
+
+  int get discountPercent =>
+      originalPriceInr <= priceInr || originalPriceInr == 0
+      ? 0
+      : (((originalPriceInr - priceInr) / originalPriceInr) * 100).round();
+
   double get progress => progressPercent / 100;
 
   /// "12 of 28 chapters completed"
-  String get chaptersLabel => '$chaptersCompleted of $chaptersTotal chapters completed';
+  String get chaptersLabel =>
+      '$chaptersCompleted of $chaptersTotal chapters completed';
 
   /// "12 / 28 chapters"
-  String get chaptersShortLabel => '$chaptersCompleted / $chaptersTotal chapters';
+  String get chaptersShortLabel =>
+      '$chaptersCompleted / $chaptersTotal chapters';
 }

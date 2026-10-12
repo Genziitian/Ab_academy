@@ -13,82 +13,78 @@ import '../../widgets/buttons.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 
-/// Live classes get their own destination: what is on now, what is coming, and
-/// what can be watched back. The month view lives on the Calendar screen.
-class LiveSessionsScreen extends ConsumerWidget {
+/// 12 · Live sessions — the class on air now, then upcoming and past.
+class LiveSessionsScreen extends ConsumerStatefulWidget {
   const LiveSessionsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LiveSessionsScreen> createState() => _LiveSessionsScreenState();
+}
+
+class _LiveSessionsScreenState extends ConsumerState<LiveSessionsScreen> {
+  String _tab = 'Upcoming';
+  final _reminders = <String>{'live-genetics'};
+
+  @override
+  Widget build(BuildContext context) {
     final grouped = ref.watch(groupedLiveSessionsProvider);
     final liveNow = grouped[LiveStatus.liveNow] ?? const [];
-    final upcoming = grouped[LiveStatus.upcoming] ?? const [];
-    final past = grouped[LiveStatus.ended] ?? const [];
+    final list = _tab == 'Upcoming'
+        ? grouped[LiveStatus.upcoming] ?? const <LiveSession>[]
+        : grouped[LiveStatus.ended] ?? const <LiveSession>[];
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         bottom: false,
-        child: Column(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
           children: [
-            Container(
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(bottom: BorderSide(color: AppColors.divider)),
-              ),
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Live Classes', style: AppText.h3),
-                  SecondaryButton(
-                    label: 'Calendar',
-                    icon: LucideIcons.calendar,
-                    height: 40,
-                    onPressed: () => context.push(Routes.calendar),
-                  ),
-                ],
-              ),
+            Row(
+              children: [
+                Expanded(child: Text('Live classes', style: AppText.h2)),
+                SquareIconButton(
+                  icon: LucideIcons.calendar,
+                  onPressed: () => context.push(Routes.calendar),
+                ),
+              ],
             ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+            const SizedBox(height: 16),
+            for (final session in liveNow) ...[
+              _LiveNowCard(session: session),
+              const SizedBox(height: 16),
+            ],
+            SegmentedTabs(
+              tabs: const ['Upcoming', 'Past'],
+              selected: _tab,
+              onSelected: (tab) => setState(() => _tab = tab),
+            ),
+            const SizedBox(height: 16),
+            if (list.isEmpty)
+              EmptyState(
+                icon: LucideIcons.radio,
+                title: _tab == 'Upcoming'
+                    ? 'No classes scheduled'
+                    : 'No recordings yet',
+                body: _tab == 'Upcoming'
+                    ? 'New live classes appear here as teachers schedule them.'
+                    : 'Finished classes show up here with their recording.',
+              )
+            else
+              ListCard(
                 children: [
-                  if (liveNow.isNotEmpty) ...[
-                    const GroupLabel('HAPPENING NOW'),
-                    const SizedBox(height: 10),
-                    for (final session in liveNow) ...[
-                      _LiveNowCard(session: session),
-                      const SizedBox(height: 12),
-                    ],
-                    const SizedBox(height: 10),
-                  ],
-                  if (upcoming.isNotEmpty) ...[
-                    const GroupLabel('UPCOMING'),
-                    const SizedBox(height: 10),
-                    for (final session in upcoming) ...[
-                      _SessionRow(session: session),
-                      const SizedBox(height: 10),
-                    ],
-                    const SizedBox(height: 10),
-                  ],
-                  if (past.isNotEmpty) ...[
-                    const GroupLabel('PAST RECORDINGS'),
-                    const SizedBox(height: 10),
-                    for (final session in past) ...[
-                      _SessionRow(session: session),
-                      const SizedBox(height: 10),
-                    ],
-                  ],
-                  if (liveNow.isEmpty && upcoming.isEmpty && past.isEmpty)
-                    const EmptyState(
-                      icon: LucideIcons.radio,
-                      title: 'No live classes yet',
-                      body: 'Your schedule will appear here once your batch starts.',
+                  for (final session in list)
+                    _SessionRow(
+                      session: session,
+                      reminded: _reminders.contains(session.id),
+                      onRemind: () => setState(() {
+                        if (!_reminders.remove(session.id)) {
+                          _reminders.add(session.id);
+                        }
+                      }),
                     ),
                 ],
               ),
-            ),
           ],
         ),
       ),
@@ -96,7 +92,6 @@ class LiveSessionsScreen extends ConsumerWidget {
   }
 }
 
-/// The dark hero treatment, reused from Home for the session that is on air.
 class _LiveNowCard extends StatelessWidget {
   const _LiveNowCard({required this.session});
 
@@ -105,100 +100,44 @@ class _LiveNowCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: const BoxDecoration(
         color: AppColors.primaryDeep,
-        borderRadius: AppRadius.xl,
-        boxShadow: AppShadow.hero,
+        borderRadius: AppRadius.md,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const LivePill(
-                label: 'LIVE NOW',
-                background: Color(0x29D93A3A),
-                textColor: Color(0xFFFF7A7A),
-                dotColor: Color(0xFFFF5A5A),
-              ),
-              Text(
-                session.scheduleLabel,
-                style: AppText.tabular(
-                  12,
-                  FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.55),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          const LivePill(),
+          const SizedBox(height: 12),
           Text(
-            session.subject,
+            '${session.subject} · ${session.title}',
+            style: AppText.tabular(19, FontWeight.w700, color: Colors.white),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${session.teacherName} · ${session.studentsEnrolled} students',
             style: AppText.tabular(
-              12.5,
-              FontWeight.w600,
-              color: const Color(0xFF9BA2E8),
-              letterSpacing: 0.3,
+              13,
+              FontWeight.w400,
+              color: AppColors.textOnDark,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(session.title, style: AppText.h3.copyWith(fontSize: 22, color: Colors.white)),
-          if (session.chapterLabel != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              session.chapterLabel!,
-              style: AppText.tabular(
-                12,
-                FontWeight.w400,
-                color: Colors.white.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
-          const SizedBox(height: 18),
-          Row(
-            children: [
-              InitialsAvatar(
-                initials: session.teacherInitials,
-                size: 32,
-                fontSize: 11,
-                background: const Color(0xFF33376E),
-                foreground: const Color(0xFFC7CBF5),
-              ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Text(
-                  '${session.teacherName} • ${session.studentsEnrolled} watching',
-                  style: AppText.tabular(
-                    12.5,
-                    FontWeight.w500,
-                    color: Colors.white.withValues(alpha: 0.75),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Material(
             color: Colors.white,
-            borderRadius: AppRadius.sm,
+            borderRadius: AppRadius.xs,
             child: InkWell(
               onTap: () => context.push(Routes.liveRoom),
-              borderRadius: AppRadius.sm,
-              child: Container(
-                height: 48,
-                alignment: Alignment.center,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Join Live Class',
-                      style: AppText.tabular(15, FontWeight.w700, color: AppColors.primaryDeep),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(LucideIcons.arrowRight, size: 16, color: AppColors.primaryDeep),
-                  ],
+              borderRadius: AppRadius.xs,
+              child: SizedBox(
+                height: 42,
+                width: double.infinity,
+                child: Center(
+                  child: Text(
+                    'Join Live Class →',
+                    style: AppText.tabular(14, FontWeight.w600),
+                  ),
                 ),
               ),
             ),
@@ -210,58 +149,92 @@ class _LiveNowCard extends StatelessWidget {
 }
 
 class _SessionRow extends StatelessWidget {
-  const _SessionRow({required this.session});
+  const _SessionRow({
+    required this.session,
+    required this.reminded,
+    required this.onRemind,
+  });
 
   final LiveSession session;
+  final bool reminded;
+  final VoidCallback onRemind;
 
   @override
   Widget build(BuildContext context) {
     final palette = SubjectPalette.fromName(session.subject);
-    final ended = session.status == LiveStatus.ended;
-
-    return AppCard(
-      padding: const EdgeInsets.all(14),
-      onTap: () => ended ? context.push(Routes.lesson(session.id)) : context.push(Routes.liveLobby),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(color: palette.tint, borderRadius: AppRadius.xs),
-            child: Icon(
-              ended ? Icons.play_arrow_rounded : LucideIcons.radio,
-              size: ended ? 22 : 18,
-              color: palette.ink,
+    final past = session.status == LiveStatus.ended;
+    return InkWell(
+      onTap: () => past
+          ? context.push(Routes.lesson('ch1-l3'))
+          : context.push(Routes.liveLobby),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: palette.tint,
+                borderRadius: AppRadius.xs,
+              ),
+              child: Text(
+                session.teacherInitials,
+                style: AppText.tabular(12, FontWeight.w600, color: palette.ink),
+              ),
             ),
-          ),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  session.subject.toUpperCase(),
-                  style: AppText.eyebrow(color: palette.ink, letterSpacing: 0.6),
-                ),
-                const SizedBox(height: 5),
-                Text(session.title, style: AppText.cardTitleSm),
-                const SizedBox(height: 4),
-                Text(
-                  ended
-                      ? '${session.scheduleLabel} • ${session.durationLabel}'
-                      : '${session.scheduleLabel} • ${session.teacherName}',
-                  style: AppText.metaSm,
-                ),
-              ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${session.subject} · ${session.title}',
+                    style: AppText.rowTitle,
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    [
+                      session.scheduleLabel.replaceAll('•', '·'),
+                      if (past && session.durationLabel != null)
+                        session.durationLabel!
+                      else
+                        session.teacherName,
+                    ].join(' · '),
+                    style: AppText.meta,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          if (ended)
-            Text('Watch', style: AppText.tabular(12, FontWeight.w700, color: AppColors.primary))
-          else
-            const Icon(LucideIcons.chevronRight, size: 16, color: AppColors.textSubtle),
-        ],
+            const SizedBox(width: 8),
+            if (past)
+              Text(
+                'Watch',
+                style: AppText.tabular(
+                  12,
+                  FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              )
+            else
+              GestureDetector(
+                onTap: onRemind,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Text(
+                    reminded ? '✓ Set' : 'Remind',
+                    style: AppText.tabular(
+                      12,
+                      FontWeight.w600,
+                      color: reminded ? AppColors.success : AppColors.primary,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

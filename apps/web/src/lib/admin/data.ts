@@ -14,8 +14,6 @@ import { createServerClient } from "@/lib/supabase/server";
 import * as mock from "./mock-store";
 import * as mockExtra from "./mock-extra";
 import type {
-  AdminCommunity,
-  AdminCommunityMessage,
   AdminCourse,
   AdminDoubt,
   AdminLesson,
@@ -858,130 +856,6 @@ export async function setDoubtResolved(
     })
     .eq("id", doubtId);
   if (error) throw new Error(`setDoubtResolved: ${error.message}`);
-}
-
-// ========================================================= communities
-
-export async function listCommunities(): Promise<AdminCommunity[]> {
-  if (isDemoMode()) return mock.listCommunities();
-
-  const supabase = await db();
-  const { data, error } = await supabase
-    .from("communities")
-    .select(
-      `id, name, course_id,
-       community_members ( count ),
-       community_messages ( count )`,
-    )
-    .order("name");
-
-  if (error) throw new Error(`listCommunities: ${error.message}`);
-
-  // The newest message per community needs its own query; a nested order+limit
-  // is not expressible in one PostgREST select.
-  const latest = await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (data ?? []).map(async (row: any) => {
-      const { data: msg } = await supabase
-        .from("community_messages")
-        .select("body, profiles:author_id ( full_name )")
-        .eq("community_id", row.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return { id: row.id, msg };
-    }),
-  );
-  const latestById = new Map(latest.map((l) => [l.id, l.msg]));
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data ?? []).map((row: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const msg = latestById.get(row.id) as any;
-    return {
-      id: row.id,
-      courseId: row.course_id,
-      name: row.name,
-      memberCount: row.community_members?.[0]?.count ?? 0,
-      messageCount: row.community_messages?.[0]?.count ?? 0,
-      lastMessage: msg?.body ?? "—",
-      lastAuthor: msg?.profiles?.full_name ?? "—",
-    };
-  });
-}
-
-export async function listCommunityMessages(
-  courseId: string,
-): Promise<AdminCommunityMessage[]> {
-  if (isDemoMode()) return mockExtra.listCommunityMessages(courseId);
-
-  const supabase = await db();
-  const { data: community } = await supabase
-    .from("communities")
-    .select("id")
-    .eq("course_id", courseId)
-    .maybeSingle();
-  if (!community) return [];
-
-  const { data, error } = await supabase
-    .from("community_messages")
-    .select("id, body, pinned, created_at, profiles:author_id ( full_name )")
-    .eq("community_id", community.id)
-    .order("pinned", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(100);
-
-  if (error) throw new Error(`listCommunityMessages: ${error.message}`);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data ?? []).map((row: any) => ({
-    id: row.id,
-    body: row.body,
-    authorName: row.profiles?.full_name ?? "Staff",
-    pinned: row.pinned,
-    createdAt: toLocalInput(row.created_at),
-  }));
-}
-
-export async function postCommunityMessage(
-  courseId: string,
-  body: string,
-  pinned: boolean,
-): Promise<void> {
-  if (isDemoMode()) return mockExtra.postCommunityMessage(courseId, body, pinned);
-
-  const supabase = await db();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: community } = await supabase
-    .from("communities")
-    .select("id")
-    .eq("course_id", courseId)
-    .maybeSingle();
-  if (!community) throw new Error("postCommunityMessage: no community");
-
-  const { error } = await supabase.from("community_messages").insert({
-    community_id: community.id,
-    author_id: user?.id,
-    body,
-    pinned,
-  });
-  if (error) throw new Error(`postCommunityMessage: ${error.message}`);
-}
-
-export async function deleteCommunityMessage(
-  courseId: string,
-  messageId: string,
-): Promise<void> {
-  if (isDemoMode()) return mockExtra.deleteCommunityMessage(courseId, messageId);
-  const supabase = await db();
-  const { error } = await supabase
-    .from("community_messages")
-    .delete()
-    .eq("id", messageId);
-  if (error) throw new Error(`deleteCommunityMessage: ${error.message}`);
 }
 
 // ============================================================= tickets

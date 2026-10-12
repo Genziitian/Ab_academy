@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../router/app_router.dart';
@@ -8,6 +9,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/academy_mark.dart';
 
+/// 01 · Splash — white mark on brand blue.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -34,62 +36,55 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const AcademyMark(size: 76),
-                    const SizedBox(height: 22),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: Text(
-                        'Akhand Bharat Academy',
-                        textAlign: TextAlign.center,
-                        style: AppText.h1.copyWith(fontSize: 27, height: 1.2),
-                      ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: AppColors.primary,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const AcademyMark(size: 84, inverted: true),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Akhand Bharat Academy',
+                          textAlign: TextAlign.center,
+                          style: AppText.h3.copyWith(color: Colors.white),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Class 11 & 12 Crash Courses',
+                          style: AppText.tabular(
+                            15,
+                            FontWeight.w400,
+                            color: const Color(0xFFDBE6FF),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Learn. Revise. Succeed.',
-                      style: AppText.tabular(
-                        13.5,
-                        FontWeight.w500,
-                        color: AppColors.textMuted,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 44),
-              child: Column(
-                children: [
-                  const SizedBox(
-                    width: 26,
-                    height: 26,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: AppColors.primary,
-                      backgroundColor: AppColors.primaryTint,
-                    ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 48),
+                child: Text(
+                  'आज शुरू करें — कल का आत्मविश्वास बनाएँ।',
+                  textAlign: TextAlign.center,
+                  style: AppText.devanagari(
+                    14,
+                    FontWeight.w400,
+                    color: const Color(0xFFC7D6FF),
                   ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'बिहार बोर्ड • कक्षा 9–12',
-                    style: AppText.devanagari(11.5, FontWeight.w500, color: AppColors.textSubtle),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

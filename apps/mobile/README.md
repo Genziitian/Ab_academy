@@ -27,14 +27,14 @@ snackbar instead. The PDF viewer is real — it reads a bundled asset.
   `lib/screens/onboarding/login_screen.dart`)
 - **Simulated realtime** — a notification arrives a few seconds after Home opens, standing in for
   the Supabase realtime subscription (`realtimeNotificationProvider`)
-- **Core tabs** — Home, Courses, Live, Community, Profile (bottom nav, per-tab state)
-- **Course** — details (Overview / Curriculum / Videos / Notes / Tests) → curriculum accordion or
-  video library → **Lecture** (player, Discussion, Notes with an in-app PDF viewer, Feedback)
+- **Core tabs** — Home, Courses, Live, Notes, Profile (bottom nav, per-tab state)
+- **Courses** — My courses → curriculum (subject tabs, chapter accordion) → **Lecture** (player,
+  About, Discussion, Notes with an in-app PDF viewer, Feedback); Explore → course page → checkout
 - **Live** — happening now / upcoming / past recordings → lobby (countdown) → classroom
-- **Community** — one group per enrolled course, auto-joined, with pinned announcements
+- **Doubts** — asked in each lecture's Discussion tab and answered by the teacher (no community feed)
 - **Tickets** — list, detail with replies, and a new-ticket form (under Profile → Support)
-- **Pushed screens** — calendar, downloads, study materials, notifications,
-  purchase → checkout → payment success
+- **Pushed screens** — calendar, downloads, notifications, explore, course page,
+  checkout → payment success (test mode until Razorpay is connected)
 
 ## Verifying
 

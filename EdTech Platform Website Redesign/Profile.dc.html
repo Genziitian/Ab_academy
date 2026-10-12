@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans',sans-serif;color:#0f1b2d;background:#f7f8fc;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="display:flex;min-height:100vh;font-family:'IBM Plex Sans',sans-serif">
+  <dc-import name="PortalSidebar" active="profile" hint-size="248px,100vh"></dc-import>
+  <div style="flex:1;min-width:0">
+    <dc-import name="PortalTopbar" title="Profile &amp; Settings" crumb="Student portal" hint-size="100%,68px"></dc-import>
+    <div style="padding:28px 32px 48px;max-width:960px;display:flex;flex-direction:column;gap:20px">
+      <section style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:24px;display:flex;align-items:center;gap:20px">
+        <span style="width:72px;height:72px;border-radius:50%;background:#e8f0ff;color:#2962ff;font-size:24px;font-weight:600;display:flex;align-items:center;justify-content:center">RK</span>
+        <div style="flex:1"><h2 style="margin:0;font-size:22px;font-weight:600;color:#122046">Rahul Kumar</h2><p style="margin:4px 0 0;font-size:14px;color:#6b7a90">+91 98765 43210 · Class 10 · Bihar Board · Hindi medium</p></div>
+        <button style="height:40px;padding:0 16px;border:1px solid #c9d6f5;border-radius:8px;background:#fff;font:inherit;font-size:14px;font-weight:600;color:#2962ff;cursor:pointer">Edit profile</button>
+      </section>
+      <section style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+        <h3 style="margin:0;padding:18px 24px;font-size:15px;font-weight:600;color:#122046;border-bottom:1px solid #e6ebf5">Academic details</h3>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr))">
+          <div style="padding:16px 24px;border-bottom:1px solid #eff1f5;border-right:1px solid #eff1f5"><p style="margin:0;font-size:12px;color:#6b7a90">Class</p><p style="margin:3px 0 0;font-size:15px;font-weight:600;color:#122046">Class 10</p></div>
+          <div style="padding:16px 24px;border-bottom:1px solid #eff1f5"><p style="margin:0;font-size:12px;color:#6b7a90">Board</p><p style="margin:3px 0 0;font-size:15px;font-weight:600;color:#122046">Bihar Board</p></div>
+          <div style="padding:16px 24px;border-right:1px solid #eff1f5"><p style="margin:0;font-size:12px;color:#6b7a90">Medium</p><p style="margin:3px 0 0;font-size:15px;font-weight:600;color:#122046">Hindi</p></div>
+          <div style="padding:16px 24px"><p style="margin:0;font-size:12px;color:#6b7a90">Stream</p><p style="margin:3px 0 0;font-size:15px;font-weight:600;color:#122046">—  (from Class 11)</p></div>
+        </div>
+      </section>
+      <section style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+        <h3 style="margin:0;padding:18px 24px;font-size:15px;font-weight:600;color:#122046;border-bottom:1px solid #e6ebf5">Learning</h3>
+        <div style="padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eff1f5"><div><p style="margin:0;font-size:15px;font-weight:500;color:#122046">Video quality on mobile data</p><p style="margin:2px 0 0;font-size:13px;color:#6b7a90">Lower quality saves data and avoids buffering.</p></div><div style="display:flex;border:1px solid #e6ebf5;border-radius:8px;padding:3px;background:#f7f8fc"><sc-for list="{{ qualities }}" as="q" hint-placeholder-count="4"><button onClick="{{ q.pick }}" style="{{ q.style }}">{{ q.label }}</button></sc-for></div></div>
+        <sc-for list="{{ toggles }}" as="t" hint-placeholder-count="3">
+          <div style="padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eff1f5"><div><p style="margin:0;font-size:15px;font-weight:500;color:#122046">{{ t.label }}</p><p style="margin:2px 0 0;font-size:13px;color:#6b7a90">{{ t.sub }}</p></div><button onClick="{{ t.flip }}" style="{{ t.track }}"><span style="{{ t.knob }}"></span></button></div>
+        </sc-for>
+      </section>
+      <section style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+        <h3 style="margin:0;padding:18px 24px;font-size:15px;font-weight:600;color:#122046;border-bottom:1px solid #e6ebf5">Account</h3>
+        <a href="My Courses.dc.html" style="padding:16px 24px;display:flex;justify-content:space-between;border-bottom:1px solid #eff1f5;font-size:15px;color:#122046">Purchases &amp; enrolments<span style="color:#98a3b6">›</span></a>
+        <a href="Support Tickets.dc.html" style="padding:16px 24px;display:flex;justify-content:space-between;border-bottom:1px solid #eff1f5;font-size:15px;color:#122046">Help &amp; support tickets<span style="color:#98a3b6">›</span></a>
+        <a href="Legal.dc.html" style="padding:16px 24px;display:flex;justify-content:space-between;border-bottom:1px solid #eff1f5;font-size:15px;color:#122046">Privacy &amp; terms<span style="color:#98a3b6">›</span></a>
+        <a href="Login.dc.html" style="padding:16px 24px;display:flex;font-size:15px;font-weight:600;color:#c43b3b">Sign out</a>
+      </section>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { q: '480p', t: { live: true, notes: true, wifi: false } };
+  renderVals() {
+    const s = this.state;
+    const T = [['live', 'Live class reminders', 'Push notification 5 minutes before class.'], ['notes', 'New notes & recordings', 'Alerts when teachers upload material.'], ['wifi', 'Download on wifi only', 'Pause offline downloads on mobile data.']];
+    return {
+      qualities: ['Auto', '360p', '480p', '720p'].map(q => ({ label: q, pick: () => this.setState({ q }),
+        style: { height: 30, padding: '0 12px', border: 0, borderRadius: 6, font: 'inherit', fontSize: 13, fontWeight: 600, cursor: 'pointer', background: s.q === q ? '#fff' : 'transparent', color: s.q === q ? '#122046' : '#6b7a90', boxShadow: s.q === q ? '0 1px 3px rgba(18,32,70,0.1)' : 'none' } })),
+      toggles: T.map(([k, label, sub]) => { const on = s.t[k]; return { label, sub, flip: () => this.setState({ t: { ...s.t, [k]: !on } }),
+        track: { width: 42, height: 24, borderRadius: 12, border: 0, padding: 3, cursor: 'pointer', background: on ? '#2962ff' : '#d5dae4', display: 'flex', justifyContent: on ? 'flex-end' : 'flex-start' },
+        knob: { width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' } }; }),
+    };
+  }
+}
+</script>
+</body>
+</html>

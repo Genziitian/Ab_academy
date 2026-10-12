@@ -4,10 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('splash shows the academy name', (tester) async {
-    await tester.pumpWidget(const ProviderScope(child: AkhandBharatAcademyApp()));
+    await tester.pumpWidget(
+      const ProviderScope(child: AkhandBharatAcademyApp()),
+    );
     await tester.pump();
 
     expect(find.text('Akhand Bharat Academy'), findsOneWidget);
-    expect(find.text('Learn. Revise. Succeed.'), findsOneWidget);
+    expect(find.text('Class 11 & 12 Crash Courses'), findsOneWidget);
   });
 }

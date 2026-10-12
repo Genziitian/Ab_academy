@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/env.dart';
-import '../models/community.dart';
 import '../models/course.dart';
 import '../models/popup.dart';
 import '../models/ticket.dart';
@@ -14,7 +13,9 @@ import '../remote/supabase_client.dart';
 /// True when a Supabase project is configured for this build. Screens use it
 /// to decide whether an action is real or should show the "coming soon"
 /// snackbar it showed before.
-final hasBackendProvider = Provider<bool>((ref) => Env.hasBackend && Api.isReady);
+final hasBackendProvider = Provider<bool>(
+  (ref) => Env.hasBackend && Api.isReady,
+);
 
 // --------------------------------------------------------------- session
 
@@ -37,7 +38,11 @@ final remoteCatalogProvider = FutureProvider.family<List<Course>, int?>((
   ref,
   classLevel,
 ) async {
-  if (!ref.watch(hasBackendProvider)) return MockData.courses;
+  if (!ref.watch(hasBackendProvider)) {
+    return classLevel == null
+        ? MockData.catalog
+        : MockData.catalog.where((c) => c.classLevel == classLevel).toList();
+  }
   return Repo.catalog(classLevel: classLevel);
 });
 
@@ -51,7 +56,7 @@ final remoteCourseProvider = FutureProvider.family<Course?, String>((
   id,
 ) async {
   if (!ref.watch(hasBackendProvider)) {
-    return MockData.courses.where((c) => c.id == id).firstOrNull;
+    return MockData.catalog.where((c) => c.id == id).firstOrNull;
   }
   return Repo.course(id);
 });
@@ -103,20 +108,6 @@ final remoteLessonCommentsProvider =
       return Repo.lessonComments(lessonId);
     });
 
-// ----------------------------------------------------------- communities
-
-final remoteCommunitiesProvider = FutureProvider<List<Community>>((ref) async {
-  if (!ref.watch(hasBackendProvider)) return MockData.communities;
-  return Repo.communities();
-});
-
-/// Live message feed for one community, over the realtime publication.
-final communityFeedProvider =
-    StreamProvider.family<List<CommunityMessage>, String>((ref, communityId) {
-      if (!ref.watch(hasBackendProvider)) return const Stream.empty();
-      return Repo.communityStream(communityId);
-    });
-
 // --------------------------------------------------------------- tickets
 
 final remoteTicketsProvider = FutureProvider<List<Ticket>>((ref) async {
@@ -144,19 +135,21 @@ typedef RemoteNotification = ({
   String? deepLink,
 });
 
-final remoteNotificationsProvider =
-    FutureProvider<List<RemoteNotification>>((ref) async {
-      if (!ref.watch(hasBackendProvider)) return const [];
-      return Repo.notifications();
-    });
+final remoteNotificationsProvider = FutureProvider<List<RemoteNotification>>((
+  ref,
+) async {
+  if (!ref.watch(hasBackendProvider)) return const [];
+  return Repo.notifications();
+});
 
 /// Realtime notification stream — replaces the simulated timer the home
 /// screen used on mock data.
-final notificationStreamProvider =
-    StreamProvider<List<Map<String, dynamic>>>((ref) {
-      if (!ref.watch(hasBackendProvider)) return const Stream.empty();
-      return Repo.notificationStream();
-    });
+final notificationStreamProvider = StreamProvider<List<Map<String, dynamic>>>((
+  ref,
+) {
+  if (!ref.watch(hasBackendProvider)) return const Stream.empty();
+  return Repo.notificationStream();
+});
 
 // ---------------------------------------------------------------- popups
 

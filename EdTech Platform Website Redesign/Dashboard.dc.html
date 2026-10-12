@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',sans-serif;color:#0f1b2d;background:#f7f8fc;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="display:flex;min-height:100vh;font-family:'IBM Plex Sans',sans-serif">
+  <dc-import name="PortalSidebar" active="dashboard" hint-size="248px,100vh"></dc-import>
+  <div style="flex:1;min-width:0">
+    <dc-import name="PortalTopbar" title="Good morning, Rahul" crumb="Class 10 · Bihar Board · Hindi medium" hint-size="100%,68px"></dc-import>
+    <div style="padding:28px 32px 48px;display:flex;flex-wrap:wrap;gap:24px;max-width:1280px;align-items:flex-start">
+      <div style="flex:1 1 520px;display:flex;flex-direction:column;gap:24px;min-width:0">
+        <section style="border-radius:12px;background:#122046;color:#fff;padding:28px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:20px">
+          <div style="flex:1 1 280px;min-width:0">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px"><span style="white-space:nowrap;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:4px;background:rgba(255,93,143,0.18);color:#ff8fb0;font-size:12px;font-weight:700;letter-spacing:0.06em"><span style="width:7px;height:7px;border-radius:50%;background:#ff5d8f"></span>LIVE NOW</span><span style="font-size:13px;color:#9aa7c2;white-space:nowrap">Today · 6:00 PM · 327 students</span></div>
+            <p style="margin:20px 0 0;font-size:13px;font-weight:600;letter-spacing:0.04em;color:#9fb8ff;white-space:nowrap">MATHEMATICS · CHAPTER 04</p>
+            <h2 style="margin:6px 0 0;font-size:30px;font-weight:700;letter-spacing:-0.02em">Quadratic Equations</h2>
+            <div style="margin-top:16px;display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:50%;background:#2a3a6e;color:#c7d4ff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center">AS</span><span style="font-size:14px;color:#c8d1e4">Amit Sir</span></div>
+          </div>
+          <a href="Live Classroom.dc.html" style="height:46px;padding:0 20px;display:flex;align-items:center;gap:8px;flex-shrink:0;white-space:nowrap;border-radius:8px;background:#fff;color:#122046;font-size:15px;font-weight:600">Join Live Class →</a>
+        </section>
+
+        <section>
+          <h3 style="margin:0 0 12px;font-size:16px;font-weight:600;color:#122046">Continue learning</h3>
+          <a href="Lecture.dc.html" style="display:flex;gap:16px;padding:16px;background:#fff;border:1px solid #e6ebf5;border-radius:12px" style-hover="border-color:#c9d6f5">
+            <div style="position:relative;width:clamp(96px,30%,140px);height:90px;border-radius:8px;background:#e8fff6;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(20,22,28,0.12)"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#14b8a6"></path></svg></span><span style="position:absolute;right:8px;bottom:8px;padding:2px 6px;border-radius:4px;background:rgba(18,32,70,0.75);color:#fff;font-size:11px;font-weight:600">18:42</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0">
+              <div><p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.06em;color:#0f8f81">SCIENCE</p><p style="margin:4px 0 0;font-size:16px;font-weight:600;color:#122046">Chapter 4 · Carbon and its Compounds</p></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#6b7a90">68% complete</span><span style="font-weight:600;color:#2962ff">Continue →</span></div><div style="margin-top:8px;height:6px;border-radius:3px;background:#edeff4"><div style="width:68%;height:100%;border-radius:3px;background:#14b8a6"></div></div></div>
+            </div>
+          </a>
+        </section>
+
+        <section>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 style="margin:0;font-size:16px;font-weight:600;color:#122046">My courses</h3><a href="My Courses.dc.html" style="font-size:14px;font-weight:600">See all</a></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+            <sc-for list="{{ courses }}" as="c" hint-placeholder-count="2">
+              <a href="My Courses.dc.html" style="display:block;padding:20px;background:#fff;border:1px solid #e6ebf5;border-radius:12px" style-hover="border-color:#c9d6f5">
+                <div style="display:flex;justify-content:space-between;gap:12px"><div><p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.06em;color:#6b7a90">{{ c.batch }}</p><p style="margin:6px 0 0;font-size:16px;font-weight:600;color:#122046">{{ c.title }}</p><p style="margin:4px 0 0;font-size:13px;color:#6b7a90">{{ c.next }}</p></div><span style="font-size:20px;font-weight:700;color:#2962ff">{{ c.pct }}%</span></div>
+                <div style="margin-top:16px;height:6px;border-radius:3px;background:#edeff4"><div style="{{ c.bar }}"></div></div>
+                <p style="margin:10px 0 0;font-size:12px;color:#6b7a90">{{ c.chapters }}</p>
+              </a>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display:flex;gap:16px;padding:18px 20px;border-radius:12px;background:#fff8ec;border:1px solid #f6e3c4">
+          <span style="width:40px;height:40px;border-radius:10px;background:#ffecd6;color:#c06a1a;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v4H4V5Zm0 7h10v7H4v-7Zm12 0h4v7h-4v-7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span>
+          <div style="flex:1"><p style="margin:0;font-size:15px;font-weight:600;color:#122046">Science test on Sunday</p><p style="margin:3px 0 0;font-size:14px;color:#8a6a3e">20 questions · Chapter 1–4</p></div>
+          <a href="Calendar.dc.html" style="align-self:center;font-size:14px;font-weight:600;color:#c06a1a">View Details →</a>
+        </section>
+      </div>
+
+      <div style="flex:1 1 280px;max-width:100%;display:flex;flex-direction:column;gap:24px">
+        <section style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0;font-size:16px;font-weight:600;color:#122046">Today's schedule</h3><a href="Calendar.dc.html" style="font-size:13px;font-weight:600">Calendar →</a></div>
+          <div style="margin-top:18px;display:flex;flex-direction:column">
+            <sc-for list="{{ schedule }}" as="s" hint-placeholder-count="3">
+              <div style="display:flex;gap:14px">
+                <div style="width:58px;flex-shrink:0;font-size:13px;font-weight:600;color:{{ s.timeColor }}">{{ s.time }}</div>
+                <div style="flex:1;padding:0 0 18px 14px;border-left:2px solid #edeff4">
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;font-weight:600;color:#122046">{{ s.title }}</span><sc-if value="{{ s.live }}" hint-placeholder-val="{{ false }}"><span style="padding:1px 6px;border-radius:4px;background:#fde8e8;color:#c43b3b;font-size:10px;font-weight:700">LIVE</span></sc-if></div>
+                  <p style="margin:3px 0 0;font-size:13px;color:#6b7a90">{{ s.sub }}</p>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+        <section style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:20px">
+          <h3 style="margin:0;font-size:16px;font-weight:600;color:#122046">This week</h3>
+          <div style="margin-top:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <div style="padding:14px;border-radius:8px;background:#f5f8ff"><p style="margin:0;font-size:22px;font-weight:700;color:#122046">12/28</p><p style="margin:2px 0 0;font-size:12px;color:#6b7a90">Chapters done</p></div>
+            <div style="padding:14px;border-radius:8px;background:#f5f8ff"><p style="margin:0;font-size:22px;font-weight:700;color:#122046">17/20</p><p style="margin:2px 0 0;font-size:12px;color:#6b7a90">Last test score</p></div>
+          </div>
+        </section>
+        <section style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0;font-size:16px;font-weight:600;color:#122046">Latest updates</h3><a href="Notifications.dc.html" style="font-size:13px;font-weight:600">All</a></div>
+          <div style="margin-top:12px;display:flex;flex-direction:column">
+            <a href="Study Materials.dc.html" style="padding:12px 0;border-bottom:1px solid #eff1f5"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">New notes uploaded</p><p style="margin:2px 0 0;font-size:13px;color:#6b7a90">Chapter 04 notes — Carbon and its Compounds.</p></a>
+            <a href="Lecture.dc.html" style="padding:12px 0"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">New recording available</p><p style="margin:2px 0 0;font-size:13px;color:#6b7a90">Yesterday's Science class recording is now available.</p></a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const bar = p => ({ width: p + '%', height: '100%', borderRadius: 3, background: '#2962ff' });
+    return {
+      courses: [
+        { batch: 'BIHAR BOARD · 2027 BATCH', title: 'Class 10 Complete Batch', next: 'Next: Mathematics · Quadratic Equations', pct: 42, bar: bar(42), chapters: '12 of 28 chapters' },
+        { batch: 'BIHAR BOARD · 2027 BATCH', title: 'Mathematics Board Booster', next: 'Next: Trigonometry revision', pct: 65, bar: bar(65), chapters: '13 of 20 chapters' },
+      ],
+      schedule: [
+        { time: '4:00 PM', title: 'Hindi Grammar Revision', sub: 'Recorded · 45 min', timeColor: '#6b7a90' },
+        { time: '6:00 PM', title: 'Mathematics', sub: 'Quadratic Equations · Amit Sir', live: true, timeColor: '#122046' },
+        { time: '7:30 PM', title: 'Science', sub: 'Carbon & Compounds · 52 min', timeColor: '#6b7a90' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,9 +1,25 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+/** Student portal routes; signed-out visitors are sent to /login. */
+const PORTAL_PREFIXES = [
+  "/dashboard",
+  "/my-courses",
+  "/lecture",
+  "/live",
+  "/calendar",
+  "/materials",
+  "/downloads",
+  "/notifications",
+  "/support",
+  "/profile",
+  "/checkout",
+];
+
 /**
  * Refreshes the Supabase session on every request (tokens are short-lived, and
- * Server Components cannot write cookies) and blocks /admin for anyone who is
+ * Server Components cannot write cookies), sends signed-out visitors from
+ * /admin and the student portal to /login, and blocks /admin for anyone who is
  * not signed-in staff.
  *
  * `requireAdmin()` repeats the role check: middleware runs before the request
@@ -37,14 +53,20 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/admin") && !user) {
+  const needsLogin =
+    pathname.startsWith("/admin") ||
+    PORTAL_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
+  if (needsLogin && !user) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
+    loginUrl.search = "";
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Already signed in and visiting /login — send staff to the console.
+  // Already signed in and visiting /login — staff go to the console, students
+  // to their dashboard (or wherever `next` points).
   if (pathname === "/login" && user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -52,12 +74,15 @@ export async function middleware(request: NextRequest) {
       .eq("id", user.id)
       .maybeSingle();
 
-    if (["admin", "super_admin", "teacher"].includes(profile?.role ?? "")) {
-      const adminUrl = request.nextUrl.clone();
-      adminUrl.pathname = request.nextUrl.searchParams.get("next") || "/admin";
-      adminUrl.search = "";
-      return NextResponse.redirect(adminUrl);
-    }
+    const staff = ["admin", "super_admin", "teacher"].includes(profile?.role ?? "");
+    const next = request.nextUrl.searchParams.get("next");
+    const safe = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+    const target = request.nextUrl.clone();
+    target.pathname = safe ?? (staff ? "/admin" : "/dashboard");
+    target.search = "";
+    // A student bounced from /admin would loop; send them to the portal.
+    if (!staff && target.pathname.startsWith("/admin")) target.pathname = "/dashboard";
+    return NextResponse.redirect(target);
   }
 
   return response;

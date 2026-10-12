@@ -3,29 +3,34 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
-/// 8pt spacing scale and the radii used across the design.
+/// Radii from the redesign: flat, 8–16px corners rather than soft pills.
 abstract final class AppRadius {
   static const pill = BorderRadius.all(Radius.circular(999));
   static const xl = BorderRadius.all(Radius.circular(22));
-  static const lg = BorderRadius.all(Radius.circular(20));
-  static const card = BorderRadius.all(Radius.circular(18));
-  static const md = BorderRadius.all(Radius.circular(16));
-  static const button = BorderRadius.all(Radius.circular(15));
-  static const sm = BorderRadius.all(Radius.circular(14));
-  static const xs = BorderRadius.all(Radius.circular(12));
-  static const tag = BorderRadius.all(Radius.circular(10));
+  static const lg = BorderRadius.all(Radius.circular(16));
+  static const card = BorderRadius.all(Radius.circular(12));
+  static const md = BorderRadius.all(Radius.circular(14));
+  static const button = BorderRadius.all(Radius.circular(10));
+  static const sm = BorderRadius.all(Radius.circular(10));
+  static const xs = BorderRadius.all(Radius.circular(8));
+  static const tag = BorderRadius.all(Radius.circular(6));
+  static const badge = BorderRadius.all(Radius.circular(4));
 }
 
+/// The redesign is mostly flat — hairline borders instead of drop shadows.
 abstract final class AppShadow {
-  static const card = [BoxShadow(color: Color(0x0A14161C), blurRadius: 2, offset: Offset(0, 1))];
+  static const card = <BoxShadow>[];
   static const cardRaised = [
-    BoxShadow(color: Color(0x0D14161C), blurRadius: 3, offset: Offset(0, 1)),
+    BoxShadow(color: Color(0x14122046), blurRadius: 2, offset: Offset(0, 1)),
   ];
-  static const primaryButton = [
-    BoxShadow(color: Color(0x403A3F99), blurRadius: 16, offset: Offset(0, 6)),
+  static const primaryButton = <BoxShadow>[];
+  static const hero = <BoxShadow>[];
+  static const page = [
+    BoxShadow(color: Color(0x14122046), blurRadius: 14, offset: Offset(0, 4)),
   ];
-  static const hero = [BoxShadow(color: Color(0x381C1F4A), blurRadius: 24, offset: Offset(0, 10))];
-  static const modal = [BoxShadow(color: Color(0x2414161C), blurRadius: 28, offset: Offset(0, 12))];
+  static const modal = [
+    BoxShadow(color: Color(0x24122046), blurRadius: 28, offset: Offset(0, 12)),
+  ];
 }
 
 abstract final class AppTheme {
@@ -39,17 +44,17 @@ abstract final class AppTheme {
         surface: AppColors.surface,
         error: AppColors.liveInk,
       ),
-      textTheme: GoogleFonts.plusJakartaSansTextTheme(
+      textTheme: GoogleFonts.ibmPlexSansTextTheme(
         base.textTheme,
       ).apply(bodyColor: AppColors.ink, displayColor: AppColors.ink),
       splashFactory: InkRipple.splashFactory,
       dividerColor: AppColors.divider,
       snackBarTheme: const SnackBarThemeData(
-        backgroundColor: AppColors.ink,
+        backgroundColor: AppColors.primaryDeep,
         contentTextStyle: TextStyle(
           color: Colors.white,
-          fontSize: 12.5,
-          fontWeight: FontWeight.w600,
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
         ),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: AppRadius.sm),

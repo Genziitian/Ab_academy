@@ -70,7 +70,7 @@ export default async function AdminCoursesPage() {
         <Card>
           <h2 className="mb-1 font-semibold text-navy">Add a course</h2>
           <p className="mb-4 text-xs text-muted">
-            A community is created for every course automatically, and enrolled students join it.
+            Published courses appear on the website and in the app; untick to save a draft.
           </p>
           <form action={saveCourseAction} className="space-y-3">
             <Field label="Title" name="title" placeholder="Class 11 Science Batch" required />

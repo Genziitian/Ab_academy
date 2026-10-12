@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../config/env.dart';
 import 'supabase_client.dart';
 
 /// Phone-OTP and Google sign-in against Supabase Auth.
@@ -102,6 +104,38 @@ abstract final class AuthRepo {
       return true;
     } catch (_) {
       return false;
+    }
+  }
+
+  /// Signs in as the seeded demo student with email + password, skipping the
+  /// SMS OTP. Returns ok without doing anything on mock data, where the caller
+  /// fakes a session itself.
+  ///
+  /// Debug builds only, deliberately: this is a way around authentication, and
+  /// a release build on a student's phone must not carry one.
+  static Future<({bool ok, String? error})> quickLogin() async {
+    if (!enabled) return (ok: true, error: null);
+
+    if (!kDebugMode) {
+      return (ok: false, error: 'Quick login is off in release builds.');
+    }
+    if (!Env.hasDemoLogin) {
+      return (
+        ok: false,
+        error: 'Build with --dart-define=DEMO_EMAIL and DEMO_PASSWORD first.',
+      );
+    }
+
+    try {
+      await Api.auth.signInWithPassword(
+        email: Env.demoEmail,
+        password: Env.demoPassword,
+      );
+      return (ok: true, error: null);
+    } on AuthException catch (e) {
+      return (ok: false, error: e.message);
+    } catch (e) {
+      return (ok: false, error: e.toString());
     }
   }
 

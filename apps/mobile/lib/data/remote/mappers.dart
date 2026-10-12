@@ -1,4 +1,3 @@
-import '../models/community.dart';
 import '../models/course.dart';
 import '../models/ticket.dart';
 import '../models/user.dart';
@@ -15,8 +14,18 @@ String relativeLabel(DateTime when) {
   if (diff.inDays < 7) return '${diff.inDays}d ago';
 
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   return '${when.day} ${months[when.month - 1]}';
 }
@@ -43,7 +52,9 @@ String _durationLabel(int? seconds) {
 String sizeLabel(int? bytes) {
   if (bytes == null || bytes == 0) return 'PDF';
   final mb = bytes / 1048576;
-  return mb >= 1 ? 'PDF • ${mb.toStringAsFixed(1)} MB' : 'PDF • ${(bytes / 1024).round()} KB';
+  return mb >= 1
+      ? 'PDF • ${mb.toStringAsFixed(1)} MB'
+      : 'PDF • ${(bytes / 1024).round()} KB';
 }
 
 // ------------------------------------------------------------------ student
@@ -71,7 +82,8 @@ Course courseFromRow(Json row, {required bool isEnrolled}) {
       .map(
         (t) => Teacher(
           displayName: (t!['display_name'] as String?) ?? 'Faculty',
-          subject: ((t['subjects'] as List?)?.firstOrNull as String?) ?? 'Faculty',
+          subject:
+              ((t['subjects'] as List?)?.firstOrNull as String?) ?? 'Faculty',
           yearsExperience: 0,
         ),
       )
@@ -97,7 +109,8 @@ Course courseFromRow(Json row, {required bool isEnrolled}) {
     ].join(' • '),
     board: (row['board'] as String?) ?? 'Bihar Board',
     classLevel: (row['class_level'] as int?) ?? 10,
-    batchLabel: '${((row['board'] as String?) ?? 'Bihar Board').toUpperCase()} • '
+    batchLabel:
+        '${((row['board'] as String?) ?? 'Bihar Board').toUpperCase()} • '
         '${batchName.toUpperCase()}',
     // Progress needs lesson_progress, which is not modelled yet; show 0 rather
     // than inventing a number.
@@ -112,6 +125,9 @@ Course courseFromRow(Json row, {required bool isEnrolled}) {
     isEnrolled: isEnrolled,
     lessonsCount: (row['lessons_count'] as int?) ?? 0,
     highlights: ((row['highlights'] as List?) ?? const []).cast<String>(),
+    rating: (row['rating'] as num?)?.toDouble(),
+    thumbnailHue: (row['thumbnail_hue'] as int?) ?? 214,
+    language: (row['language'] as String?) ?? 'Hindi + English',
   );
 }
 
@@ -150,11 +166,14 @@ Lesson lessonFromRow(Json row, {required bool hasAccess}) {
 List<Chapter> chaptersFromLessons(List<Json> rows, {required bool hasAccess}) {
   final byChapter = <String, List<Json>>{};
   final titles = <String, String>{};
+  final subjects = <String, String>{};
 
   for (final row in rows) {
     final chapter = row['chapters'] as Json?;
     final id = (chapter?['id'] as String?) ?? 'unknown';
     titles[id] = (chapter?['title'] as String?) ?? 'Chapter';
+    subjects[id] =
+        ((chapter?['subjects'] as Json?)?['name'] as String?) ?? 'General';
     (byChapter[id] ??= []).add(row);
   }
 
@@ -167,47 +186,14 @@ List<Chapter> chaptersFromLessons(List<Json> rows, {required bool hasAccess}) {
     return Chapter(
       number: number,
       title: titles[entry.key] ?? 'Chapter',
+      subject: subjects[entry.key] ?? 'General',
       lessonsCompleted: 0,
       lessonsTotal: lessons.length,
       lessons: lessons,
-      isLocked: !hasAccess && lessons.every((l) => l.state == LessonState.locked),
+      isLocked:
+          !hasAccess && lessons.every((l) => l.state == LessonState.locked),
     );
   }).toList();
-}
-
-// -------------------------------------------------------------- communities
-
-CommunityMessage communityMessageFromRow(Json row, {String? myUserId}) {
-  final author = row['profiles'] as Json?;
-  final name = (author?['full_name'] as String?) ?? 'Student';
-  final role = (author?['role'] as String?) ?? 'student';
-
-  return CommunityMessage(
-    id: row['id'] as String,
-    author: name,
-    initials: initialsOf(name),
-    body: (row['body'] as String?) ?? '',
-    timeLabel: relativeLabel(parseTs(row['created_at'])),
-    pinned: (row['pinned'] as bool?) ?? false,
-    isTeacher: role != 'student',
-    isMe: myUserId != null && row['author_id'] == myUserId,
-  );
-}
-
-Community communityFromRow(Json row, List<CommunityMessage> messages) {
-  final course = row['courses'] as Json?;
-  final subjects = ((course?['subjects'] as List?) ?? const []).cast<String>();
-
-  return Community(
-    id: row['id'] as String,
-    courseId: (row['course_id'] as String?) ?? '',
-    name: (row['name'] as String?) ?? 'Community',
-    subject: subjects.firstOrNull ?? 'General',
-    memberCount: ((row['community_members'] as List?)?.firstOrNull
-            as Json?)?['count'] as int? ??
-        0,
-    messages: messages,
-  );
 }
 
 // ------------------------------------------------------------------ tickets
@@ -243,12 +229,12 @@ String ticketCategoryTo(TicketCategory category) => switch (category) {
 };
 
 Ticket ticketFromRow(Json row) {
-  final messageRows = ((row['ticket_messages'] as List?) ?? const [])
-      .cast<Json>()
-      .toList()
-    ..sort(
-      (a, b) => parseTs(a['created_at']).compareTo(parseTs(b['created_at'])),
-    );
+  final messageRows =
+      ((row['ticket_messages'] as List?) ?? const []).cast<Json>().toList()
+        ..sort(
+          (a, b) =>
+              parseTs(a['created_at']).compareTo(parseTs(b['created_at'])),
+        );
 
   return Ticket(
     id: row['id'] as String,

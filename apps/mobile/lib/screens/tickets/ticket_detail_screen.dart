@@ -1,47 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../data/models/ticket.dart';
 import '../../data/providers/feature_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
-import '../../theme/app_theme.dart';
-import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
-import '../lessons/lecture_screen.dart';
 import 'tickets_screen.dart';
 
-class TicketDetailScreen extends ConsumerStatefulWidget {
+/// 21 · Ticket detail — the conversation with support, plus a reply box.
+class TicketDetailScreen extends ConsumerWidget {
   const TicketDetailScreen({super.key, required this.ticketId});
 
   final String ticketId;
 
   @override
-  ConsumerState<TicketDetailScreen> createState() => _TicketDetailScreenState();
-}
-
-class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
-  final _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _send() {
-    final body = _controller.text.trim();
-    if (body.isEmpty) return;
-    ref.read(ticketsProvider.notifier).reply(widget.ticketId, body);
-    _controller.clear();
-    FocusScope.of(context).unfocus();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final ticket = ref.watch(ticketByIdProvider(widget.ticketId));
-    final palette = ticketStatusPalette(ticket.status);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ticket = ref.watch(ticketByIdProvider(ticketId));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -49,72 +24,70 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
         bottom: false,
         child: Column(
           children: [
-            AppTopBar(title: ticket.reference, subtitle: ticket.category.label),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: AppColors.surface,
+                border: Border(bottom: BorderSide(color: AppColors.border)),
+              ),
+              padding: const EdgeInsets.fromLTRB(8, 4, 20, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppCard(
-                    shadow: null,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: Text(ticket.subject, style: AppText.cardTitle)),
-                            const SizedBox(width: 10),
-                            StatusBadge(
-                              label: ticket.status.label.toUpperCase(),
-                              color: palette.ink,
-                              background: palette.tint,
-                            ),
-                          ],
+                  Row(
+                    children: [
+                      IconButton(
+                        tooltip: 'Back',
+                        onPressed: () => Navigator.of(context).maybePop(),
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          size: 22,
+                          color: AppColors.ink,
                         ),
-                        const SizedBox(height: 8),
-                        Text(ticket.openedLabel, style: AppText.metaSm),
-                      ],
+                      ),
+                      Text(
+                        ticket.reference,
+                        style: AppText.mono(12, color: AppColors.textMuted),
+                      ),
+                      const SizedBox(width: 10),
+                      TicketStatusBadge(status: ticket.status),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12),
+                    child: Text(
+                      ticket.subject,
+                      style: AppText.tabular(16, FontWeight.w600),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  for (final message in ticket.messages) ...[
-                    _TicketMessageTile(message: message),
-                    const SizedBox(height: 14),
-                  ],
-                  if (ticket.isClosed) ...[
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: const BoxDecoration(
-                        color: AppColors.fillMutedAlt,
-                        borderRadius: AppRadius.sm,
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            LucideIcons.checkCircle,
-                            size: 16,
-                            color: AppColors.scienceInk,
-                          ),
-                          const SizedBox(width: 9),
-                          Expanded(
-                            child: Text(
-                              'This ticket is ${ticket.status.label.toLowerCase()}. '
-                              'Reply below to reopen it.',
-                              style: AppText.tabular(
-                                12,
-                                FontWeight.w500,
-                                color: AppColors.textMuted,
-                              ).copyWith(height: 1.4),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
-            MessageComposer(controller: _controller, hint: 'Write a reply…', onSend: _send),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                itemCount: ticket.messages.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (_, i) => _Bubble(message: ticket.messages[i]),
+              ),
+            ),
+            if (ticket.isClosed)
+              Container(
+                width: double.infinity,
+                color: AppColors.surface,
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+                child: Text(
+                  'This ticket is ${ticket.status.label.toLowerCase()}. Raise a new one if the problem comes back.',
+                  textAlign: TextAlign.center,
+                  style: AppText.meta,
+                ),
+              )
+            else
+              MessageComposer(
+                hint: 'Write a reply…',
+                onSend: (body) =>
+                    ref.read(ticketsProvider.notifier).reply(ticketId, body),
+              ),
           ],
         ),
       ),
@@ -122,74 +95,67 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
   }
 }
 
-class _TicketMessageTile extends StatelessWidget {
-  const _TicketMessageTile({required this.message});
+class _Bubble extends StatelessWidget {
+  const _Bubble({required this.message});
 
   final TicketMessage message;
 
   @override
   Widget build(BuildContext context) {
-    final fromSupport = message.fromSupport;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: fromSupport ? AppColors.primaryTint : AppColors.fillMuted,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            fromSupport ? LucideIcons.headphones : LucideIcons.user,
-            size: 15,
-            color: fromSupport ? AppColors.primary : AppColors.textMuted,
-          ),
+    final mine = !message.fromSupport;
+    return Align(
+      alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.sizeOf(context).width * 0.8,
         ),
-        const SizedBox(width: 11),
-        Expanded(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: mine ? AppColors.primary : AppColors.surface,
+            border: mine ? null : Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(12),
+              topRight: const Radius.circular(12),
+              bottomLeft: Radius.circular(mine ? 12 : 2),
+              bottomRight: Radius.circular(mine ? 2 : 12),
+            ),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      message.authorName ?? 'You',
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.tabular(12.5, FontWeight.w700),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(message.timeLabel, style: AppText.metaSm.copyWith(fontSize: 11)),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(13),
-                decoration: BoxDecoration(
-                  color: fromSupport ? const Color(0xFFF5F6FD) : AppColors.surface,
-                  borderRadius: AppRadius.sm,
-                  border: Border.all(
-                    color: fromSupport ? const Color(0xFFE3E5F6) : AppColors.border,
+              if (!mine) ...[
+                Text(
+                  message.authorName ?? 'Support',
+                  style: AppText.tabular(
+                    11,
+                    FontWeight.w600,
+                    color: AppColors.primary,
                   ),
                 ),
-                child: Text(
-                  message.body,
-                  style: AppText.tabular(
-                    13,
-                    FontWeight.w400,
-                    color: AppColors.textBodyAlt,
-                  ).copyWith(height: 1.55),
+                const SizedBox(height: 4),
+              ],
+              Text(
+                message.body,
+                style: AppText.tabular(
+                  13,
+                  FontWeight.w400,
+                  color: mine ? Colors.white : AppColors.ink,
+                ).copyWith(height: 1.55),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                message.timeLabel,
+                style: AppText.tabular(
+                  11,
+                  FontWeight.w400,
+                  color: mine ? const Color(0xFFC7D6FF) : AppColors.textSubtle,
                 ),
               ),
             ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

@@ -1,78 +1,51 @@
+import Link from "next/link";
+import { ContactForm } from "./ContactForm";
+
 export const metadata = {
   title: "Contact",
   description: "Contact Akhand Bharat Academy support.",
 };
 
+const rows = [
+  ["Email", "support@akhandbharatacademy.in"],
+  ["WhatsApp", "+91 90000 00000 (placeholder)"],
+  ["Hours", "Mon–Sat, 9:00 AM – 7:00 PM IST"],
+];
+
 export default function ContactPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-      <div className="grid gap-10 lg:grid-cols-2">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">
-            Contact
-          </p>
-          <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight">
-            We&apos;re here to help
-          </h1>
-          <p className="mt-4 text-muted">
-            Questions about courses, payments or live classes? Reach the support
-            team — OTP login and tickets will connect here in a later phase.
-          </p>
-          <dl className="mt-8 space-y-4 text-sm">
-            <div>
-              <dt className="font-semibold text-foreground">Email</dt>
-              <dd className="mt-1 text-muted">support@akhandbharatacademy.in</dd>
+    <section className="mx-auto grid max-w-[1200px] gap-16 px-4 pb-[88px] pt-14 sm:px-6 sm:pt-[72px] lg:grid-cols-2">
+      <div>
+        <p className="eyebrow">Contact</p>
+        <h1 className="mt-3 text-[36px] font-bold leading-[1.1] tracking-[-0.025em] text-navy sm:text-[46px]">
+          We&apos;re here to help
+        </h1>
+        <p className="mt-4 max-w-[460px] text-[17px] leading-[1.6] text-ink">
+          Questions about courses, payments or live classes? Reach the support
+          team.
+        </p>
+        <div className="mt-9 rounded-xl border border-border bg-white">
+          {rows.map(([label, value], index) => (
+            <div
+              key={label}
+              className={`flex flex-wrap justify-between gap-x-4 gap-y-1 px-[22px] py-[18px] ${
+                index < rows.length - 1 ? "border-b border-border" : ""
+              }`}
+            >
+              <span className="text-sm text-muted">{label}</span>
+              <span className="text-[15px] font-semibold text-navy">{value}</span>
             </div>
-            <div>
-              <dt className="font-semibold text-foreground">WhatsApp</dt>
-              <dd className="mt-1 text-muted">+91 90000 00000 (placeholder)</dd>
-            </div>
-            <div>
-              <dt className="font-semibold text-foreground">Hours</dt>
-              <dd className="mt-1 text-muted">Mon–Sat, 9:00 AM – 7:00 PM IST</dd>
-            </div>
-          </dl>
+          ))}
         </div>
-
-        <form className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-soft)]">
-          <label className="block text-sm font-medium">
-            Full name
-            <input
-              type="text"
-              name="name"
-              className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2.5 outline-none focus:border-primary"
-              placeholder="Rahul Kumar"
-            />
-          </label>
-          <label className="mt-4 block text-sm font-medium">
-            Mobile number
-            <input
-              type="tel"
-              name="phone"
-              className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2.5 outline-none focus:border-primary"
-              placeholder="98765 43210"
-            />
-          </label>
-          <label className="mt-4 block text-sm font-medium">
-            Message
-            <textarea
-              name="message"
-              rows={4}
-              className="mt-2 w-full rounded-xl border border-border bg-background px-3 py-2.5 outline-none focus:border-primary"
-              placeholder="How can we help?"
-            />
-          </label>
-          <button
-            type="button"
-            className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-primary-dark"
-          >
-            Send message
-          </button>
-          <p className="mt-3 text-xs text-muted">
-            Form submit will be wired to backend in a later phase.
-          </p>
-        </form>
+        <p className="mt-5 text-sm text-muted">
+          Already enrolled?{" "}
+          <Link href="/support" className="font-semibold text-primary">
+            Raise a support ticket
+          </Link>{" "}
+          from your portal.
+        </p>
       </div>
-    </div>
+      <ContactForm />
+    </section>
   );
 }

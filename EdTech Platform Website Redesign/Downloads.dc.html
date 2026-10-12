@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500;600&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',sans-serif;color:#0f1b2d;background:#f7f8fc;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="display:flex;min-height:100vh;font-family:'IBM Plex Sans',sans-serif">
+  <dc-import name="PortalSidebar" active="downloads" hint-size="248px,100vh"></dc-import>
+  <div style="flex:1;min-width:0">
+    <dc-import name="PortalTopbar" title="Downloads" crumb="Student portal" hint-size="100%,68px"></dc-import>
+    <div style="padding:28px 32px 48px;max-width:1080px;display:flex;flex-direction:column;gap:20px">
+      <section style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:24px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><h2 style="margin:0;font-size:16px;font-weight:600;color:#122046">Device storage</h2><span style="font-size:14px;color:#6b7a90"><span style="font-weight:600;color:#122046">1.8 GB used</span> · 4.2 GB free</span></div>
+        <div style="margin-top:14px;height:10px;border-radius:5px;background:#edeff4;display:flex;overflow:hidden"><span style="width:26%;background:#2962ff"></span><span style="width:7%;background:#7c5cff"></span></div>
+        <div style="margin-top:12px;display:flex;gap:20px;font-size:13px;color:#4a5872"><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#2962ff"></span>Videos</span><span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#7c5cff"></span>Notes</span></div>
+      </section>
+      <section style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+        <div style="display:flex;gap:4px;padding:0 20px;border-bottom:1px solid #e6ebf5"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for></div>
+        <sc-for list="{{ items }}" as="d" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:16px;padding:16px 20px;border-bottom:1px solid #eff1f5">
+            <span style="{{ d.icon }}">{{ d.kindLabel }}</span>
+            <div style="flex:1;min-width:0"><p style="margin:0;font-size:15px;font-weight:600;color:#122046">{{ d.title }}</p><p style="margin:2px 0 0;font-size:13px;color:#6b7a90">{{ d.meta }}</p><sc-if value="{{ d.downloading }}" hint-placeholder-val="{{ false }}"><div style="margin-top:8px;height:4px;width:240px;border-radius:2px;background:#edeff4"><div style="width:62%;height:100%;border-radius:2px;background:#2962ff"></div></div></sc-if></div>
+            <a href="{{ d.href }}" style="font-size:13px;font-weight:600">{{ d.cta }}</a>
+            <button onClick="{{ d.remove }}" style="height:32px;padding:0 10px;border:1px solid #e6ebf5;border-radius:6px;background:#fff;font:inherit;font-size:13px;color:#6b7a90;cursor:pointer">Remove</button>
+          </div>
+        </sc-for>
+      </section>
+      <p style="margin:0;font-size:13px;color:#6b7a90">Tip: download lessons overnight on wifi. Set video quality under <a href="Profile.dc.html" style="font-weight:600">Profile → Learning</a>.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const D = [
+  { title: 'Mathematics · Quadratic Equations', kind: 'video', meta: '48 min · 320 MB' },
+  { title: 'Science · Carbon and its Compounds', kind: 'video', meta: 'Downloading · 62% of 280 MB', downloading: true },
+  { title: 'Quadratic Equations — formula sheet', kind: 'pdf', meta: '1.1 MB' },
+  { title: 'व्याकरण — समास और संधि', kind: 'pdf', meta: '2.6 MB' },
+];
+class Component extends DCLogic {
+  state = { tab: 'all', gone: [] };
+  renderVals() {
+    const s = this.state;
+    const tab = on => ({ height: 48, padding: '0 14px', border: 0, background: 'none', font: 'inherit', fontSize: 14, fontWeight: on ? 600 : 500, color: on ? '#2962ff' : '#6b7a90', borderBottom: on ? '2px solid #2962ff' : '2px solid transparent', cursor: 'pointer' });
+    return {
+      tabs: [['all', 'All'], ['video', 'Videos'], ['pdf', 'Notes']].map(([v, l]) => ({ label: l, style: tab(s.tab === v), pick: () => this.setState({ tab: v }) })),
+      items: D.map((d, i) => ({ ...d, i })).filter(d => !s.gone.includes(d.i) && (s.tab === 'all' || d.kind === s.tab)).map(d => ({ ...d, downloading: !!d.downloading,
+        kindLabel: d.kind === 'video' ? '▶' : 'PDF', cta: d.downloading ? 'Pause' : d.kind === 'video' ? 'Play' : 'Open', href: d.kind === 'video' ? 'Lecture.dc.html' : 'Study Materials.dc.html',
+        remove: () => this.setState({ gone: [...s.gone, d.i] }),
+        icon: { width: 44, height: 44, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: d.kind === 'video' ? 14 : 10, fontWeight: 700, background: d.kind === 'video' ? '#e8f0ff' : '#fde9e9', color: d.kind === 'video' ? '#2962ff' : '#c43b3b' } })),
+    };
+  }
+}
+</script>
+</body>
+</html>

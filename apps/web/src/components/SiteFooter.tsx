@@ -1,102 +1,85 @@
 import Link from "next/link";
 
+const columns = [
+  {
+    title: "Crash courses",
+    links: [
+      { href: "/courses?class=12", label: "Class 12 crash courses" },
+      { href: "/courses?class=11", label: "Class 11 crash courses" },
+      { href: "/notes", label: "Free notes" },
+    ],
+  },
+  {
+    title: "Student services",
+    links: [
+      { href: "/for-students", label: "How learning works" },
+      { href: "/login", label: "Student login" },
+      { href: "/contact", label: "Doubt / support" },
+      { href: "/about", label: "About academy" },
+    ],
+  },
+];
+
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-border bg-navy text-white">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
+    <footer className="mt-auto bg-navy text-white">
+      <div className="mx-auto grid max-w-[1200px] gap-10 px-4 pb-10 pt-14 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
         <div>
-          <p className="text-lg font-bold">Akhand Bharat Academy</p>
-          <p className="mt-3 text-sm leading-relaxed text-white/70">
+          <p className="text-[17px] font-bold">Akhand Bharat Academy</p>
+          <p className="mt-3 max-w-[300px] text-sm leading-[1.65] text-pretty text-[#b7c1d6]">
             Live classes, recordings and notes for ambitious students. Starting
             with Bihar Board — expanding to more domains soon.
           </p>
-          <p className="mt-4 inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/80">
+          <p className="mt-[18px] inline-flex rounded-md border border-white/[0.18] px-2.5 py-[5px] text-xs font-medium text-[#d5dcea]">
             Trusted learning platform
           </p>
         </div>
 
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
-            Academic portals
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-white/80">
-            <li>
-              <Link href="/courses?class=9" className="hover:text-white">
-                Class 9 courses
-              </Link>
-            </li>
-            <li>
-              <Link href="/courses?class=10" className="hover:text-white">
-                Class 10 courses
-              </Link>
-            </li>
-            <li>
-              <Link href="/courses?class=11" className="hover:text-white">
-                Class 11 courses
-              </Link>
-            </li>
-            <li>
-              <Link href="/courses?class=12" className="hover:text-white">
-                Class 12 courses
-              </Link>
-            </li>
-          </ul>
-        </div>
+        {columns.map((column) => (
+          <div key={column.title}>
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#8592ad]">
+              {column.title}
+            </p>
+            <div className="mt-4 flex flex-col gap-2.5 text-sm">
+              {column.links.map((link) => (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="text-[#d5dcea] hover:text-white"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
-            Student services
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#8592ad]">
+            Head office &amp; support
           </p>
-          <ul className="mt-4 space-y-2 text-sm text-white/80">
-            <li>
-              <Link href="/for-students" className="hover:text-white">
-                How learning works
-              </Link>
-            </li>
-            <li>
-              <Link href="/login" className="hover:text-white">
-                Student login
-              </Link>
-            </li>
-            <li>
-              <Link href="/contact" className="hover:text-white">
-                Doubt / support
-              </Link>
-            </li>
-            <li>
-              <Link href="/about" className="hover:text-white">
-                About academy
-              </Link>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/45">
-            Head office & support
-          </p>
-          <ul className="mt-4 space-y-2 text-sm text-white/80">
-            <li>Patna, Bihar (placeholder)</li>
-            <li>+91 90000 00000</li>
-            <li>support@akhandbharatacademy.in</li>
-            <li>Mon–Sat, 9 AM – 7 PM IST</li>
-          </ul>
+          <div className="mt-4 flex flex-col gap-2.5 text-sm text-[#d5dcea]">
+            <span>Patna, Bihar (placeholder)</span>
+            <span>+91 90000 00000</span>
+            <span>support@akhandbharatacademy.in</span>
+            <span>Mon–Sat, 9 AM – 7 PM IST</span>
+          </div>
         </div>
       </div>
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p>
+        <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-4 py-[18px] text-[13px] text-[#8592ad] sm:flex-row sm:justify-between sm:px-6">
+          <span>
             © {new Date().getFullYear()} Akhand Bharat Academy. All rights
             reserved.
-          </p>
-          <div className="flex gap-4">
-            <Link href="/privacy" className="hover:text-white/70">
+          </span>
+          <div className="flex gap-5">
+            <Link href="/privacy" className="hover:text-white">
               Privacy
             </Link>
-            <Link href="/terms" className="hover:text-white/70">
+            <Link href="/terms" className="hover:text-white">
               Terms
             </Link>
-            <Link href="/contact" className="hover:text-white/70">
+            <Link href="/contact" className="hover:text-white">
               Refund / Grievance
             </Link>
           </div>

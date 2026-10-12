@@ -1,4 +1,3 @@
-import '../models/community.dart';
 import '../models/course.dart';
 import '../models/popup.dart';
 import '../models/ticket.dart';
@@ -51,7 +50,7 @@ abstract final class Repo {
 
   static const _courseFields = '''
     id, slug, title, description, board, class_level, language, price_inr,
-    original_price_inr, rating, lessons_count, highlights, subjects,
+    original_price_inr, rating, lessons_count, highlights, subjects, thumbnail_hue,
     is_published,
     course_teachers ( is_primary, teachers ( display_name, subjects ) ),
     course_batches ( id, name )
@@ -175,10 +174,7 @@ abstract final class Repo {
           id: r['id'] as String,
           title: (r['title'] as String?) ?? 'Notes',
           meta: sizeLabel(r['size_bytes'] as int?),
-          url: await Api.signedUrl(
-            'lesson-notes',
-            r['storage_path'] as String,
-          ),
+          url: await Api.signedUrl('lesson-notes', r['storage_path'] as String),
         );
       }),
     );
@@ -186,11 +182,24 @@ abstract final class Repo {
 
   // ------------------------------------------------- doubts under a lesson
 
-  static Future<List<({String id, String author, String initials, String body, String time, bool isStaff})>>
+  static Future<
+    List<
+      ({
+        String id,
+        String author,
+        String initials,
+        String body,
+        String time,
+        bool isStaff,
+      })
+    >
+  >
   lessonComments(String lessonId) async {
     final rows = await Api.client
         .from('lesson_comments')
-        .select('id, body, created_at, author_id, profiles:author_id ( full_name, role )')
+        .select(
+          'id, body, created_at, author_id, profiles:author_id ( full_name, role )',
+        )
         .eq('lesson_id', lessonId)
         .isFilter('parent_id', null)
         .order('created_at');
@@ -226,7 +235,11 @@ abstract final class Repo {
     });
   }
 
-  static Future<void> rateLesson(String lessonId, int rating, String? comment) async {
+  static Future<void> rateLesson(
+    String lessonId,
+    int rating,
+    String? comment,
+  ) async {
     final id = Api.currentUserId;
     if (id == null) return;
 
@@ -236,64 +249,6 @@ abstract final class Repo {
       'rating': rating,
       'comment': comment,
     }, onConflict: 'lesson_id,student_id');
-  }
-
-  // ------------------------------------------------------- communities
-
-  static Future<List<Community>> communities() async {
-    final rows = await Api.client
-        .from('communities')
-        .select('''
-          id, name, course_id,
-          courses ( subjects ),
-          community_members ( count )
-        ''')
-        .order('name');
-
-    return Future.wait(
-      rows.map((row) async {
-        final messages = await communityMessages(row['id'] as String);
-        return communityFromRow(row, messages);
-      }),
-    );
-  }
-
-  static Future<List<CommunityMessage>> communityMessages(
-    String communityId, {
-    int limit = 100,
-  }) async {
-    final rows = await Api.client
-        .from('community_messages')
-        .select('id, body, pinned, created_at, author_id, profiles:author_id ( full_name, role )')
-        .eq('community_id', communityId)
-        .order('created_at')
-        .limit(limit);
-
-    final me = Api.currentUserId;
-    return rows.map((r) => communityMessageFromRow(r, myUserId: me)).toList();
-  }
-
-  static Future<void> postToCommunity(String communityId, String body) async {
-    final id = Api.currentUserId;
-    if (id == null) return;
-
-    await Api.client.from('community_messages').insert({
-      'community_id': communityId,
-      'author_id': id,
-      'body': body,
-    });
-  }
-
-  /// Live feed for one community. Backed by the realtime publication the
-  /// slice 3 migration added.
-  static Stream<List<CommunityMessage>> communityStream(String communityId) {
-    final me = Api.currentUserId;
-    return Api.client
-        .from('community_messages')
-        .stream(primaryKey: ['id'])
-        .eq('community_id', communityId)
-        .order('created_at')
-        .map((rows) => rows.map((r) => communityMessageFromRow(r, myUserId: me)).toList());
   }
 
   // ----------------------------------------------------------- tickets
@@ -366,7 +321,11 @@ abstract final class Repo {
 
   // ----------------------------------------------------- notifications
 
-  static Future<List<({String id, String title, String body, String time, String? deepLink})>>
+  static Future<
+    List<
+      ({String id, String title, String body, String time, String? deepLink})
+    >
+  >
   notifications() async {
     final rows = await Api.client
         .from('notifications')

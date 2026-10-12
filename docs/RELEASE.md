@@ -76,7 +76,7 @@ where id = 'THE-USER-UUID-FROM-STEP-1';
 ```
 
 Roles: `super_admin` and `admin` get everything; `teacher` can manage content,
-schedule, doubts and communities but cannot change courses, pricing or
+schedule and doubts but cannot change courses, pricing or
 enrolments (`is_admin()` vs `is_staff()` in migration 3).
 
 ## 5. Turn on auth providers

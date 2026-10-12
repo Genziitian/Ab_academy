@@ -67,6 +67,11 @@ idempotent guards mean it will not break anything).
 `setup.sql` also backfills communities and memberships for any courses and
 enrolments that already exist.
 
+> The community feature has been removed from both apps and the admin console.
+> The `communities`, `community_members` and `community_messages` tables and
+> their triggers still exist and keep filling in; drop them in a new migration
+> once you are sure no data in them needs keeping.
+
 ## Realtime
 
 `notifications`, `community_messages` and `ticket_messages` are added to the

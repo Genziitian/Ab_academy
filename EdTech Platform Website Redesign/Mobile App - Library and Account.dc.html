@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Sans+Devanagari:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans','IBM Plex Sans Devanagari',sans-serif;color:#0f1b2d;background:#e9edf4;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="padding:64px;font-family:'IBM Plex Sans',sans-serif">
+  <div style="display:flex;align-items:baseline;gap:16px"><h1 style="margin:0;font-size:32px;font-weight:700;color:#122046">Mobile app · Library &amp; Account</h1><span style="white-space:nowrap;font-size:15px;color:#6b7a90">Notes, downloads, notifications, profile and support</span></div>
+  <div style="margin-top:12px;display:flex;gap:16px;font-size:14px"><a href="Mobile App - Onboarding.dc.html">← Onboarding</a><a href="Mobile App - Learn.dc.html">← Learn</a><a href="Mobile App - Live.dc.html">← Live</a><a href="Mobile App - Purchase.dc.html">Purchase →</a></div>
+  <div style="margin-top:40px;display:flex;flex-wrap:wrap;gap:48px">
+
+    <div data-screen-label="16 Notes" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">16 · Notes (study materials)</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#f7f8fc;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" hint-size="100%,44px"></dc-import>
+        <div style="flex:1;overflow:hidden;padding:10px 20px 0;display:flex;flex-direction:column;gap:14px">
+          <h2 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-0.02em;color:#122046">Notes</h2>
+          <div style="height:44px;border:1px solid #e6ebf5;border-radius:10px;background:#fff;padding:0 12px;display:flex;align-items:center;gap:8px;font-size:14px;color:#98a3b6"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"></circle><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>Search notes</div>
+          <div style="display:flex;gap:6px;overflow:hidden"><span style="height:32px;padding:0 12px;border-radius:8px;background:#122046;color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;white-space:nowrap">All</span><span style="height:32px;padding:0 12px;border-radius:8px;background:#fff;border:1px solid #e6ebf5;color:#4a5872;font-size:12px;display:flex;align-items:center;white-space:nowrap">Physics</span><span style="height:32px;padding:0 12px;border-radius:8px;background:#fff;border:1px solid #e6ebf5;color:#4a5872;font-size:12px;display:flex;align-items:center;white-space:nowrap">Chemistry</span><span style="height:32px;padding:0 12px;border-radius:8px;background:#fff;border:1px solid #e6ebf5;color:#4a5872;font-size:12px;display:flex;align-items:center;white-space:nowrap">Maths</span><span style="height:32px;padding:0 12px;border-radius:8px;background:#fff;border:1px solid #e6ebf5;color:#4a5872;font-size:12px;display:flex;align-items:center;white-space:nowrap">Biology</span></div>
+          <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px">
+            <sc-for list="{{ notes }}" as="n" hint-placeholder-count="5">
+              <div style="display:flex;gap:12px;align-items:center;padding:14px;border-bottom:1px solid #eff1f5"><span style="white-space:nowrap;width:38px;height:38px;border-radius:8px;background:#fde9e9;color:#c43b3b;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">PDF</span><div style="flex:1;min-width:0"><p style="margin:0;font-size:11px;font-weight:600;color:{{ n.color }}">{{ n.subject }}</p><p style="margin:2px 0 0;font-size:14px;font-weight:600;color:#122046">{{ n.title }}</p><p style="margin:1px 0 0;font-size:12px;color:#6b7a90">{{ n.meta }}</p></div><span style="white-space:nowrap;{{ n.actStyle }}">{{ n.act }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+        <dc-import name="MobileTabBar" active="notes" hint-size="100%,82px"></dc-import>
+      </div>
+    </div>
+
+    <div data-screen-label="17 Downloads" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">17 · Downloads</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#f7f8fc;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" bg="#fff" hint-size="100%,44px"></dc-import>
+        <div style="background:#fff;padding:8px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #e6ebf5"><span style="white-space:nowrap;font-size:20px;color:#122046">←</span><p style="margin:0;font-size:17px;font-weight:600;color:#122046">Downloads</p></div>
+        <div style="flex:1;overflow:hidden;padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+          <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:16px"><div style="display:flex;justify-content:space-between;font-size:13px"><span style="white-space:nowrap;font-weight:600;color:#122046">1.8 GB used</span><span style="white-space:nowrap;color:#6b7a90">4.2 GB free</span></div><div style="margin-top:10px;height:8px;border-radius:4px;background:#edeff4;display:flex;overflow:hidden"><span style="white-space:nowrap;width:26%;background:#2962ff"></span><span style="white-space:nowrap;width:7%;background:#7c5cff"></span></div><div style="margin-top:10px;display:flex;gap:16px;font-size:12px;color:#4a5872"><span style="white-space:nowrap;display:flex;align-items:center;gap:6px"><span style="white-space:nowrap;width:8px;height:8px;border-radius:2px;background:#2962ff"></span>Videos</span><span style="white-space:nowrap;display:flex;align-items:center;gap:6px"><span style="white-space:nowrap;width:8px;height:8px;border-radius:2px;background:#7c5cff"></span>Notes</span></div></div>
+          <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px">
+            <div style="display:flex;gap:12px;align-items:center;padding:14px;border-bottom:1px solid #eff1f5"><span style="white-space:nowrap;width:52px;height:40px;border-radius:8px;background:#e8f0ff;color:#2962ff;display:flex;align-items:center;justify-content:center;font-size:13px">▶</span><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Physics · Electric Charges</p><p style="margin:1px 0 0;font-size:12px;color:#6b7a90">48 min · 320 MB</p></div><span style="white-space:nowrap;color:#98a3b6">⋯</span></div>
+            <div style="display:flex;gap:12px;align-items:center;padding:14px;border-bottom:1px solid #eff1f5"><span style="white-space:nowrap;width:52px;height:40px;border-radius:8px;background:#e8fff6;color:#0f8f81;display:flex;align-items:center;justify-content:center;font-size:13px">▶</span><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Chemistry · Solutions</p><p style="margin:1px 0 0;font-size:12px;color:#2962ff">Downloading · 62% of 280 MB</p><div style="margin-top:6px;height:4px;border-radius:2px;background:#edeff4"><div style="width:62%;height:100%;border-radius:2px;background:#2962ff"></div></div></div><span style="white-space:nowrap;font-size:12px;font-weight:600;color:#6b7a90">Pause</span></div>
+            <div style="display:flex;gap:12px;align-items:center;padding:14px;border-bottom:1px solid #eff1f5"><span style="white-space:nowrap;width:52px;height:40px;border-radius:8px;background:#fde9e9;color:#c43b3b;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">PDF</span><div style="flex:1"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">Current Electricity — formula sheet</p><p style="margin:1px 0 0;font-size:12px;color:#6b7a90">1.1 MB</p></div><span style="white-space:nowrap;color:#98a3b6">⋯</span></div>
+            <div style="display:flex;gap:12px;align-items:center;padding:14px"><span style="white-space:nowrap;width:52px;height:40px;border-radius:8px;background:#fde9e9;color:#c43b3b;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">PDF</span><div style="flex:1"><p style="margin:0;font-family:'IBM Plex Sans Devanagari',sans-serif;font-size:14px;font-weight:600;color:#122046">व्याकरण — समास और संधि</p><p style="margin:1px 0 0;font-size:12px;color:#6b7a90">2.6 MB</p></div><span style="white-space:nowrap;color:#98a3b6">⋯</span></div>
+          </div>
+          <p style="margin:0;font-size:12px;line-height:1.5;color:#6b7a90">Downloads play offline inside the app for as long as your course is active.</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="18 Notifications" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">18 · Notifications</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#f7f8fc;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" bg="#fff" hint-size="100%,44px"></dc-import>
+        <div style="background:#fff;padding:8px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #e6ebf5"><span style="white-space:nowrap;font-size:20px;color:#122046">←</span><p style="margin:0;flex:1;font-size:17px;font-weight:600;color:#122046">Notifications</p><span style="white-space:nowrap;font-size:13px;font-weight:600;color:#2962ff">Mark all read</span></div>
+        <div style="flex:1;overflow:hidden;padding:4px 20px">
+          <sc-for list="{{ notifs }}" as="g" hint-placeholder-count="3">
+            <p style="margin:16px 0 8px;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#6b7a90">{{ g.name }}</p>
+            <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+              <sc-for list="{{ g.items }}" as="n" hint-placeholder-count="2">
+                <div style="{{ n.row }}"><span style="white-space:nowrap;{{ n.icon }}">{{ n.glyph }}</span><div style="flex:1"><div style="display:flex;justify-content:space-between"><p style="margin:0;font-size:14px;font-weight:600;color:#122046">{{ n.title }}</p><span style="white-space:nowrap;font-size:11px;color:#98a3b6">{{ n.time }}</span></div><p style="margin:2px 0 0;font-size:13px;color:#4a5872">{{ n.body }}</p><p style="margin:4px 0 0;font-size:12px;font-weight:600;color:#2962ff">{{ n.action }}</p></div></div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="19 Profile" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">19 · Profile</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#f7f8fc;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" hint-size="100%,44px"></dc-import>
+        <div style="flex:1;overflow:hidden;padding:10px 20px 0;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;gap:14px"><span style="white-space:nowrap;width:60px;height:60px;border-radius:50%;background:#e8f0ff;color:#2962ff;font-size:20px;font-weight:600;display:flex;align-items:center;justify-content:center">RK</span><div style="flex:1"><p style="margin:0;font-size:18px;font-weight:600;color:#122046">Rahul Kumar</p><p style="margin:2px 0 0;font-size:13px;color:#6b7a90">Class 12 · Science · Hindi medium</p><p style="margin:1px 0 0;font-size:12px;color:#98a3b6">+91 98765 43210</p></div><span style="white-space:nowrap;font-size:13px;font-weight:600;color:#2962ff">Edit</span></div>
+          <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+            <div><p style="margin:0 0 6px;font-size:11px;font-weight:600;letter-spacing:0.08em;color:#6b7a90">{{ g.label }}</p>
+              <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden">
+                <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3"><div style="display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid #f2f3f7"><span style="white-space:nowrap;flex:1;font-size:14px;font-weight:500;color:#122046">{{ r.t }}</span><span style="white-space:nowrap;font-size:12px;color:#6b7a90">{{ r.v }}</span><span style="white-space:nowrap;margin-left:8px;color:#c7cad3">›</span></div></sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <div style="height:46px;border-radius:10px;border:1.5px solid #f2d6d6;color:#c43b3b;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center">Log out</div>
+        </div>
+        <dc-import name="MobileTabBar" active="profile" hint-size="100%,82px"></dc-import>
+      </div>
+    </div>
+
+    <div data-screen-label="20 Tickets" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">20 · Support tickets</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#f7f8fc;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" bg="#fff" hint-size="100%,44px"></dc-import>
+        <div style="background:#fff;padding:8px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #e6ebf5"><span style="white-space:nowrap;font-size:20px;color:#122046">←</span><p style="margin:0;font-size:17px;font-weight:600;color:#122046">Help &amp; support</p></div>
+        <div style="flex:1;overflow:hidden;padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+          <div style="height:48px;border-radius:10px;background:#2962ff;color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center">+ Raise a ticket</div>
+          <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between"><span style="white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6b7a90">ABA-T-1042</span><span style="white-space:nowrap;padding:1px 6px;border-radius:4px;background:#fff1e8;color:#c06a1a;font-size:10px;font-weight:700">IN PROGRESS</span></div><p style="margin:8px 0 0;font-size:14px;font-weight:600;color:#122046">Payment deducted but course not unlocked</p><p style="margin:3px 0 0;font-size:12px;color:#6b7a90">Payment · Opened 2 days ago</p></div>
+          <div style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:14px"><div style="display:flex;justify-content:space-between"><span style="white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6b7a90">ABA-T-1017</span><span style="white-space:nowrap;padding:1px 6px;border-radius:4px;background:#e9f9ef;color:#16a34a;font-size:10px;font-weight:700">RESOLVED</span></div><p style="margin:8px 0 0;font-size:14px;font-weight:600;color:#122046">Video keeps buffering on mobile data</p><p style="margin:3px 0 0;font-size:12px;color:#6b7a90">Technical · Opened 1 week ago</p></div>
+          <p style="margin:8px 0 0;font-size:12px;color:#6b7a90">Mon–Sat, 9 AM – 7 PM IST · We usually reply within 24 hours.</p>
+        </div>
+      </div>
+    </div>
+
+    <div data-screen-label="21 Ticket Detail" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">21 · Ticket detail</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#f7f8fc;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" bg="#fff" hint-size="100%,44px"></dc-import>
+        <div style="background:#fff;padding:8px 20px 14px;border-bottom:1px solid #e6ebf5"><div style="display:flex;align-items:center;gap:12px"><span style="white-space:nowrap;font-size:20px;color:#122046">←</span><span style="white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#6b7a90">ABA-T-1042</span><span style="white-space:nowrap;padding:1px 6px;border-radius:4px;background:#fff1e8;color:#c06a1a;font-size:10px;font-weight:700">IN PROGRESS</span></div><p style="margin:10px 0 0;font-size:16px;font-weight:600;color:#122046">Payment deducted but course not unlocked</p></div>
+        <div style="flex:1;overflow:hidden;padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+          <div style="align-self:flex-end;max-width:80%;padding:12px 14px;border-radius:12px 12px 2px 12px;background:#2962ff;color:#fff"><p style="margin:0;font-size:13px;line-height:1.55">I paid ₹2,499 by UPI yesterday but the Class 12 Science crash course still shows as locked.</p><p style="margin:6px 0 0;font-size:11px;color:#c7d6ff">2 days ago</p></div>
+          <div style="align-self:flex-start;max-width:80%;padding:12px 14px;border-radius:12px 12px 12px 2px;background:#fff;border:1px solid #e6ebf5"><p style="margin:0;font-size:11px;font-weight:600;color:#2962ff">Support · Kavita</p><p style="margin:4px 0 0;font-size:13px;line-height:1.55;color:#122046">Thanks for writing in Rahul. We can see the payment and are reconciling it with the bank. Your access will be unlocked within 24 hours.</p><p style="margin:6px 0 0;font-size:11px;color:#98a3b6">1 day ago</p></div>
+        </div>
+        <div style="padding:10px 16px 30px;background:#fff;border-top:1px solid #eff1f5;display:flex;gap:8px"><span style="white-space:nowrap;flex:1;height:44px;border:1px solid #dde0e8;border-radius:10px;padding:0 12px;display:flex;align-items:center;font-size:14px;color:#98a3b6">Write a reply…</span><span style="white-space:nowrap;width:44px;height:44px;border-radius:10px;background:#2962ff;color:#fff;display:flex;align-items:center;justify-content:center">➤</span></div>
+      </div>
+    </div>
+
+    <div data-screen-label="22 New Ticket" style="display:flex;flex-direction:column;gap:12px"><p style="margin:0;font-size:14px;font-weight:600;color:#4a5872">22 · New ticket</p>
+      <div style="width:390px;height:844px;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;background:#fff;border:8px solid #0f1b2d;box-shadow:0 30px 60px rgba(18,32,70,0.18)">
+        <dc-import name="MobileStatusBar" hint-size="100%,44px"></dc-import>
+        <div style="padding:8px 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #e6ebf5"><span style="white-space:nowrap;font-size:20px;color:#122046">✕</span><p style="margin:0;font-size:17px;font-weight:600;color:#122046">Raise a ticket</p></div>
+        <div style="flex:1;padding:20px;display:flex;flex-direction:column;gap:18px">
+          <div><p style="margin:0 0 8px;font-size:13px;font-weight:500;color:#122046">Category</p><div style="display:flex;flex-wrap:wrap;gap:8px"><span style="white-space:nowrap;height:34px;padding:0 12px;border-radius:8px;border:1.5px solid #2962ff;background:#e8f0ff;color:#2962ff;font-size:13px;font-weight:600;display:flex;align-items:center">Payment</span><span style="white-space:nowrap;height:34px;padding:0 12px;border-radius:8px;border:1px solid #e6ebf5;color:#4a5872;font-size:13px;display:flex;align-items:center">Technical</span><span style="white-space:nowrap;height:34px;padding:0 12px;border-radius:8px;border:1px solid #e6ebf5;color:#4a5872;font-size:13px;display:flex;align-items:center">Course content</span><span style="white-space:nowrap;height:34px;padding:0 12px;border-radius:8px;border:1px solid #e6ebf5;color:#4a5872;font-size:13px;display:flex;align-items:center">Other</span></div></div>
+          <div><p style="margin:0 0 6px;font-size:13px;font-weight:500;color:#122046">Subject</p><div style="height:48px;border:1px solid #dde0e8;border-radius:10px;padding:0 12px;display:flex;align-items:center;font-size:14px;color:#98a3b6">Briefly describe the issue</div></div>
+          <div><p style="margin:0 0 6px;font-size:13px;font-weight:500;color:#122046">Details</p><div style="height:140px;border:1px solid #dde0e8;border-radius:10px;padding:12px;box-sizing:border-box;font-size:14px;color:#98a3b6">Include order ID, course name or screenshots where helpful</div></div>
+          <div style="height:48px;border:1px dashed #c9d6f5;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#2962ff">+ Attach screenshot</div>
+          <div style="margin-top:auto;margin-bottom:16px;height:52px;border-radius:10px;background:#2962ff;color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center">Submit ticket</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const K = { live: ['#fde8e8', '#c43b3b', '●'], test: ['#fff1e8', '#c06a1a', '✎'], recording: ['#e8f0ff', '#2962ff', '▶'], notes: ['#f1ecff', '#6b4fd8', '≡'], result: ['#e9f9ef', '#16a34a', '✓'] };
+    const mk = (n, unread) => ({ ...n, action: n.action || '', glyph: K[n.kind][2],
+      row: { display: 'flex', gap: 12, padding: 14, borderBottom: '1px solid #eff1f5', background: unread ? '#f5f8ff' : '#fff' },
+      icon: { width: 34, height: 34, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, background: K[n.kind][0], color: K[n.kind][1] } });
+    return {
+      notes: [
+        { subject: 'PHYSICS', color: '#2962ff', title: 'Electric Charges — notes', meta: 'PDF · 2.4 MB · Updated 12 Oct', act: 'Open' },
+        { subject: 'PHYSICS', color: '#2962ff', title: 'Current Electricity — formulas', meta: 'PDF · 1.1 MB', act: '✓ Offline', off: true },
+        { subject: 'CHEMISTRY', color: '#0f8f81', title: 'Solutions & Electrochemistry', meta: 'PDF · 3.1 MB', act: 'Open' },
+        { subject: 'MATHEMATICS', color: '#6b4fd8', title: 'Integrals — important questions', meta: 'PDF · 1.6 MB', act: 'Open' },
+        { subject: 'BIOLOGY', color: '#c06a1a', title: 'Reproduction in Organisms', meta: 'PDF · 2.8 MB', act: 'Open' },
+      ].map(n => ({ ...n, actStyle: { fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', color: n.off ? '#16a34a' : '#2962ff' } })),
+      notifs: [
+        { name: 'TODAY', items: [mk({ title: 'Live class starting soon', body: 'Physics starts in 5 minutes.', kind: 'live', time: '5m', action: 'Join Class →' }, true), mk({ title: 'Test reminder', body: 'Your Physics weekly test is due today.', kind: 'test', time: '2h' }, true)] },
+        { name: 'YESTERDAY', items: [mk({ title: 'New recording available', body: "Yesterday's Chemistry class is now available.", kind: 'recording', time: '', action: 'Watch Now →' }), mk({ title: 'New notes uploaded', body: 'Chapter 02 — Electrochemistry.', kind: 'notes', time: '' })] },
+        { name: 'EARLIER', items: [mk({ title: 'Weekly test result', body: 'Physics Weekly Test 06 — you scored 17 / 20.', kind: 'result', time: '' })] },
+      ],
+      groups: [
+        { label: 'ACCOUNT', rows: [{ t: 'Personal information', v: '' }, { t: 'Class & stream', v: '12 · Science' }, { t: 'My purchases', v: '2' }] },
+        { label: 'LEARNING', rows: [{ t: 'Downloads', v: '1.8 GB' }, { t: 'Calendar', v: '' }, { t: 'Video quality', v: '720p' }, { t: 'Notifications', v: 'On' }] },
+        { label: 'SUPPORT', rows: [{ t: 'My tickets', v: '1 open' }, { t: 'Privacy & terms', v: '' }] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap" rel="stylesheet"><style>body{margin:0;font-family:'IBM Plex Sans',sans-serif;color:#0f1b2d;background:#f7f8fc;-webkit-font-smoothing:antialiased}a{color:#2962ff;text-decoration:none}a:hover{color:#1a4de0}</style></helmet>
+<div style="min-height:100vh;font-family:'IBM Plex Sans',sans-serif">
+  <header style="height:64px;background:#fff;border-bottom:1px solid #e6ebf5"><div style="max-width:1040px;margin:0 auto;height:100%;padding:0 24px;display:flex;align-items:center;justify-content:space-between"><a href="Home.dc.html" style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:8px;background:#2962ff;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3 2 8l10 5 10-5-10-5Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"></path><path d="M5 10.5V16c0 .8 3.1 3 7 3s7-2.2 7-3v-5.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path><path d="M22 8v6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path></svg></span><span style="font-size:15px;font-weight:700;color:#122046">Akhand Bharat Academy</span></a><span style="font-size:13px;color:#6b7a90">🔒 Secure checkout · Razorpay</span></div></header>
+
+  <sc-if value="{{ paying }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width:1040px;margin:0 auto;padding:40px 24px 64px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:28px;align-items:start">
+      <div>
+        <a href="Course Detail.dc.html" style="font-size:14px;font-weight:500">← Back to course</a>
+        <h1 style="margin:12px 0 0;font-size:28px;font-weight:700;letter-spacing:-0.02em;color:#122046">Complete your enrolment</h1>
+        <section style="margin-top:24px;background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:24px">
+          <h2 style="margin:0;font-size:16px;font-weight:600;color:#122046">Payment method</h2>
+          <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ methods }}" as="m" hint-placeholder-count="4">
+              <button onClick="{{ m.pick }}" style="{{ m.row }}"><span style="width:40px;height:40px;border-radius:8px;background:#f2f3f7;font-size:12px;font-weight:700;color:#122046;display:flex;align-items:center;justify-content:center">{{ m.short }}</span><span style="flex:1;text-align:left"><span style="display:block;font-size:15px;font-weight:600;color:#122046">{{ m.name }}</span><span style="font-size:13px;color:#6b7a90">{{ m.sub }}</span></span><span style="{{ m.radio }}"></span></button>
+            </sc-for>
+          </div>
+        </section>
+        <section style="margin-top:16px;background:#fff;border:1px solid #e6ebf5;border-radius:12px;padding:20px 24px;display:flex;gap:10px"><input placeholder="Have a coupon code?" style="flex:1;height:42px;padding:0 12px;border:1px solid #dde0e8;border-radius:8px;font:inherit;font-size:14px;outline:none"><button style="height:42px;padding:0 16px;border:1px solid #c9d6f5;border-radius:8px;background:#fff;font:inherit;font-size:14px;font-weight:600;color:#2962ff;cursor:pointer">Apply</button></section>
+      </div>
+      <aside style="background:#fff;border:1px solid #e6ebf5;border-radius:12px;overflow:hidden;position:sticky;top:24px">
+        <div style="padding:20px;background:linear-gradient(145deg,hsl(214 70% 48%),hsl(236 65% 34%));color:#fff"><p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.06em">BIHAR BOARD · 90-DAY CRASH COURSE</p><p style="margin:6px 0 0;font-size:17px;font-weight:600">Class 12 Science Crash Course</p><p style="margin:4px 0 0;font-size:13px;color:#dbe6ff">PCM + PCB · Amit Sir, Neha Ma'am +2</p></div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:10px;font-size:14px;color:#4a5872">
+          <div style="display:flex;justify-content:space-between"><span>Course price</span><span>₹4,999</span></div>
+          <div style="display:flex;justify-content:space-between"><span>Discount</span><span style="color:#16a34a">− ₹2,500</span></div>
+          <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:1px solid #e6ebf5;font-size:17px;font-weight:700;color:#122046"><span>Total</span><span>₹2,499</span></div>
+          <button onClick="{{ pay }}" style="margin-top:8px;height:48px;border:0;border-radius:8px;background:#2962ff;color:#fff;font:inherit;font-size:15px;font-weight:600;cursor:pointer">Pay ₹2,499</button>
+          <p style="margin:4px 0 0;font-size:12px;line-height:1.5;color:#6b7a90">Access until 31 March 2027, including the full board revision series in January.</p>
+        </div>
+      </aside>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ paid }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width:520px;margin:0 auto;padding:72px 24px;text-align:center">
+      <span style="width:64px;height:64px;margin:0 auto;border-radius:50%;background:#e9f9ef;display:flex;align-items:center;justify-content:center"><svg width="32" height="32" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#22c55e"></circle><path d="M5 9.2 7.6 11.7 13 6.4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+      <h1 style="margin:20px 0 0;font-size:28px;font-weight:700;letter-spacing:-0.02em;color:#122046">Payment successful</h1>
+      <p style="margin:8px 0 0;font-size:15px;color:#6b7a90">You're enrolled in Class 12 Science Crash Course.</p>
+      <div style="margin-top:28px;background:#fff;border:1px solid #e6ebf5;border-radius:12px;text-align:left">
+        <div style="padding:14px 20px;display:flex;justify-content:space-between;border-bottom:1px solid #eff1f5;font-size:14px"><span style="color:#6b7a90">Order ID</span><span style="font-family:'IBM Plex Mono',monospace;color:#122046">ABA-2026-84172</span></div>
+        <div style="padding:14px 20px;display:flex;justify-content:space-between;border-bottom:1px solid #eff1f5;font-size:14px"><span style="color:#6b7a90">Amount paid</span><span style="font-weight:600;color:#122046">₹2,499</span></div>
+        <div style="padding:14px 20px;display:flex;justify-content:space-between;font-size:14px"><span style="color:#6b7a90">Method</span><span style="font-weight:600;color:#122046">{{ methodName }}</span></div>
+      </div>
+      <div style="margin-top:24px;display:flex;gap:10px;justify-content:center"><a href="My Courses.dc.html" style="height:46px;padding:0 22px;display:flex;align-items:center;border-radius:8px;background:#2962ff;color:#fff;font-size:15px;font-weight:600">Start learning</a><a href="Dashboard.dc.html" style="height:46px;padding:0 22px;display:flex;align-items:center;border-radius:8px;border:1px solid #c9d6f5;font-size:15px;font-weight:600">Go to dashboard</a></div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const M = [['UPI', 'Pay by any UPI app', 'UPI'], ['Google Pay', 'rahul@okaxis', 'GP'], ['PhonePe', 'Linked account', 'PP'], ['Debit / Credit Card', 'Visa, Mastercard, RuPay', 'CARD']];
+class Component extends DCLogic {
+  state = { m: 0, paid: false };
+  renderVals() {
+    const s = this.state;
+    return {
+      paying: !s.paid, paid: s.paid, methodName: M[s.m][0], pay: () => this.setState({ paid: true }),
+      methods: M.map(([name, sub, short], i) => { const on = s.m === i; return { name, sub, short, pick: () => this.setState({ m: i }),
+        row: { display: 'flex', alignItems: 'center', gap: 14, padding: 14, borderRadius: 10, font: 'inherit', cursor: 'pointer', background: on ? '#f5f8ff' : '#fff', border: on ? '1.5px solid #2962ff' : '1px solid #e6ebf5' },
+        radio: { width: 18, height: 18, borderRadius: '50%', boxSizing: 'border-box', border: on ? '5px solid #2962ff' : '2px solid #c7cad3' } }; }),
+    };
+  }
+}
+</script>
+</body>
+</html>
