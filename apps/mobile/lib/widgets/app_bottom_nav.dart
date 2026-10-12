@@ -5,17 +5,16 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 
-enum AppTab { home, courses, live, notes, profile }
+enum AppTab { home, courses, academics, profile }
 
 const _items = <(AppTab, IconData, String)>[
   (AppTab.home, LucideIcons.home, 'Home'),
   (AppTab.courses, LucideIcons.bookOpen, 'Courses'),
-  (AppTab.live, LucideIcons.radio, 'Live'),
-  (AppTab.notes, LucideIcons.fileText, 'Notes'),
+  (AppTab.academics, LucideIcons.graduationCap, 'Academics'),
   (AppTab.profile, LucideIcons.user, 'Profile'),
 ];
 
-/// The five-tab bottom bar from `MobileTabBar.dc.html`.
+/// The bottom bar: Home, Courses, Academics (live, calendar, notes), Profile.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
     super.key,

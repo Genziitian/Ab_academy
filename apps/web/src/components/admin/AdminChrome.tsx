@@ -13,6 +13,7 @@ const NAV = [
   { href: "/admin/tickets", label: "Tickets" },
   { href: "/admin/notifications", label: "Notifications" },
   { href: "/admin/popups", label: "Popups" },
+  { href: "/admin/banners", label: "App slider" },
 ];
 
 export function AdminSidebar() {

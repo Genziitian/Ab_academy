@@ -173,7 +173,7 @@ final courseFilterProvider = NotifierProvider<SelectionNotifier, String>(
 
 /// Class and stream chips on the Explore screen.
 final exploreFilterProvider = NotifierProvider<SelectionNotifier, String>(
-  () => SelectionNotifier('Class 12'),
+  () => SelectionNotifier('All'),
 );
 
 /// Overview / Classes / Notes / Tests tabs on Course details.

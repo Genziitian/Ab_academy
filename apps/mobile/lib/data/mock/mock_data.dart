@@ -1,3 +1,4 @@
+import '../models/banner.dart';
 import '../models/content.dart';
 import '../models/course.dart';
 import '../models/lesson_extras.dart';
@@ -254,6 +255,36 @@ abstract final class MockData {
     artsCrash,
     science11Crash,
     commerce11Crash,
+  ];
+
+  // ---------------------------------------------------------------- slider
+
+  /// Course slider slides — `course_banners` rows, managed from the admin.
+  static const banners = [
+    CourseBanner(
+      id: 'b1',
+      title: 'Class 12 Science Crash Course',
+      subtitle: 'Finish the syllabus in 90 days · 50% off',
+      courseId: 'class-12-science-crash-course-2027',
+      ctaLabel: 'Enroll now',
+      hue: 214,
+    ),
+    CourseBanner(
+      id: 'b2',
+      title: 'Commerce Crash Course',
+      subtitle: 'Accountancy · BST · Economics — ₹1,999',
+      courseId: 'class-12-commerce-crash-course',
+      ctaLabel: 'View course',
+      hue: 320,
+    ),
+    CourseBanner(
+      id: 'b3',
+      title: 'Class 11 Science foundation',
+      subtitle: 'Build a strong base for Class 12',
+      courseId: 'class-11-science-crash-course',
+      ctaLabel: 'Explore',
+      hue: 162,
+    ),
   ];
 
   // ------------------------------------------------------------- curriculum
@@ -709,6 +740,10 @@ abstract final class MockData {
   ];
 
   // -------------------------------------------------------------- lectures
+
+  /// Plays in the lecture player on mock data: Blender's "Big Buck Bunny",
+  /// a Creative Commons film that allows embedding.
+  static const demoYoutubeId = 'aqz-KE-bpKQ';
 
   static const lectureTitle = "Gauss's Law — Class 03";
   static const lectureEyebrow = 'PHYSICS · CHAPTER 01';

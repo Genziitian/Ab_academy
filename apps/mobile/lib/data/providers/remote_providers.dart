@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/env.dart';
+import '../models/banner.dart';
 import '../models/course.dart';
 import '../models/popup.dart';
 import '../models/ticket.dart';
@@ -71,17 +72,13 @@ final remoteCurriculumProvider = FutureProvider.family<List<Chapter>, String>((
 
 // ----------------------------------------------------- lessons and notes
 
-typedef LessonVideo = ({String? youtubeId, String? signedUrl});
-
-final remoteLessonVideoProvider = FutureProvider.family<LessonVideo, String>((
-  ref,
-  lessonId,
-) async {
-  if (!ref.watch(hasBackendProvider)) {
-    return (youtubeId: null, signedUrl: null);
-  }
-  return Repo.lessonVideo(lessonId);
-});
+/// YouTube id for a lesson, fetched at play time through `lesson_playback`.
+/// Never cached to disk, never put in a route or a log line.
+final lessonYoutubeIdProvider = FutureProvider.autoDispose
+    .family<String?, String>((ref, lessonId) async {
+      if (!ref.watch(hasBackendProvider)) return MockData.demoYoutubeId;
+      return Repo.lessonYoutubeId(lessonId);
+    });
 
 typedef LessonNote = ({String id, String title, String meta, String? url});
 
@@ -164,6 +161,19 @@ final popupsProvider = FutureProvider.family<List<AppPopup>, PopupPlacement>((
     return await Repo.popups(placement);
   } catch (_) {
     // A popup failing to load must never block the screen behind it.
+    return const [];
+  }
+});
+
+// --------------------------------------------------------------- slider
+
+/// Slides for the course slider on Home and the Courses store. Mock slides
+/// without a backend; an empty list (slider hidden) if the query fails.
+final bannersProvider = FutureProvider<List<CourseBanner>>((ref) async {
+  if (!ref.watch(hasBackendProvider)) return MockData.banners;
+  try {
+    return await Repo.banners();
+  } catch (_) {
     return const [];
   }
 });

@@ -175,3 +175,21 @@ export type AdminPushDelivery = {
   failed: number;
   error: string | null;
 };
+
+/** A slide in the app's course slider (`public.course_banners`). */
+export type AdminBanner = {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  imagePath: string | null;
+  imageUrl: string | null;
+  courseId: string | null;
+  courseTitle: string | null;
+  ctaLabel: string;
+  hue: number;
+  sortOrder: number;
+  isActive: boolean;
+  /** ISO local datetime, e.g. "2026-10-12T09:00". */
+  startsAt: string;
+  endsAt: string | null;
+};

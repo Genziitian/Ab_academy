@@ -151,7 +151,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 _Row(
                   title: 'My purchases',
                   value: '$purchases',
-                  onTap: () => context.go(Routes.courses),
+                  onTap: () => context.go(Routes.myCourses),
                 ),
               ],
             ),

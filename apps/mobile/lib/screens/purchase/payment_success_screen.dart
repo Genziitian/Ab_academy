@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../data/mock/mock_data.dart';
+import '../../data/models/course.dart';
 import '../../data/providers/app_providers.dart';
+import '../../data/providers/remote_providers.dart';
+import '../../data/remote/payment_service.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -15,21 +18,26 @@ import '../../widgets/common.dart';
 
 /// 26 · Payment success.
 class PaymentSuccessScreen extends ConsumerWidget {
-  const PaymentSuccessScreen({super.key, this.courseId});
+  const PaymentSuccessScreen({super.key, this.receipt});
 
-  final String? courseId;
+  /// Null only when the route is opened directly (route walk, tests).
+  final PaymentReceipt? receipt;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final course = ref.watch(
-      courseByIdProvider(courseId ?? MockData.scienceCrash.id),
-    );
-    final method = ref.watch(paymentMethodProvider);
+    final id = receipt?.courseId ?? MockData.scienceCrash.id;
+    final remote = ref.watch(remoteCourseProvider(id)).value;
+    final Course course = remote ?? ref.watch(courseByIdProvider(id));
+    final testMode = receipt?.testMode ?? true;
 
-    final rows = [
-      ('Order ID', MockData.orderId, true),
-      ('Amount paid', formatRupees(course.priceInr), false),
-      ('Method', method, false),
+    final rows = <(String, String, bool)>[
+      ('Order ID', receipt?.orderId ?? MockData.orderId, true),
+      (
+        'Amount paid',
+        formatRupees(receipt?.amountInr ?? course.priceInr),
+        false,
+      ),
+      ('Method', receipt?.method ?? ref.watch(paymentMethodProvider), false),
     ];
 
     return Scaffold(
@@ -130,23 +138,27 @@ class PaymentSuccessScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 14),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                        if (testMode) ...[
+                          const SizedBox(height: 14),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: const BoxDecoration(
+                              color: AppColors.amberTint,
+                              borderRadius: AppRadius.xs,
+                            ),
+                            child: Text(
+                              'Test mode — nothing was charged.',
+                              textAlign: TextAlign.center,
+                              style: AppText.meta.copyWith(
+                                color: AppColors.ink,
+                              ),
+                            ),
                           ),
-                          decoration: const BoxDecoration(
-                            color: AppColors.amberTint,
-                            borderRadius: AppRadius.xs,
-                          ),
-                          child: Text(
-                            'Test mode — payments are not connected yet, so nothing was charged.',
-                            textAlign: TextAlign.center,
-                            style: AppText.meta.copyWith(color: AppColors.ink),
-                          ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -154,14 +166,16 @@ class PaymentSuccessScreen extends ConsumerWidget {
               ),
               PrimaryButton(
                 label: 'Start learning',
-                onPressed: () => context.go(Routes.courses),
+                onPressed: () => context.go(Routes.myCourses),
               ),
               const SizedBox(height: 10),
               SecondaryButton(
                 label: 'Download receipt',
                 onPressed: () => showDemoSnack(
                   context,
-                  'Receipts arrive once payments go live.',
+                  testMode
+                      ? 'Receipts are issued for real payments only.'
+                      : 'Razorpay has emailed your receipt.',
                 ),
               ),
               const SizedBox(height: 28),

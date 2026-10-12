@@ -14,16 +14,15 @@ import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 
 /// 16 · Notes — every chapter PDF from the student's courses, searchable.
-/// This is the fourth bottom-nav tab (it replaced Community).
-class StudyMaterialsScreen extends ConsumerStatefulWidget {
-  const StudyMaterialsScreen({super.key});
+/// Shown as the Notes section of the Academics tab.
+class NotesView extends ConsumerStatefulWidget {
+  const NotesView({super.key});
 
   @override
-  ConsumerState<StudyMaterialsScreen> createState() =>
-      _StudyMaterialsScreenState();
+  ConsumerState<NotesView> createState() => _NotesViewState();
 }
 
-class _StudyMaterialsScreenState extends ConsumerState<StudyMaterialsScreen> {
+class _NotesViewState extends ConsumerState<NotesView> {
   String _query = '';
   late final Set<String> _offline = {
     for (final m in MockData.materials)
@@ -44,90 +43,78 @@ class _StudyMaterialsScreenState extends ConsumerState<StudyMaterialsScreen> {
         )
         .toList();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
-          children: [
-            Text('Notes', style: AppText.h2),
-            const SizedBox(height: 14),
-            SizedBox(
-              height: 44,
-              child: TextField(
-                onChanged: (value) => setState(() => _query = value),
-                cursorColor: AppColors.primary,
-                style: AppText.tabular(14, FontWeight.w400),
-                decoration: InputDecoration(
-                  hintText: 'Search notes',
-                  hintStyle: AppText.tabular(
-                    14,
-                    FontWeight.w400,
-                    color: AppColors.textSubtle,
-                  ),
-                  prefixIcon: const Icon(
-                    LucideIcons.search,
-                    size: 17,
-                    color: AppColors.textSubtle,
-                  ),
-                  filled: true,
-                  fillColor: AppColors.surface,
-                  contentPadding: EdgeInsets.zero,
-                  enabledBorder: const OutlineInputBorder(
-                    borderRadius: AppRadius.sm,
-                    borderSide: BorderSide(color: AppColors.border),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderRadius: AppRadius.sm,
-                    borderSide: BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
-                    ),
-                  ),
-                ),
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+      children: [
+        SizedBox(
+          height: 44,
+          child: TextField(
+            onChanged: (value) => setState(() => _query = value),
+            cursorColor: AppColors.primary,
+            style: AppText.tabular(14, FontWeight.w400),
+            decoration: InputDecoration(
+              hintText: 'Search notes',
+              hintStyle: AppText.tabular(
+                14,
+                FontWeight.w400,
+                color: AppColors.textSubtle,
+              ),
+              prefixIcon: const Icon(
+                LucideIcons.search,
+                size: 17,
+                color: AppColors.textSubtle,
+              ),
+              filled: true,
+              fillColor: AppColors.surface,
+              contentPadding: EdgeInsets.zero,
+              enabledBorder: const OutlineInputBorder(
+                borderRadius: AppRadius.sm,
+                borderSide: BorderSide(color: AppColors.border),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: AppRadius.sm,
+                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
               ),
             ),
-            const SizedBox(height: 14),
-            ChipRow(
-              children: [
-                for (final label in ['All', ...MockData.scienceSubjects])
-                  FilterChipPill(
-                    label: label == 'Mathematics' ? 'Maths' : label,
-                    selected: filter == label,
-                    onTap: () => ref
-                        .read(materialsFilterProvider.notifier)
-                        .select(label),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            if (materials.isEmpty)
-              EmptyState(
-                icon: LucideIcons.fileSearch,
-                title: 'No notes found',
-                body: q.isEmpty
-                    ? 'Teachers have not uploaded $filter notes yet.'
-                    : 'Nothing matches “$_query”.',
-              )
-            else
-              ListCard(
-                children: [
-                  for (final m in materials)
-                    _NoteRow(
-                      material: m,
-                      offline: _offline.contains(m.id),
-                      onToggleOffline: () => setState(() {
-                        if (!_offline.remove(m.id)) {
-                          _offline.add(m.id);
-                        }
-                      }),
-                    ),
-                ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        ChipRow(
+          children: [
+            for (final label in ['All', ...MockData.scienceSubjects])
+              FilterChipPill(
+                label: label == 'Mathematics' ? 'Maths' : label,
+                selected: filter == label,
+                onTap: () =>
+                    ref.read(materialsFilterProvider.notifier).select(label),
               ),
           ],
         ),
-      ),
+        const SizedBox(height: 14),
+        if (materials.isEmpty)
+          EmptyState(
+            icon: LucideIcons.fileSearch,
+            title: 'No notes found',
+            body: q.isEmpty
+                ? 'Teachers have not uploaded $filter notes yet.'
+                : 'Nothing matches “$_query”.',
+          )
+        else
+          ListCard(
+            children: [
+              for (final m in materials)
+                _NoteRow(
+                  material: m,
+                  offline: _offline.contains(m.id),
+                  onToggleOffline: () => setState(() {
+                    if (!_offline.remove(m.id)) {
+                      _offline.add(m.id);
+                    }
+                  }),
+                ),
+            ],
+          ),
+      ],
     );
   }
 }

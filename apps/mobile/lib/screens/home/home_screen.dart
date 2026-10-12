@@ -14,6 +14,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
+import '../../widgets/course_slider.dart';
 
 /// 06 · Home — live hero, continue learning and today's schedule.
 class HomeScreen extends ConsumerWidget {
@@ -77,6 +78,8 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 20),
+            // Admin-managed course slider (App slider in the console).
+            const CourseSlider(padding: EdgeInsets.only(bottom: 20)),
             const _LiveHeroCard(),
             const SizedBox(height: 20),
             Text('Continue learning', style: AppText.sectionTitle),

@@ -6,6 +6,8 @@ import '../../data/mock/mock_data.dart';
 import '../../data/models/course.dart';
 import '../../data/providers/app_providers.dart';
 import '../../data/providers/remote_providers.dart';
+import '../../data/remote/payment_service.dart';
+import '../../data/remote/repositories.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -17,15 +19,71 @@ import '../onboarding/setup_class_screen.dart';
 
 /// 25 · Checkout — order summary and payment method.
 ///
-/// Razorpay is not connected yet, so "Pay" completes a test enrolment and the
-/// success screen says so; nothing is charged.
-class CheckoutScreen extends ConsumerWidget {
+/// With Supabase configured, "Pay" sells the course for real through
+/// [PaymentService] (Razorpay). On mock data it completes a test enrolment and
+/// the success screen says nothing was charged.
+class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key, required this.courseId});
 
   final String courseId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
+}
+
+class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
+  final _payments = PaymentService();
+  bool _paying = false;
+
+  String get courseId => widget.courseId;
+
+  @override
+  void dispose() {
+    _payments.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pay(Course course, String method) async {
+    if (_paying) return;
+
+    if (!ref.read(hasBackendProvider)) {
+      context.go(
+        Routes.paymentSuccess,
+        extra: PaymentReceipt(
+          courseId: course.id,
+          orderId: MockData.orderId,
+          amountInr: course.priceInr,
+          method: method,
+          testMode: true,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _paying = true);
+    try {
+      final receipt = await _payments.buy(
+        courseId: course.id,
+        methodLabel: method,
+      );
+      // The new enrolment shows up in My courses and the store.
+      ref.invalidate(remoteMyCoursesProvider);
+      ref.invalidate(remoteCatalogProvider(null));
+      if (!mounted) return;
+      context.go(Routes.paymentSuccess, extra: receipt);
+    } on CheckoutException catch (e) {
+      if (mounted) showDemoSnack(context, e.message);
+    } catch (_) {
+      if (mounted) {
+        showDemoSnack(context, 'Payment could not be completed. Try again.');
+      }
+    } finally {
+      if (mounted) setState(() => _paying = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final remote = ref.watch(remoteCourseProvider(courseId)).value;
     final Course course = remote ?? ref.watch(courseByIdProvider(courseId));
     final method = ref.watch(paymentMethodProvider);
@@ -104,9 +162,11 @@ class CheckoutScreen extends ConsumerWidget {
         child: SafeArea(
           top: false,
           child: PrimaryButton(
-            label: 'Pay ${formatRupees(course.priceInr)}',
-            onPressed: () =>
-                context.go(Routes.paymentSuccess, extra: course.id),
+            label: _paying
+                ? 'Processing…'
+                : 'Pay ${formatRupees(course.priceInr)}',
+            enabled: !_paying,
+            onPressed: () => _pay(course, method),
           ),
         ),
       ),

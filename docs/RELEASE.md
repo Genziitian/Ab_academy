@@ -219,3 +219,41 @@ cd apps/mobile && flutter analyze && flutter test
 Then in the console: create a course → it appears on `/courses` and in the
 app; send a notification → it reaches a device with the app installed; upload
 a notes PDF → it opens in the app's PDF viewer.
+
+## Selling courses (Razorpay)
+
+Apply migration `20261012000100_course_banners_and_checkout.sql`, then deploy
+the checkout function and give it your Razorpay keys:
+
+```bash
+supabase functions deploy checkout --no-verify-jwt
+supabase secrets set RAZORPAY_KEY_ID=rzp_live_... RAZORPAY_KEY_SECRET=... \
+                     RAZORPAY_WEBHOOK_SECRET=...
+```
+
+In the Razorpay dashboard add a webhook to
+`https://YOUR_PROJECT.supabase.co/functions/v1/checkout` for the
+`payment.captured` event, using the same webhook secret. It enrols students
+whose app closed before the payment was verified.
+
+Without keys the function refuses to sell. For a staging project only, set
+`ALLOW_TEST_CHECKOUT=true` to let "Pay" enrol without charging.
+
+## Lecture videos (YouTube)
+
+Lectures play from YouTube inside the app's own player
+(`lib/widgets/secure_youtube_player.dart`). For each lecture:
+
+- Upload to YouTube as **Unlisted** (not Private — private videos cannot be
+  embedded) and leave **Allow embedding** on.
+- In the admin console, set the lesson's provider to YouTube and paste only
+  the 11-character video id.
+
+Apply migration `20261013000100_protect_lesson_video_refs.sql`. After it,
+students cannot read `lessons.video_ref` directly; the app asks
+`lesson_playback(lesson_id)` at play time, which answers only for published
+demo lessons or students with an active enrolment.
+
+Screenshots and screen recording are blocked on Android while a lecture is on
+screen. For QA screenshots only, build with
+`--dart-define=ALLOW_SCREENSHOTS=true`.

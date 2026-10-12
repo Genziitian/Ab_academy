@@ -1,3 +1,7 @@
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show FunctionException, PostgrestException;
+
+import '../models/banner.dart';
 import '../models/course.dart';
 import '../models/popup.dart';
 import '../models/ticket.dart';
@@ -117,7 +121,7 @@ abstract final class Repo {
         .from('lessons')
         .select('''
           id, title, lesson_type, sort_order, duration_seconds, is_demo,
-          is_published, video_provider, video_ref, storage_path,
+          is_published, video_provider,
           chapters!inner (
             id, title, sort_order,
             subjects!inner ( name, course_batches!inner ( course_id ) )
@@ -134,30 +138,27 @@ abstract final class Repo {
     );
   }
 
-  /// Playable URL for a lesson: a YouTube id, or a signed URL into the
-  /// private lesson-videos bucket.
-  static Future<({String? youtubeId, String? signedUrl})> lessonVideo(
-    String lessonId,
-  ) async {
-    final row = await Api.client
-        .from('lessons')
-        .select('video_provider, video_ref, storage_path')
-        .eq('id', lessonId)
-        .maybeSingle();
-
-    if (row == null) return (youtubeId: null, signedUrl: null);
-
-    if (row['video_provider'] == 'youtube') {
-      return (youtubeId: row['video_ref'] as String?, signedUrl: null);
+  /// The YouTube id for one lesson, asked for only when it is about to play.
+  ///
+  /// `lesson_playback` returns it only to staff, for published demo lessons,
+  /// or to a student with an active enrolment; students cannot select
+  /// `video_ref` any other way (migration 6). Null when the lesson is not a
+  /// YouTube lesson; throws [PlaybackDenied] when the student has no access.
+  static Future<String?> lessonYoutubeId(String lessonId) async {
+    try {
+      final rows = await Api.client.rpc(
+        'lesson_playback',
+        params: {'p_lesson_id': lessonId},
+      );
+      final list = (rows as List).cast<Map<String, dynamic>>();
+      if (list.isEmpty) return null;
+      final row = list.first;
+      if (row['provider'] != 'youtube') return null;
+      return row['video_ref'] as String?;
+    } on PostgrestException catch (e) {
+      if (e.code == '42501') throw const PlaybackDenied();
+      rethrow;
     }
-
-    final path = row['storage_path'] as String?;
-    if (path == null) return (youtubeId: null, signedUrl: null);
-
-    return (
-      youtubeId: null,
-      signedUrl: await Api.signedUrl('lesson-videos', path),
-    );
   }
 
   /// Notes attached to a lesson, each with a short-lived signed URL.
@@ -456,4 +457,62 @@ abstract final class Repo {
         .eq('popup_id', popupId)
         .eq('student_id', me);
   }
+
+  // ----------------------------------------------------------- banners
+
+  /// Live slides for the course slider, in admin order. RLS already hides
+  /// inactive and out-of-window slides from students.
+  static Future<List<CourseBanner>> banners() async {
+    final rows = await Api.client
+        .from('course_banners')
+        .select('id, title, subtitle, image_path, course_id, cta_label, hue')
+        .order('sort_order')
+        .order('created_at');
+
+    final base =
+        '${Api.client.storage.url.replaceAll(RegExp(r'/storage/v1$'), '')}'
+        '/storage/v1/object/public/banner-images/';
+
+    return rows.map((r) => CourseBanner.fromRow(r, publicBase: base)).toList();
+  }
+
+  // ---------------------------------------------------------- checkout
+
+  /// Calls the `checkout` Edge Function. Orders, payments and enrolments are
+  /// written there with the service role; students cannot write them.
+  static Future<Map<String, dynamic>> checkout(
+    Map<String, dynamic> body,
+  ) async {
+    try {
+      final response = await Api.client.functions.invoke(
+        'checkout',
+        body: body,
+      );
+      return Map<String, dynamic>.from(response.data as Map);
+    } on FunctionException catch (e) {
+      final details = e.details;
+      final message = details is Map && details['error'] != null
+          ? details['error'].toString()
+          : 'Checkout failed (${e.status}).';
+      throw CheckoutException(message);
+    }
+  }
+}
+
+/// A checkout step the server refused, with a message fit to show the student.
+class CheckoutException implements Exception {
+  const CheckoutException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+/// The student is not enrolled in the course this lesson belongs to.
+class PlaybackDenied implements Exception {
+  const PlaybackDenied();
+
+  @override
+  String toString() => 'Enroll in this course to watch the lecture.';
 }

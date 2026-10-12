@@ -49,8 +49,27 @@ List<ScheduleItem> _agendaFor(DateTime date) {
 }
 
 /// 15 · Calendar — month grid with event dots, agenda for the chosen day.
-class CalendarScreen extends ConsumerWidget {
+class CalendarScreen extends StatelessWidget {
   const CalendarScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        bottom: false,
+        child: CalendarView(onBack: () => context.pop()),
+      ),
+    );
+  }
+}
+
+/// Month grid + agenda. Pushed full-screen from Home, and embedded as the
+/// Calendar section of the Academics tab (without a back button).
+class CalendarView extends ConsumerWidget {
+  const CalendarView({super.key, this.onBack});
+
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,97 +77,99 @@ class CalendarScreen extends ConsumerWidget {
     final selected = ref.watch(calendarDayProvider);
     final agenda = _agendaFor(selected);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                border: Border(bottom: BorderSide(color: AppColors.border)),
-              ),
-              padding: const EdgeInsets.fromLTRB(8, 4, 8, 18),
-              child: Column(
+    return Column(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            border: Border(bottom: BorderSide(color: AppColors.border)),
+          ),
+          padding: const EdgeInsets.fromLTRB(8, 4, 8, 18),
+          child: Column(
+            children: [
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        tooltip: 'Back',
-                        onPressed: () => context.pop(),
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          size: 22,
-                          color: AppColors.ink,
-                        ),
+                  if (onBack != null)
+                    IconButton(
+                      tooltip: 'Back',
+                      onPressed: onBack,
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        size: 22,
+                        color: AppColors.ink,
                       ),
-                      Expanded(
-                        child: Text(
-                          DateFormat('MMMM y').format(month),
-                          textAlign: TextAlign.center,
-                          style: AppText.tabular(17, FontWeight.w600),
-                        ),
+                    ),
+                  Expanded(
+                    child: Padding(
+                      // Lines the month up with the page's 20px gutter
+                      // when there is no back button in front of it.
+                      padding: EdgeInsets.only(left: onBack == null ? 12 : 0),
+                      child: Text(
+                        DateFormat('MMMM y').format(month),
+                        textAlign: onBack == null
+                            ? TextAlign.left
+                            : TextAlign.center,
+                        style: AppText.tabular(17, FontWeight.w600),
                       ),
-                      IconButton(
-                        tooltip: 'Previous month',
-                        onPressed: () =>
-                            ref.read(calendarMonthProvider.notifier).shift(-1),
-                        icon: const Icon(
-                          LucideIcons.chevronLeft,
-                          size: 20,
-                          color: AppColors.ink,
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'Next month',
-                        onPressed: () =>
-                            ref.read(calendarMonthProvider.notifier).shift(1),
-                        icon: const Icon(
-                          LucideIcons.chevronRight,
-                          size: 20,
-                          color: AppColors.ink,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: _MonthGrid(
-                      month: month,
-                      selected: selected,
-                      onSelect: ref.read(calendarDayProvider.notifier).select,
+                  IconButton(
+                    tooltip: 'Previous month',
+                    onPressed: () =>
+                        ref.read(calendarMonthProvider.notifier).shift(-1),
+                    icon: const Icon(
+                      LucideIcons.chevronLeft,
+                      size: 20,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Next month',
+                    onPressed: () =>
+                        ref.read(calendarMonthProvider.notifier).shift(1),
+                    icon: const Icon(
+                      LucideIcons.chevronRight,
+                      size: 20,
+                      color: AppColors.ink,
                     ),
                   ),
                 ],
               ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                children: [
-                  Text(
-                    DateFormat('EEEE, d MMMM').format(selected),
-                    style: AppText.tabular(15, FontWeight.w600),
-                  ),
-                  const SizedBox(height: 10),
-                  if (agenda.isEmpty)
-                    const EmptyState(
-                      icon: LucideIcons.calendarX,
-                      title: 'No classes scheduled',
-                      body: 'Pick a day with a dot to see its classes.',
-                    ),
-                  for (final item in agenda) ...[
-                    _AgendaCard(item: item),
-                    const SizedBox(height: 10),
-                  ],
-                ],
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: _MonthGrid(
+                  month: month,
+                  selected: selected,
+                  onSelect: ref.read(calendarDayProvider.notifier).select,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            children: [
+              Text(
+                DateFormat('EEEE, d MMMM').format(selected),
+                style: AppText.tabular(15, FontWeight.w600),
+              ),
+              const SizedBox(height: 10),
+              if (agenda.isEmpty)
+                const EmptyState(
+                  icon: LucideIcons.calendarX,
+                  title: 'No classes scheduled',
+                  body: 'Pick a day with a dot to see its classes.',
+                ),
+              for (final item in agenda) ...[
+                _AgendaCard(item: item),
+                const SizedBox(height: 10),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

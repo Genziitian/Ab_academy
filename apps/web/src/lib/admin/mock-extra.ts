@@ -7,6 +7,7 @@
 import { listCourses } from "./mock-store";
 import type {
   AdminDoubt,
+  AdminBanner,
   AdminLesson,
   AdminPopup,
   AdminStudent,
@@ -474,4 +475,61 @@ export function savePopup(input: {
 
 export function deletePopup(id: string) {
   popups = popups.filter((p) => p.id !== id);
+}
+
+// ------------------------------------------------------------- banners
+
+let banners: AdminBanner[] = [
+  {
+    id: "b-1",
+    title: "Class 12 Science Crash Course",
+    subtitle: "Finish the syllabus in 90 days · 50% off",
+    imagePath: null,
+    imageUrl: null,
+    courseId: "class-12-science-batch",
+    courseTitle: "Class 12 Science Batch",
+    ctaLabel: "Enroll now",
+    hue: 214,
+    sortOrder: 0,
+    isActive: true,
+    startsAt: localStamp(3),
+    endsAt: null,
+  },
+  {
+    id: "b-2",
+    title: "Board revision series",
+    subtitle: "Live doubt sessions every evening in January",
+    imagePath: null,
+    imageUrl: null,
+    courseId: null,
+    courseTitle: null,
+    ctaLabel: "See schedule",
+    hue: 320,
+    sortOrder: 1,
+    isActive: false,
+    startsAt: localStamp(1),
+    endsAt: null,
+  },
+];
+
+export const listBanners = () =>
+  [...banners].sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
+
+export function saveBanner(
+  input: Omit<AdminBanner, "id" | "imagePath" | "imageUrl" | "courseTitle"> & {
+    id?: string;
+    courseTitle: string | null;
+  },
+) {
+  if (input.id) {
+    banners = banners.map((b) => (b.id === input.id ? { ...b, ...input, id: b.id } : b));
+    return input.id;
+  }
+  const id = `b-${Date.now()}`;
+  banners = [...banners, { ...input, id, imagePath: null, imageUrl: null }];
+  return id;
+}
+
+export function deleteBanner(id: string) {
+  banners = banners.filter((b) => b.id !== id);
 }

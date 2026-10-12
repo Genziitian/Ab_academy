@@ -49,6 +49,10 @@ dependencies:
   shared_preferences: ^2.3.3
   package_info_plus: ^8.1.1
   device_info_plus: ^11.2.0
+  razorpay_flutter: ^1.4.7
+  webview_flutter: ^4.13.1
+  webview_flutter_android: ^4.10.1
+  webview_flutter_wkwebview: ^3.23.0
 
 dev_dependencies:
   flutter_test:

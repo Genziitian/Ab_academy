@@ -6,7 +6,10 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../data/mock/mock_data.dart';
 import '../../data/models/lesson_extras.dart';
+import '../../data/providers/app_providers.dart';
 import '../../data/providers/feature_providers.dart';
+import '../../data/providers/remote_providers.dart';
+import '../../data/remote/repositories.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -14,7 +17,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
-import 'lecture_player.dart';
+import '../../widgets/secure_youtube_player.dart';
 
 /// 09 / 10 · Lecture — player, then About / Discussion / Notes / Feedback.
 /// Discussion is the doubt thread: questions land in the teacher's queue.
@@ -31,42 +34,223 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
   static const _tabs = ['About', 'Discussion', 'Notes', 'Feedback'];
 
   String _tab = 'About';
+  bool _fullscreen = false;
+
+  @override
+  void dispose() {
+    if (_fullscreen) _restoreOrientation();
+    super.dispose();
+  }
+
+  Future<void> _toggleFullscreen() async {
+    final next = !_fullscreen;
+    setState(() => _fullscreen = next);
+    if (next) {
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      await _restoreOrientation();
+    }
+  }
+
+  Future<void> _restoreOrientation() async {
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    await SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+  }
+
+  void _back() {
+    if (_fullscreen) {
+      _toggleFullscreen();
+    } else {
+      context.pop();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: AppColors.surface,
-        body: Column(
-          children: [
-            LecturePlayer(onBack: () => context.pop()),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.divider)),
+    final size = MediaQuery.sizeOf(context);
+    final topInset = _fullscreen ? 0.0 : MediaQuery.paddingOf(context).top;
+    // The player stays the first child in both layouts, so going full screen
+    // resizes it instead of reloading the video.
+    final playerHeight = _fullscreen
+        ? size.height
+        : topInset + size.width * 9 / 16;
+
+    return PopScope(
+      canPop: !_fullscreen,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _fullscreen) _toggleFullscreen();
+      },
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: Scaffold(
+          backgroundColor: _fullscreen ? Colors.black : AppColors.surface,
+          body: Column(
+            children: [
+              Container(
+                height: playerHeight,
+                color: Colors.black,
+                padding: EdgeInsets.only(top: topInset),
+                child: _LecturePlayerArea(
+                  lessonId: widget.lessonId,
+                  fullscreen: _fullscreen,
+                  onToggleFullscreen: _toggleFullscreen,
+                  onBack: _back,
+                ),
               ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: UnderlineTabs(
-                  tabs: _tabs,
-                  selected: _tab,
-                  gap: 20,
-                  onSelected: (value) => setState(() => _tab = value),
+              if (!_fullscreen) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: AppColors.divider),
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: UnderlineTabs(
+                      tabs: _tabs,
+                      selected: _tab,
+                      gap: 20,
+                      onSelected: (value) => setState(() => _tab = value),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: switch (_tab) {
+                    'Discussion' => _DiscussionTab(lessonId: widget.lessonId),
+                    'Notes' => const _NotesTab(),
+                    'Feedback' => _FeedbackTab(lessonId: widget.lessonId),
+                    _ => const _AboutTab(),
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Fetches the lecture's YouTube id at play time and hands it to the secure
+/// player. The id lives only in this widget's memory.
+class _LecturePlayerArea extends ConsumerWidget {
+  const _LecturePlayerArea({
+    required this.lessonId,
+    required this.fullscreen,
+    required this.onToggleFullscreen,
+    required this.onBack,
+  });
+
+  final String lessonId;
+  final bool fullscreen;
+  final VoidCallback onToggleFullscreen;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final video = ref.watch(lessonYoutubeIdProvider(lessonId));
+    final student = ref.watch(studentProvider);
+
+    return video.when(
+      loading: () => _PlayerMessage(
+        onBack: onBack,
+        child: const SizedBox.square(
+          dimension: 30,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      error: (error, _) => _PlayerMessage(
+        onBack: onBack,
+        child: _MessageText(
+          error is PlaybackDenied
+              ? 'Enroll in this course to watch the lecture.'
+              : 'Could not load the lecture. Check your connection and try again.',
+          action: error is PlaybackDenied
+              ? null
+              : () => ref.invalidate(lessonYoutubeIdProvider(lessonId)),
+        ),
+      ),
+      data: (id) => id == null
+          ? _PlayerMessage(
+              onBack: onBack,
+              child: const _MessageText('This lecture has no video yet.'),
+            )
+          : SecureYouTubePlayer(
+              videoId: id,
+              watermark: student.phone,
+              fullscreen: fullscreen,
+              onToggleFullscreen: onToggleFullscreen,
+              onBack: onBack,
+            ),
+    );
+  }
+}
+
+class _PlayerMessage extends StatelessWidget {
+  const _PlayerMessage({required this.child, required this.onBack});
+
+  final Widget child;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Center(child: child),
+        Positioned(
+          left: 4,
+          top: 4,
+          child: IconButton(
+            tooltip: 'Back',
+            onPressed: onBack,
+            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MessageText extends StatelessWidget {
+  const _MessageText(this.text, {this.action});
+
+  final String text;
+  final VoidCallback? action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: AppText.tabular(13, FontWeight.w500, color: Colors.white),
+          ),
+          if (action != null)
+            TextButton(
+              onPressed: action,
+              child: Text(
+                'Retry',
+                style: AppText.tabular(
+                  13,
+                  FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
             ),
-            Expanded(
-              child: switch (_tab) {
-                'Discussion' => _DiscussionTab(lessonId: widget.lessonId),
-                'Notes' => const _NotesTab(),
-                'Feedback' => _FeedbackTab(lessonId: widget.lessonId),
-                _ => const _AboutTab(),
-              },
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

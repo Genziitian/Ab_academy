@@ -13,87 +13,81 @@ import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/common.dart';
 
-/// 07 · My courses — enrolled crash courses with progress.
-class MyCoursesScreen extends ConsumerWidget {
-  const MyCoursesScreen({super.key});
+/// 07 · My courses — enrolled crash courses with progress. Shown as the
+/// "My courses" section of the Courses tab.
+class MyCoursesView extends ConsumerWidget {
+  const MyCoursesView({super.key, required this.onExplore});
+
+  /// Switches the Courses tab to the store.
+  final VoidCallback onExplore;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final filter = ref.watch(courseFilterProvider);
     final async = ref.watch(remoteMyCoursesProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          onRefresh: () => ref.refresh(remoteMyCoursesProvider.future),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
-            children: [
-              Text('My courses', style: AppText.h2),
-              const SizedBox(height: 16),
-              ...async.when(
-                loading: () => const [
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 48),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                ],
-                error: (error, _) => [
-                  EmptyState(
-                    icon: LucideIcons.wifiOff,
-                    title: 'Could not load your courses',
-                    body: 'Check your connection and pull down to try again.',
-                  ),
-                ],
-                data: (courses) {
-                  final enrolled = courses
-                      .where((c) => c.progressPercent < 100)
-                      .toList();
-                  final completed = courses
-                      .where((c) => c.progressPercent >= 100)
-                      .toList();
-                  final shown = filter == 'Completed' ? completed : enrolled;
-                  return [
-                    SegmentedTabs(
-                      tabs: ['Enrolled (${enrolled.length})', 'Completed'],
-                      selected: filter == 'Completed'
-                          ? 'Completed'
-                          : 'Enrolled (${enrolled.length})',
-                      onSelected: (tab) => ref
-                          .read(courseFilterProvider.notifier)
-                          .select(
-                            tab.startsWith('Enrolled')
-                                ? 'Enrolled'
-                                : 'Completed',
-                          ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (shown.isEmpty)
-                      EmptyState(
-                        icon: LucideIcons.bookOpen,
-                        title: filter == 'Completed'
-                            ? 'Nothing completed yet'
-                            : 'No crash courses yet',
-                        body: filter == 'Completed'
-                            ? 'Courses you finish will show up here.'
-                            : 'Pick a crash course for your class to start the 90-day plan.',
-                      ),
-                    for (var i = 0; i < shown.length; i++) ...[
-                      if (i == 0 && filter != 'Completed')
-                        _FeaturedCourseCard(course: shown[i])
-                      else
-                        _CompactCourseCard(course: shown[i]),
-                      const SizedBox(height: 16),
-                    ],
-                  ];
-                },
+    return RefreshIndicator(
+      onRefresh: () => ref.refresh(remoteMyCoursesProvider.future),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+        children: [
+          ...async.when(
+            loading: () => const [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 48),
+                child: Center(child: CircularProgressIndicator()),
               ),
-              _ExploreBanner(onTap: () => context.push(Routes.explore)),
             ],
+            error: (error, _) => [
+              EmptyState(
+                icon: LucideIcons.wifiOff,
+                title: 'Could not load your courses',
+                body: 'Check your connection and pull down to try again.',
+              ),
+            ],
+            data: (courses) {
+              final enrolled = courses
+                  .where((c) => c.progressPercent < 100)
+                  .toList();
+              final completed = courses
+                  .where((c) => c.progressPercent >= 100)
+                  .toList();
+              final shown = filter == 'Completed' ? completed : enrolled;
+              return [
+                SegmentedTabs(
+                  tabs: ['Enrolled (${enrolled.length})', 'Completed'],
+                  selected: filter == 'Completed'
+                      ? 'Completed'
+                      : 'Enrolled (${enrolled.length})',
+                  onSelected: (tab) => ref
+                      .read(courseFilterProvider.notifier)
+                      .select(
+                        tab.startsWith('Enrolled') ? 'Enrolled' : 'Completed',
+                      ),
+                ),
+                const SizedBox(height: 16),
+                if (shown.isEmpty)
+                  EmptyState(
+                    icon: LucideIcons.bookOpen,
+                    title: filter == 'Completed'
+                        ? 'Nothing completed yet'
+                        : 'No crash courses yet',
+                    body: filter == 'Completed'
+                        ? 'Courses you finish will show up here.'
+                        : 'Pick a crash course for your class to start the 90-day plan.',
+                  ),
+                for (var i = 0; i < shown.length; i++) ...[
+                  if (i == 0 && filter != 'Completed')
+                    _FeaturedCourseCard(course: shown[i])
+                  else
+                    _CompactCourseCard(course: shown[i]),
+                  const SizedBox(height: 16),
+                ],
+              ];
+            },
           ),
-        ),
+          _ExploreBanner(onTap: onExplore),
+        ],
       ),
     );
   }
@@ -318,7 +312,11 @@ class _ExploreBanner extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Explore more crash courses', style: AppText.rowTitle),
-            const Icon(LucideIcons.arrowRight, size: 18, color: AppColors.primary),
+            const Icon(
+              LucideIcons.arrowRight,
+              size: 18,
+              color: AppColors.primary,
+            ),
           ],
         ),
       ),

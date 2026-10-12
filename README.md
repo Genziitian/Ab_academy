@@ -58,7 +58,7 @@ is configured; their course, schedule and notes content is still sample data
 (`apps/web/src/lib/portal/data.ts`) until it is wired to enrolments.
 
 Real Supabase auth. `/admin` is gated by middleware and by `requireAdmin()`,
-and enforced a third time by RLS in Postgres. Nine sections:
+and enforced a third time by RLS in Postgres. Ten sections:
 
 | Section | Does |
 |---|---|
@@ -71,6 +71,7 @@ and enforced a third time by RLS in Postgres. Nine sections:
 | Tickets | support queue with replies and status |
 | Notifications | compose, target, deep link, send as push |
 | Popups | scheduled interstitials with targeting and view/click counts |
+| App slider | course slides for the app's Home and Courses store — artwork, link, order, schedule |
 
 Teachers (`is_staff`) can manage content, schedule and doubts.
 Courses, pricing and enrolments are admin-only (`is_admin`).
@@ -79,8 +80,9 @@ Courses, pricing and enrolments are admin-only (`is_admin`).
 
 26 screens, redesigned to match the website (IBM Plex, blue/navy). The
 community feature was removed; students ask doubts under each lecture and get
-help through support tickets. Bottom tabs are Home, Courses, Live, Notes and
-Profile. Supabase is wired for auth (phone OTP + Google), the catalog, My
+help through support tickets. Bottom tabs are Home, Courses (store + My
+courses), Academics (live, calendar, notes) and Profile. Paid courses are sold
+in the app through Razorpay via the `checkout` Edge Function. Supabase is wired for auth (phone OTP + Google), the catalog, My
 Courses, the course page and curriculum, recordings and notes over signed URLs,
 tickets, notifications and popups. FCM push
 registers a device token on launch and claims it at sign-in.

@@ -14,6 +14,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import * as mock from "./mock-store";
 import * as mockExtra from "./mock-extra";
 import type {
+  AdminBanner,
   AdminCourse,
   AdminDoubt,
   AdminLesson,
@@ -71,7 +72,9 @@ export async function getDashboardCounts(): Promise<DashboardCounts> {
     build?: (q: ReturnType<typeof supabase.from>) => unknown,
   ) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let q: any = supabase.from(table).select("*", { count: "exact", head: true });
+    // "id" rather than "*": students' column grants on some tables (lessons)
+    // leave columns out, and "*" would ask for them.
+    let q: any = supabase.from(table).select("id", { count: "exact", head: true });
     if (build) q = build(q);
     const { count: n } = await q;
     return n ?? 0;
@@ -458,7 +461,7 @@ export async function listLessons(courseId?: string): Promise<AdminLesson[]> {
     .from("lessons")
     .select(
       `id, title, lesson_type, sort_order, duration_seconds, video_provider,
-       video_ref, storage_path, is_demo, is_published, is_downloadable,
+       is_demo, is_published, is_downloadable,
        chapter_id,
        chapters ( id, title, subjects ( name, course_batches ( course_id, courses ( id, title ) ) ) ),
        lesson_resources ( id, title, resource_type, storage_path, size_bytes, is_downloadable )`,
@@ -467,6 +470,15 @@ export async function listLessons(courseId?: string): Promise<AdminLesson[]> {
     .limit(500);
 
   if (error) throw new Error(`listLessons: ${error.message}`);
+
+  // Video ids and storage paths are not selectable directly (migration 6);
+  // staff get them through a security-definer function.
+  const { data: media, error: mediaError } = await supabase.rpc("staff_lesson_media");
+  if (mediaError) throw new Error(`listLessons/media: ${mediaError.message}`);
+  const mediaById = new Map<string, { video_ref: string | null; storage_path: string | null }>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (media ?? []).map((m: any) => [m.id, m]),
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows = (data ?? []).map((row: any) => {
@@ -484,8 +496,8 @@ export async function listLessons(courseId?: string): Promise<AdminLesson[]> {
       courseTitle: course?.title ?? "—",
       durationSeconds: row.duration_seconds,
       videoProvider: row.video_provider,
-      videoRef: row.video_ref,
-      storagePath: row.storage_path,
+      videoRef: mediaById.get(row.id)?.video_ref ?? null,
+      storagePath: mediaById.get(row.id)?.storage_path ?? null,
       isDemo: row.is_demo,
       isPublished: row.is_published,
       isDownloadable: row.is_downloadable,
@@ -596,7 +608,7 @@ export async function deleteResource(
 
 /** Saves an uploaded file to a private bucket and returns its storage path. */
 export async function uploadToBucket(
-  bucket: "lesson-notes" | "lesson-videos" | "popup-images",
+  bucket: "lesson-notes" | "lesson-videos" | "popup-images" | "banner-images",
   file: File,
   prefix: string,
 ): Promise<string> {
@@ -1199,4 +1211,94 @@ export async function deletePopup(id: string): Promise<void> {
   const supabase = await db();
   const { error } = await supabase.from("popups").delete().eq("id", id);
   if (error) throw new Error(`deletePopup: ${error.message}`);
+}
+
+// ============================================================= banners
+
+export async function listBanners(): Promise<AdminBanner[]> {
+  if (isDemoMode()) return mockExtra.listBanners();
+
+  const supabase = await db();
+  const { data, error } = await supabase
+    .from("course_banners")
+    .select(
+      `id, title, subtitle, image_path, course_id, cta_label, hue, sort_order,
+       is_active, starts_at, ends_at, courses ( title )`,
+    )
+    .order("sort_order")
+    .order("created_at");
+  if (error) throw new Error(`listBanners: ${error.message}`);
+
+  const publicBase = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/banner-images/`;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    title: row.title,
+    subtitle: row.subtitle,
+    imagePath: row.image_path,
+    imageUrl: row.image_path ? `${publicBase}${row.image_path}` : null,
+    courseId: row.course_id,
+    courseTitle: row.courses?.title ?? null,
+    ctaLabel: row.cta_label,
+    hue: row.hue,
+    sortOrder: row.sort_order,
+    isActive: row.is_active,
+    startsAt: toLocalInput(row.starts_at),
+    endsAt: row.ends_at ? toLocalInput(row.ends_at) : null,
+  }));
+}
+
+export async function saveBanner(input: {
+  id?: string;
+  title: string;
+  subtitle: string | null;
+  imagePath?: string | null;
+  courseId: string | null;
+  ctaLabel: string;
+  hue: number;
+  sortOrder: number;
+  isActive: boolean;
+  startsAt: string;
+  endsAt: string | null;
+}): Promise<string> {
+  if (isDemoMode()) {
+    const courses = mock.listCourses();
+    return mockExtra.saveBanner({
+      ...input,
+      courseTitle: courses.find((c) => c.id === input.courseId)?.title ?? null,
+    });
+  }
+
+  const supabase = await db();
+  const row: Record<string, unknown> = {
+    title: input.title,
+    subtitle: input.subtitle,
+    course_id: input.courseId,
+    cta_label: input.ctaLabel,
+    hue: input.hue,
+    sort_order: input.sortOrder,
+    is_active: input.isActive,
+    starts_at: new Date(input.startsAt).toISOString(),
+    ends_at: input.endsAt ? new Date(input.endsAt).toISOString() : null,
+  };
+  // Only overwrite the artwork when a new file was uploaded.
+  if (input.imagePath !== undefined) row.image_path = input.imagePath;
+
+  if (input.id) {
+    const { error } = await supabase.from("course_banners").update(row).eq("id", input.id);
+    if (error) throw new Error(`saveBanner: ${error.message}`);
+    return input.id;
+  }
+
+  const { data, error } = await supabase.from("course_banners").insert(row).select("id").single();
+  if (error) throw new Error(`saveBanner: ${error.message}`);
+  return data.id;
+}
+
+export async function deleteBanner(id: string): Promise<void> {
+  if (isDemoMode()) return mockExtra.deleteBanner(id);
+  const supabase = await db();
+  const { error } = await supabase.from("course_banners").delete().eq("id", id);
+  if (error) throw new Error(`deleteBanner: ${error.message}`);
 }

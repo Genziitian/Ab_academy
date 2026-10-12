@@ -2,11 +2,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../data/remote/payment_service.dart';
+import '../screens/academics/academics_screen.dart';
 import '../screens/calendar/calendar_screen.dart';
 import '../screens/courses/course_details_screen.dart';
 import '../screens/courses/curriculum_screen.dart';
-import '../screens/courses/explore_screen.dart';
-import '../screens/courses/my_courses_screen.dart';
+import '../screens/courses/courses_screen.dart';
 import '../screens/downloads/downloads_screen.dart';
 import '../screens/home/app_shell.dart';
 import '../screens/home/home_screen.dart';
@@ -14,8 +15,6 @@ import '../screens/lessons/lecture_screen.dart';
 import '../screens/lessons/pdf_viewer_screen.dart';
 import '../screens/live/live_classroom_screen.dart';
 import '../screens/live/live_lobby_screen.dart';
-import '../screens/live/live_sessions_screen.dart';
-import '../screens/materials/study_materials_screen.dart';
 import '../screens/notifications/notifications_screen.dart';
 import '../screens/onboarding/login_screen.dart';
 import '../screens/onboarding/otp_screen.dart';
@@ -39,15 +38,19 @@ abstract final class Routes {
   // Bottom-nav tabs, in AppTab order.
   static const home = '/home';
   static const courses = '/courses';
-  static const live = '/live';
-  static const notes = '/notes';
+  static const academics = '/academics';
   static const profile = '/profile';
+
+  // Sections inside those tabs.
+  static const store = '/courses?tab=store';
+  static const myCourses = '/courses?tab=mine';
+  static const live = '/academics?tab=live';
+  static const notes = '/academics?tab=notes';
 
   // Pushed full-screen routes.
   static const calendar = '/calendar';
   static const downloads = '/downloads';
   static const notifications = '/notifications';
-  static const explore = '/explore';
   static const curriculum = '/curriculum';
   static const liveLobby = '/live/lobby';
   static const liveRoom = '/live/room';
@@ -82,7 +85,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => const SetupStreamScreen(),
       ),
 
-      // The five bottom-nav tabs share a shell and keep their own stacks.
+      // The four bottom-nav tabs share a shell and keep their own stacks.
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => AppShell(navigationShell: shell),
         branches: [
@@ -95,23 +98,18 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: Routes.courses,
-                builder: (_, _) => const MyCoursesScreen(),
+                builder: (_, state) =>
+                    CoursesScreen(initialTab: state.uri.queryParameters['tab']),
               ),
             ],
           ),
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: Routes.live,
-                builder: (_, _) => const LiveSessionsScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: Routes.notes,
-                builder: (_, _) => const StudyMaterialsScreen(),
+                path: Routes.academics,
+                builder: (_, state) => AcademicsScreen(
+                  initialTab: state.uri.queryParameters['tab'],
+                ),
               ),
             ],
           ),
@@ -135,7 +133,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.notifications,
         builder: (_, _) => const NotificationsScreen(),
       ),
-      GoRoute(path: Routes.explore, builder: (_, _) => const ExploreScreen()),
+      // Old paths, kept so existing deep links and notifications still land.
+      GoRoute(path: '/explore', redirect: (_, _) => Routes.store),
+      GoRoute(path: '/live', redirect: (_, _) => Routes.live),
+      GoRoute(path: '/notes', redirect: (_, _) => Routes.notes),
+      GoRoute(path: '/materials', redirect: (_, _) => Routes.notes),
       GoRoute(
         path: Routes.curriculum,
         // The course id rides along as `extra`; absent opens the first course.
@@ -157,8 +159,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: Routes.paymentSuccess,
-        builder: (_, state) =>
-            PaymentSuccessScreen(courseId: state.extra as String?),
+        builder: (_, state) => PaymentSuccessScreen(
+          receipt: state.extra is PaymentReceipt
+              ? state.extra as PaymentReceipt
+              : null,
+        ),
       ),
       GoRoute(
         path: '/course/:id',
