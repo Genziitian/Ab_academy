@@ -71,9 +71,9 @@ export async function getDashboardCounts(): Promise<DashboardCounts> {
     table: string,
     build?: (q: ReturnType<typeof supabase.from>) => unknown,
   ) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // "id" rather than "*": students' column grants on some tables (lessons)
     // leave columns out, and "*" would ask for them.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let q: any = supabase.from(table).select("id", { count: "exact", head: true });
     if (build) q = build(q);
     const { count: n } = await q;
@@ -464,7 +464,7 @@ export async function listLessons(courseId?: string): Promise<AdminLesson[]> {
        is_demo, is_published, is_downloadable,
        chapter_id,
        chapters ( id, title, subjects ( name, course_batches ( course_id, courses ( id, title ) ) ) ),
-       lesson_resources ( id, title, resource_type, storage_path, size_bytes, is_downloadable )`,
+       lesson_resources ( id, title, resource_type, source, size_bytes, is_downloadable )`,
     )
     .order("sort_order")
     .limit(500);
@@ -478,6 +478,13 @@ export async function listLessons(courseId?: string): Promise<AdminLesson[]> {
   const mediaById = new Map<string, { video_ref: string | null; storage_path: string | null }>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (media ?? []).map((m: any) => [m.id, m]),
+  );
+  // Notes' storage paths and Drive ids are hidden the same way (migration 7).
+  const { data: notesMedia, error: notesError } = await supabase.rpc("staff_resource_media");
+  if (notesError) throw new Error(`listLessons/notes: ${notesError.message}`);
+  const noteById = new Map<string, { storage_path: string | null; drive_file_id: string | null }>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (notesMedia ?? []).map((m: any) => [m.id, m]),
   );
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -508,7 +515,9 @@ export async function listLessons(courseId?: string): Promise<AdminLesson[]> {
         lessonId: row.id,
         title: r.title,
         resourceType: r.resource_type,
-        storagePath: r.storage_path,
+        source: r.source === "gdrive" ? "gdrive" : "storage",
+        storagePath: noteById.get(r.id)?.storage_path ?? null,
+        driveFileId: noteById.get(r.id)?.drive_file_id ?? null,
         sizeBytes: r.size_bytes,
         isDownloadable: r.is_downloadable,
       })),
@@ -578,7 +587,9 @@ export async function deleteLesson(id: string): Promise<void> {
 export async function addResource(input: {
   lessonId: string;
   title: string;
-  storagePath: string;
+  /** Exactly one of these: an uploaded file's path or a Google Drive id. */
+  storagePath?: string;
+  driveFileId?: string;
   sizeBytes: number | null;
 }): Promise<void> {
   if (isDemoMode()) return mockExtra.addResource(input);
@@ -587,7 +598,9 @@ export async function addResource(input: {
     lesson_id: input.lessonId,
     title: input.title,
     resource_type: "PDF",
-    storage_path: input.storagePath,
+    source: input.driveFileId ? "gdrive" : "storage",
+    storage_path: input.storagePath ?? null,
+    drive_file_id: input.driveFileId ?? null,
     size_bytes: input.sizeBytes,
   });
   if (error) throw new Error(`addResource: ${error.message}`);

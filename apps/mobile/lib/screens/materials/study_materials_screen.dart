@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../data/mock/mock_data.dart';
 import '../../data/models/content.dart';
 import '../../data/providers/app_providers.dart';
+import '../../data/providers/remote_providers.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -24,17 +25,15 @@ class NotesView extends ConsumerStatefulWidget {
 
 class _NotesViewState extends ConsumerState<NotesView> {
   String _query = '';
-  late final Set<String> _offline = {
-    for (final m in MockData.materials)
-      if (m.isOffline) m.id,
-  };
 
   @override
   Widget build(BuildContext context) {
     final filter = ref.watch(materialsFilterProvider);
     final q = _query.trim().toLowerCase();
     final materials = ref
-        .watch(filteredMaterialsProvider)
+        .watch(notesLibraryProvider)
+        .maybeWhen(data: (all) => all, orElse: () => const <StudyMaterial>[])
+        .where((m) => filter == 'All' || m.subject == filter)
         .where(
           (m) =>
               q.isEmpty ||
@@ -101,18 +100,7 @@ class _NotesViewState extends ConsumerState<NotesView> {
           )
         else
           ListCard(
-            children: [
-              for (final m in materials)
-                _NoteRow(
-                  material: m,
-                  offline: _offline.contains(m.id),
-                  onToggleOffline: () => setState(() {
-                    if (!_offline.remove(m.id)) {
-                      _offline.add(m.id);
-                    }
-                  }),
-                ),
-            ],
+            children: [for (final m in materials) _NoteRow(material: m)],
           ),
       ],
     );
@@ -120,23 +108,15 @@ class _NotesViewState extends ConsumerState<NotesView> {
 }
 
 class _NoteRow extends StatelessWidget {
-  const _NoteRow({
-    required this.material,
-    required this.offline,
-    required this.onToggleOffline,
-  });
+  const _NoteRow({required this.material});
 
   final StudyMaterial material;
-  final bool offline;
-  final VoidCallback onToggleOffline;
 
   @override
   Widget build(BuildContext context) {
     final palette = SubjectPalette.fromName(material.subject);
     return InkWell(
-      // Every note opens the bundled sample until notes come from storage.
-      onTap: () =>
-          context.push(Routes.pdf(MockData.lessonAttachments.first.id)),
+      onTap: () => context.push(Routes.pdf(material.id), extra: material.title),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(
@@ -166,19 +146,14 @@ class _NoteRow extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            GestureDetector(
-              onTap: onToggleOffline,
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Text(
-                  offline ? '✓ Offline' : 'Open',
-                  style: AppText.tabular(
-                    12,
-                    FontWeight.w600,
-                    color: offline ? AppColors.success : AppColors.primary,
-                  ),
-                ),
+            // Notes open only in the in-app viewer; they are never saved to
+            // the phone, so there is no download or offline toggle.
+            Text(
+              'Open',
+              style: AppText.tabular(
+                12,
+                FontWeight.w600,
+                color: AppColors.primary,
               ),
             ),
           ],

@@ -257,3 +257,28 @@ demo lessons or students with an active enrolment.
 Screenshots and screen recording are blocked on Android while a lecture is on
 screen. For QA screenshots only, build with
 `--dart-define=ALLOW_SCREENSHOTS=true`.
+
+## Class notes (Google Drive)
+
+Notes open in the app's PDF viewer (`lib/screens/lessons/pdf_viewer_screen.dart`)
+and are never saved to the phone. The app asks the `notes` Edge Function for a
+note by id; the function checks access with `note_access()` (migration 7),
+fetches the PDF from Google Drive or the private `lesson-notes` bucket, and
+streams only the bytes. The Drive link never reaches students.
+
+To add notes: Admin → Content → a lesson → paste the Google Drive link of the
+PDF (or upload a PDF) → Attach PDF.
+
+Drive sharing, pick one:
+
+- **Simple:** share each PDF as "Anyone with the link — Viewer".
+- **Private (recommended):** create a Google Cloud service account with the
+  Drive API enabled, share the notes folder with the service account's email
+  as Viewer, and give the function its key:
+
+  ```bash
+  supabase secrets set GOOGLE_SA_EMAIL=notes@PROJECT.iam.gserviceaccount.com \
+                       GOOGLE_SA_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+  ```
+
+Deploy or redeploy the function with `supabase functions deploy notes`.

@@ -209,12 +209,6 @@ final materialsFilterProvider = NotifierProvider<SelectionNotifier, String>(
   () => SelectionNotifier('All'),
 );
 
-final filteredMaterialsProvider = Provider<List<StudyMaterial>>((ref) {
-  final filter = ref.watch(materialsFilterProvider);
-  if (filter == 'All') return MockData.materials;
-  return MockData.materials.where((m) => m.subject == filter).toList();
-});
-
 // --------------------------------------------------------------- calendar
 
 final calendarFilterProvider = NotifierProvider<SelectionNotifier, String>(

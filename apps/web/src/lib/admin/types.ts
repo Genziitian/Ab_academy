@@ -115,7 +115,10 @@ export type AdminResource = {
   lessonId: string;
   title: string;
   resourceType: string;
-  storagePath: string;
+  /** Where the PDF lives: the private lesson-notes bucket or Google Drive. */
+  source: "storage" | "gdrive";
+  storagePath: string | null;
+  driveFileId: string | null;
   sizeBytes: number | null;
   isDownloadable: boolean;
 };

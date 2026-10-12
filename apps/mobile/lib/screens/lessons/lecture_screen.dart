@@ -123,7 +123,7 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
                 Expanded(
                   child: switch (_tab) {
                     'Discussion' => _DiscussionTab(lessonId: widget.lessonId),
-                    'Notes' => const _NotesTab(),
+                    'Notes' => _NotesTab(lessonId: widget.lessonId),
                     'Feedback' => _FeedbackTab(lessonId: widget.lessonId),
                     _ => const _AboutTab(),
                   },
@@ -558,11 +558,14 @@ class _CommentTile extends StatelessWidget {
 }
 
 class _NotesTab extends ConsumerWidget {
-  const _NotesTab();
+  const _NotesTab({required this.lessonId});
+
+  final String lessonId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final attachments = ref.watch(lessonAttachmentsProvider);
+    final notes = ref.watch(remoteLessonNotesProvider(lessonId));
+    final attachments = notes.value ?? const <LessonNote>[];
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -570,11 +573,25 @@ class _NotesTab extends ConsumerWidget {
         const SizedBox(height: 4),
         Text('Open them here — no download needed.', style: AppText.meta),
         const SizedBox(height: 14),
+        if (notes.isLoading)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator()),
+          )
+        else if (attachments.isEmpty)
+          const EmptyState(
+            icon: LucideIcons.fileText,
+            title: 'No notes yet',
+            body: 'Your teacher has not attached notes to this lecture.',
+          ),
         for (final attachment in attachments) ...[
           AppCard(
             padding: const EdgeInsets.all(12),
             borderRadius: AppRadius.sm,
-            onTap: () => context.push(Routes.pdf(attachment.id)),
+            onTap: () => context.push(
+              Routes.pdf(attachment.id),
+              extra: attachment.title,
+            ),
             child: Row(
               children: [
                 const PdfBadge(),
@@ -584,10 +601,7 @@ class _NotesTab extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(attachment.title, style: AppText.rowTitle),
-                      Text(
-                        attachment.sizeLabel.replaceAll('•', '·'),
-                        style: AppText.meta,
-                      ),
+                      Text(attachment.meta, style: AppText.meta),
                     ],
                   ),
                 ),

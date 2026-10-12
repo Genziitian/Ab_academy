@@ -1,13 +1,17 @@
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/env.dart';
 import '../models/banner.dart';
+import '../models/content.dart';
 import '../models/course.dart';
 import '../models/popup.dart';
 import '../models/ticket.dart';
 import '../models/user.dart';
 import '../mock/mock_data.dart';
 import '../remote/auth_repository.dart';
+import '../remote/mappers.dart' show sizeLabel;
 import '../remote/repositories.dart';
 import '../remote/supabase_client.dart';
 
@@ -80,13 +84,54 @@ final lessonYoutubeIdProvider = FutureProvider.autoDispose
       return Repo.lessonYoutubeId(lessonId);
     });
 
-typedef LessonNote = ({String id, String title, String meta, String? url});
+typedef LessonNote = ({String id, String title, String meta});
 
+/// Notes attached to a lecture. Mock attachments without a backend.
 final remoteLessonNotesProvider =
     FutureProvider.family<List<LessonNote>, String>((ref, lessonId) async {
-      if (!ref.watch(hasBackendProvider)) return const [];
+      if (!ref.watch(hasBackendProvider)) {
+        return [
+          for (final a in MockData.lessonAttachments)
+            (id: a.id, title: a.title, meta: a.sizeLabel.replaceAll('•', '·')),
+        ];
+      }
       return Repo.lessonNotes(lessonId);
     });
+
+/// Academics → Notes: every note the student can open.
+final notesLibraryProvider = FutureProvider<List<StudyMaterial>>((ref) async {
+  if (!ref.watch(hasBackendProvider)) return MockData.materials;
+  final rows = await Repo.notesLibrary();
+  return [
+    for (final r in rows)
+      StudyMaterial(
+        id: r['id'] as String,
+        title: (r['title'] as String?) ?? 'Class notes',
+        subject:
+            ((((r['lessons'] as Map?)?['chapters'] as Map?)?['subjects']
+                    as Map?)?['name']
+                as String?) ??
+            'General',
+        kind: MaterialKind.pdf,
+        sizeLabel: r['source'] == 'gdrive'
+            ? 'PDF'
+            : 'PDF • ${sizeLabel(r['size_bytes'] as int?)}',
+      ),
+  ];
+});
+
+/// One note's PDF bytes. Kept only in memory while the viewer is open —
+/// never written to disk, so notes cannot be copied out of app storage.
+final noteBytesProvider = FutureProvider.autoDispose.family<Uint8List, String>((
+  ref,
+  noteId,
+) async {
+  if (!ref.watch(hasBackendProvider)) {
+    final data = await rootBundle.load('assets/sample-notes.pdf');
+    return data.buffer.asUint8List();
+  }
+  return Repo.noteBytes(noteId);
+});
 
 // ---------------------------------------------------------------- doubts
 

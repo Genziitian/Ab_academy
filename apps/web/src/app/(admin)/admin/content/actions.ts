@@ -9,6 +9,7 @@ import {
   saveLesson,
   uploadToBucket,
 } from "@/lib/admin/data";
+import { driveFileId } from "@/lib/admin/drive";
 import type { AdminLesson } from "@/lib/admin/types";
 
 /**
@@ -66,22 +67,28 @@ export async function deleteLessonAction(formData: FormData) {
   revalidatePath("/admin");
 }
 
-/** Uploads a notes PDF to the private bucket and links it to the lesson. */
+/**
+ * Attaches a notes PDF to a lesson, from a Google Drive link or an upload to
+ * the private bucket. Either way students only ever read it through the
+ * app's viewer; the link and the path stay server-side.
+ */
 export async function addResourceAction(formData: FormData) {
   await requireAdmin();
 
   const lessonId = String(formData.get("lessonId") ?? "");
-  const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0) return;
+  const title = String(formData.get("title") ?? "").trim();
+  const driveLink = String(formData.get("driveLink") ?? "").trim();
 
-  const storagePath = await uploadToBucket("lesson-notes", file, lessonId);
-
-  await addResource({
-    lessonId,
-    title: String(formData.get("title") ?? "").trim() || file.name,
-    storagePath,
-    sizeBytes: file.size,
-  });
+  if (driveLink) {
+    const id = driveFileId(driveLink);
+    if (!id) throw new Error("That does not look like a Google Drive file link.");
+    await addResource({ lessonId, title: title || "Class notes", driveFileId: id, sizeBytes: null });
+  } else {
+    const file = formData.get("file");
+    if (!(file instanceof File) || file.size === 0) return;
+    const storagePath = await uploadToBucket("lesson-notes", file, lessonId);
+    await addResource({ lessonId, title: title || file.name, storagePath, sizeBytes: file.size });
+  }
 
   revalidatePath("/admin/content");
 }

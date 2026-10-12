@@ -222,7 +222,8 @@ class LessonRow extends StatelessWidget {
       LessonState.completed => () => context.push(Routes.lesson(lesson.id)),
       LessonState.live => () => context.push(Routes.liveLobby),
       LessonState.notes => () => context.push(
-        Routes.pdf(MockData.lessonAttachments.first.id),
+        Routes.pdf(lesson.id, lesson: true),
+        extra: lesson.title,
       ),
       LessonState.locked => null,
     };

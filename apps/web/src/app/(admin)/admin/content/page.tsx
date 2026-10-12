@@ -143,7 +143,7 @@ export default async function AdminContentPage({
                               {resource.title}
                             </p>
                             <p className="text-xs text-muted">
-                              {resource.resourceType}
+                              {resource.source === "gdrive" ? "Google Drive" : resource.resourceType}
                               {formatSize(resource.sizeBytes)
                                 ? ` · ${formatSize(resource.sizeBytes)}`
                                 : ""}
@@ -183,10 +183,15 @@ export default async function AdminContentPage({
                       className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm text-navy outline-none focus:border-primary"
                     />
                     <input
+                      name="driveLink"
+                      placeholder="Google Drive link"
+                      className="min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm text-navy outline-none focus:border-primary"
+                    />
+                    <span className="text-xs text-muted">or</span>
+                    <input
                       type="file"
                       name="file"
                       accept="application/pdf"
-                      required
                       className="text-xs text-muted"
                     />
                     <button

@@ -60,7 +60,10 @@ abstract final class Routes {
 
   static String courseDetails(String id) => '/course/$id';
   static String lesson(String id) => '/lesson/$id';
-  static String pdf(String id) => '/pdf/$id';
+
+  /// A note by id, or with [lesson] the first note of a lesson.
+  static String pdf(String id, {bool lesson = false}) =>
+      lesson ? '/pdf/$id?lesson=1' : '/pdf/$id';
   static String ticket(String id) => '/ticket/$id';
   static String purchase(String id) => '/purchase/$id';
   static String checkout(String id) => '/checkout/$id';
@@ -177,8 +180,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/pdf/:id',
-        builder: (_, state) =>
-            PdfViewerScreen(attachmentId: state.pathParameters['id']!),
+        builder: (_, state) => PdfViewerScreen(
+          id: state.pathParameters['id']!,
+          byLesson: state.uri.queryParameters['lesson'] == '1',
+          // Titles ride along in memory; they are never put in the URL.
+          title: state.extra is String ? state.extra as String : null,
+        ),
       ),
       GoRoute(
         path: '/ticket/:id',

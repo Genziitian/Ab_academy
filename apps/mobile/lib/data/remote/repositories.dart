@@ -1,5 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:supabase_flutter/supabase_flutter.dart'
-    show FunctionException, PostgrestException;
+    show FunctionException, HttpMethod, PostgrestException;
 
 import '../models/banner.dart';
 import '../models/course.dart';
@@ -161,24 +163,66 @@ abstract final class Repo {
     }
   }
 
-  /// Notes attached to a lesson, each with a short-lived signed URL.
-  static Future<List<({String id, String title, String meta, String? url})>>
-  lessonNotes(String lessonId) async {
+  /// Notes attached to a lesson. No location comes back — students cannot
+  /// select storage paths or Drive ids (migration 7); [noteBytes] fetches
+  /// the file itself.
+  static Future<List<({String id, String title, String meta})>> lessonNotes(
+    String lessonId,
+  ) async {
     final rows = await Api.client
         .from('lesson_resources')
-        .select('id, title, resource_type, storage_path, size_bytes')
-        .eq('lesson_id', lessonId);
+        .select('id, title, size_bytes, source')
+        .eq('lesson_id', lessonId)
+        .order('created_at');
 
-    return Future.wait(
-      rows.map((r) async {
-        return (
+    return [
+      for (final r in rows)
+        (
           id: r['id'] as String,
-          title: (r['title'] as String?) ?? 'Notes',
-          meta: sizeLabel(r['size_bytes'] as int?),
-          url: await Api.signedUrl('lesson-notes', r['storage_path'] as String),
-        );
-      }),
-    );
+          title: (r['title'] as String?) ?? 'Class notes',
+          meta: r['source'] == 'gdrive'
+              ? 'PDF'
+              : 'PDF · ${sizeLabel(r['size_bytes'] as int?)}',
+        ),
+    ];
+  }
+
+  /// Every note the student can read, newest first, with its subject — the
+  /// Academics → Notes list. RLS limits rows to enrolled courses and demos.
+  static Future<List<Map<String, dynamic>>> notesLibrary() async {
+    final rows = await Api.client
+        .from('lesson_resources')
+        .select(
+          'id, title, size_bytes, source, created_at, '
+          'lessons ( chapters ( subjects ( name ) ) )',
+        )
+        .order('created_at', ascending: false)
+        .limit(200);
+    return rows.cast<Map<String, dynamic>>();
+  }
+
+  /// The PDF bytes of one note, streamed by the `notes` Edge Function after
+  /// it checks the student's access. The file's real location — the private
+  /// bucket or Google Drive — never reaches the app.
+  static Future<Uint8List> noteBytes(String resourceId) async {
+    try {
+      final response = await Api.client.functions.invoke(
+        'notes',
+        method: HttpMethod.get,
+        queryParameters: {'id': resourceId},
+      );
+      final data = response.data;
+      if (data is Uint8List) return data;
+      throw const NoteUnavailable('These notes could not be opened.');
+    } on FunctionException catch (e) {
+      final details = e.details;
+      throw NoteUnavailable(
+        details is Map && details['error'] != null
+            ? details['error'].toString()
+            : 'These notes could not be opened.',
+        denied: e.status == 403,
+      );
+    }
   }
 
   // ------------------------------------------------- doubts under a lesson
@@ -515,4 +559,17 @@ class PlaybackDenied implements Exception {
 
   @override
   String toString() => 'Enroll in this course to watch the lecture.';
+}
+
+/// A note the server would not hand over, with a message for the student.
+class NoteUnavailable implements Exception {
+  const NoteUnavailable(this.message, {this.denied = false});
+
+  final String message;
+
+  /// True when the student is not enrolled, rather than a fetch failure.
+  final bool denied;
+
+  @override
+  String toString() => message;
 }

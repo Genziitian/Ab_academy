@@ -84,9 +84,6 @@ final lessonFeedbackProvider =
       LessonFeedbackNotifier.new,
     );
 
-final lessonAttachmentsProvider = Provider<List<LessonAttachment>>(
-  (ref) => MockData.lessonAttachments,
-);
 
 // --------------------------------------------------------------- tickets
 

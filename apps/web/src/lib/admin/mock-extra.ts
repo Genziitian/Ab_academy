@@ -104,7 +104,9 @@ let lessons: AdminLesson[] = [
         lessonId: "l-1",
         title: "Chapter 01 notes",
         resourceType: "PDF",
+        source: "storage",
         storagePath: "lesson-notes/demo/chapter-01.pdf",
+        driveFileId: null,
         sizeBytes: 1_240_000,
         isDownloadable: true,
       },
@@ -152,7 +154,9 @@ let lessons: AdminLesson[] = [
         lessonId: "l-3",
         title: "Carbon compounds — summary sheet",
         resourceType: "PDF",
+        source: "storage",
         storagePath: "lesson-notes/demo/carbon-summary.pdf",
+        driveFileId: null,
         sizeBytes: 820_000,
         isDownloadable: true,
       },
@@ -374,7 +378,8 @@ export function deleteLesson(id: string) {
 export function addResource(input: {
   lessonId: string;
   title: string;
-  storagePath: string;
+  storagePath?: string;
+  driveFileId?: string;
   sizeBytes: number | null;
 }) {
   lessons = lessons.map((l) =>
@@ -388,7 +393,9 @@ export function addResource(input: {
               lessonId: l.id,
               title: input.title,
               resourceType: "PDF",
-              storagePath: input.storagePath,
+              source: input.driveFileId ? "gdrive" : "storage",
+              storagePath: input.storagePath ?? null,
+              driveFileId: input.driveFileId ?? null,
               sizeBytes: input.sizeBytes,
               isDownloadable: true,
             },
