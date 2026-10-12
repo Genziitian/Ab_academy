@@ -1,11 +1,18 @@
+import Link from "next/link";
 import { Card, EmptyRow, PageHeader, Pill } from "@/components/admin/AdminChrome";
-import { Field, SelectField } from "@/components/admin/Fields";
+import { Field, SelectField, TextAreaField } from "@/components/admin/Fields";
 import { formatRupees } from "@/lib/admin/format";
 import { listCourses } from "@/lib/admin/data";
 import { deleteCourseAction, saveCourseAction } from "./actions";
 
-export default async function AdminCoursesPage() {
+export default async function AdminCoursesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ edit?: string }>;
+}) {
+  const { edit } = await searchParams;
   const courses = await listCourses();
+  const editing = edit ? courses.find((c) => c.id === edit) : undefined;
 
   return (
     <>
@@ -36,6 +43,7 @@ export default async function AdminCoursesPage() {
                     <tr key={course.id}>
                       <td className="py-3 pr-3">
                         <p className="font-medium text-navy">{course.title}</p>
+                        <p className="font-mono text-xs text-primary">{course.courseCode}</p>
                         <p className="text-xs text-muted">
                           Class {course.classLevel} · {course.medium} · {course.subjects.length}{" "}
                           subjects
@@ -48,8 +56,14 @@ export default async function AdminCoursesPage() {
                       <td className="py-3 pr-3">
                         <Pill status={course.isPublished ? "published" : "draft"} />
                       </td>
-                      <td className="py-3 text-right">
-                        <form action={deleteCourseAction}>
+                      <td className="py-3 text-right whitespace-nowrap">
+                        <Link
+                          href={`/admin/courses?edit=${course.id}`}
+                          className="mr-3 text-xs font-medium text-primary hover:underline"
+                        >
+                          Edit
+                        </Link>
+                        <form action={deleteCourseAction} className="inline">
                           <input type="hidden" name="id" value={course.id} />
                           <button
                             type="submit"
@@ -68,46 +82,109 @@ export default async function AdminCoursesPage() {
         </Card>
 
         <Card>
-          <h2 className="mb-1 font-semibold text-navy">Add a course</h2>
+          <div className="mb-1 flex items-center justify-between gap-3">
+            <h2 className="font-semibold text-navy">
+              {editing ? `Edit ${editing.title}` : "Add a course"}
+            </h2>
+            {editing ? (
+              <Link href="/admin/courses" className="text-xs font-medium text-muted hover:text-navy">
+                Cancel
+              </Link>
+            ) : null}
+          </div>
           <p className="mb-4 text-xs text-muted">
+            {editing ? (
+              <>
+                Course ID <span className="font-mono text-primary">{editing.courseCode}</span> is
+                fixed.{" "}
+              </>
+            ) : (
+              "A random course ID is generated when you save. "
+            )}
             Published courses appear on the website and in the app; untick to save a draft.
           </p>
-          <form action={saveCourseAction} className="space-y-3">
-            <Field label="Title" name="title" placeholder="Class 11 Science Batch" required />
+          {/* key resets the uncontrolled inputs when switching courses. */}
+          <form key={editing?.id ?? "new"} action={saveCourseAction} className="space-y-3">
+            {editing ? <input type="hidden" name="id" value={editing.id} /> : null}
+            <Field
+              label="Title"
+              name="title"
+              placeholder="Class 11 Science Batch"
+              defaultValue={editing?.title}
+              required
+            />
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Class" name="classLevel" type="number" defaultValue="10" required />
-              <SelectField label="Medium" name="medium" options={["Hindi", "English"]} />
+              <Field
+                label="Class"
+                name="classLevel"
+                type="number"
+                defaultValue={String(editing?.classLevel ?? 12)}
+                required
+              />
+              <SelectField
+                label="Medium"
+                name="medium"
+                defaultValue={editing?.medium}
+                options={["Hindi", "English", "Hindi + English"]}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Price (₹)" name="priceInr" type="number" defaultValue="2999" required />
+              <Field
+                label="Price (₹)"
+                name="priceInr"
+                type="number"
+                defaultValue={String(editing?.priceInr ?? 2999)}
+                required
+              />
               <Field
                 label="Before discount (₹)"
                 name="originalPriceInr"
                 type="number"
-                defaultValue="4999"
+                defaultValue={String(editing?.originalPriceInr ?? 4999)}
               />
             </div>
+            <TextAreaField
+              label="Description"
+              name="description"
+              placeholder="What the course covers, in one or two sentences."
+              defaultValue={editing?.description}
+            />
+            <TextAreaField
+              label="Highlights"
+              name="highlights"
+              placeholder={"Live classes with expert teachers\nPDF notes for every chapter"}
+              defaultValue={editing?.highlights.join("\n")}
+              hint="One per line"
+              rows={4}
+            />
             <Field
               label="Subjects"
               name="subjects"
               placeholder="Physics, Chemistry, Maths"
+              defaultValue={editing?.subjects.join(", ")}
               hint="Comma separated"
             />
             <Field
               label="Teachers"
               name="teachers"
               placeholder="Amit Sir, Neha Ma'am"
+              defaultValue={editing?.teachers.join(", ")}
               hint="Comma separated"
             />
             <label className="flex items-center gap-2 pt-1 text-sm text-navy">
-              <input type="checkbox" name="isPublished" defaultChecked className="size-4" />
-              Publish immediately
+              <input
+                type="checkbox"
+                name="isPublished"
+                defaultChecked={editing ? editing.isPublished : true}
+                className="size-4"
+              />
+              {editing ? "Published" : "Publish immediately"}
             </label>
             <button
               type="submit"
               className="mt-2 w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-dark"
             >
-              Save course
+              {editing ? "Save changes" : "Save course"}
             </button>
           </form>
         </Card>

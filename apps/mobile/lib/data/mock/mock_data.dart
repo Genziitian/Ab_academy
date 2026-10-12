@@ -17,6 +17,7 @@ abstract final class MockData {
     board: 'Bihar Board',
     medium: 'Hindi',
     stream: 'Science',
+    studentCode: 'ABA-S-4MZT8KQ2',
   );
 
   static const amitSir = Teacher(

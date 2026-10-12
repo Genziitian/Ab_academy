@@ -16,8 +16,12 @@ const NAV = [
   { href: "/admin/banners", label: "App slider" },
 ];
 
-export function AdminSidebar() {
+/** Money is the super admin's alone; the page and RLS both enforce it. */
+const SUPER_ADMIN_NAV = [{ href: "/admin/transactions", label: "Transactions" }];
+
+export function AdminSidebar({ role }: { role: string }) {
   const pathname = usePathname();
+  const items = role === "super_admin" ? [...NAV, ...SUPER_ADMIN_NAV] : NAV;
 
   return (
     <aside className="w-full shrink-0 border-b border-border bg-surface md:h-screen md:w-60 md:border-r md:border-b-0">
@@ -28,7 +32,7 @@ export function AdminSidebar() {
         <p className="mt-0.5 text-xs text-muted">Admin console</p>
       </div>
       <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-col md:overflow-visible">
-        {NAV.map((item) => {
+        {items.map((item) => {
           const active =
             item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
           return (
@@ -106,6 +110,11 @@ const STATUS_STYLES: Record<string, string> = {
   closed: "bg-surface-soft text-muted",
   published: "bg-success/15 text-success",
   draft: "bg-surface-soft text-muted",
+  paid: "bg-success/15 text-success",
+  failed: "bg-pink/15 text-pink",
+  refunded: "bg-orange/15 text-orange",
+  created: "bg-surface-soft text-muted",
+  pending: "bg-surface-soft text-muted",
 };
 
 export function Pill({ status, label }: { status: string; label?: string }) {

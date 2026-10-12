@@ -22,7 +22,7 @@ abstract final class Repo {
 
     final profile = await Api.client
         .from('profiles')
-        .select('full_name, phone, email')
+        .select('full_name, phone, email, student_code')
         .eq('id', id)
         .maybeSingle();
     if (profile == null) return null;

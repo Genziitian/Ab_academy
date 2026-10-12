@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -142,6 +143,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     'Name and phone are set at sign-in.',
                   ),
                 ),
+                if (student.studentCode != null)
+                  _Row(
+                    title: 'Student ID',
+                    value: student.studentCode!,
+                    onTap: () {
+                      Clipboard.setData(
+                        ClipboardData(text: student.studentCode!),
+                      );
+                      showDemoSnack(context, 'Student ID copied.');
+                    },
+                  ),
                 _Row(
                   title: 'Class & stream',
                   value:

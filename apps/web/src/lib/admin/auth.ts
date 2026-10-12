@@ -73,3 +73,14 @@ export async function requireFullAdmin(): Promise<AdminUser> {
   if (admin.role === "teacher") redirect("/admin?error=admin-only");
   return admin;
 }
+
+/**
+ * Transactions and revenue are super-admin only. Postgres enforces the same
+ * rule (`orders_super_admin_read`), so an admin who reached the page would
+ * still see no rows.
+ */
+export async function requireSuperAdmin(): Promise<AdminUser> {
+  const admin = await requireAdmin();
+  if (admin.role !== "super_admin") redirect("/admin?error=super-admin-only");
+  return admin;
+}

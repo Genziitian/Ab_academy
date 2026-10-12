@@ -69,6 +69,7 @@ Student studentFromRows(Json profile, Json? studentProfile) {
     board: (studentProfile?['board'] as String?) ?? 'Bihar Board',
     medium: (studentProfile?['medium'] as String?) ?? 'Hindi',
     stream: studentProfile?['stream'] as String?,
+    studentCode: profile['student_code'] as String?,
   );
 }
 

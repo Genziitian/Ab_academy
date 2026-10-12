@@ -22,6 +22,7 @@ import type {
   AdminPopup,
   AdminSession,
   AdminStudent,
+  AdminTransaction,
   AdminTicket,
   AudienceKind,
   LiveStatus,
@@ -132,8 +133,8 @@ export async function listCourses(): Promise<AdminCourse[]> {
   const { data, error } = await supabase
     .from("courses")
     .select(
-      `id, title, class_level, board, language, price_inr, original_price_inr,
-       subjects, is_published,
+      `id, course_code, title, class_level, board, language, price_inr,
+       original_price_inr, subjects, description, highlights, is_published,
        course_teachers ( teachers ( display_name ) ),
        enrollments ( count )`,
     )
@@ -145,6 +146,7 @@ export async function listCourses(): Promise<AdminCourse[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((row: any) => ({
     id: row.id,
+    courseCode: row.course_code,
     title: row.title,
     classLevel: row.class_level,
     board: row.board,
@@ -156,6 +158,8 @@ export async function listCourses(): Promise<AdminCourse[]> {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((ct: any) => ct.teachers?.display_name)
       .filter(Boolean),
+    description: row.description ?? "",
+    highlights: row.highlights ?? [],
     isPublished: row.is_published,
     enrolledCount: row.enrollments?.[0]?.count ?? 0,
   }));
@@ -177,6 +181,8 @@ export async function saveCourse(input: {
   originalPriceInr: number;
   subjects: string[];
   teachers: string[];
+  description: string;
+  highlights: string[];
   isPublished: boolean;
 }): Promise<string> {
   if (isDemoMode()) return mock.saveCourse(input);
@@ -190,6 +196,8 @@ export async function saveCourse(input: {
     price_inr: input.priceInr,
     original_price_inr: input.originalPriceInr || null,
     subjects: input.subjects,
+    description: input.description,
+    highlights: input.highlights,
     is_published: input.isPublished,
   };
 
@@ -200,17 +208,40 @@ export async function saveCourse(input: {
     return input.id;
   }
 
+  // The slug is the website URL; add a short suffix if the title is taken.
+  const base = slugify(input.title) || "course";
+  const { data: taken } = await supabase
+    .from("courses")
+    .select("id")
+    .eq("slug", base)
+    .maybeSingle();
+  const slug = taken ? `${base}-${Math.random().toString(36).slice(2, 6)}` : base;
+
   const { data, error } = await supabase
     .from("courses")
-    .insert({ ...row, slug: slugify(input.title) })
+    .insert({ ...row, slug })
     .select("id")
     .single();
   if (error) throw new Error(`saveCourse: ${error.message}`);
 
   // Every course needs one batch; the curriculum hangs off it.
-  await supabase
+  const { data: batch } = await supabase
     .from("course_batches")
-    .insert({ course_id: data.id, name: "Current Batch", is_active: true });
+    .insert({ course_id: data.id, name: "Current Batch", is_active: true })
+    .select("id")
+    .single();
+
+  // One subject row per subject, so the Content page and the app's subject
+  // tabs have something to hang chapters on straight away.
+  if (batch && input.subjects.length > 0) {
+    await supabase.from("subjects").insert(
+      input.subjects.map((name, index) => ({
+        batch_id: batch.id,
+        name,
+        sort_order: index + 1,
+      })),
+    );
+  }
 
   await syncCourseTeachers(data.id, input.teachers);
   return data.id;
@@ -265,7 +296,7 @@ export async function listStudents(
   let query = supabase
     .from("profiles")
     .select(
-      `id, full_name, phone, email, role, created_at,
+      `id, student_code, full_name, phone, email, role, created_at,
        student_profiles ( class_level, board, medium, stream, school ),
        enrollments ( course_id, courses ( title ) )`,
     )
@@ -275,7 +306,9 @@ export async function listStudents(
 
   if (search) {
     const q = `%${search}%`;
-    query = query.or(`full_name.ilike.${q},phone.ilike.${q},email.ilike.${q}`);
+    query = query.or(
+      `full_name.ilike.${q},phone.ilike.${q},email.ilike.${q},student_code.ilike.${q}`,
+    );
   }
 
   const { data, error } = await query;
@@ -288,6 +321,7 @@ export async function listStudents(
       : row.student_profiles;
     return {
       id: row.id,
+      studentCode: row.student_code,
       fullName: row.full_name || "—",
       phone: row.phone,
       email: row.email,
@@ -1010,6 +1044,7 @@ export async function listNotifications(): Promise<AdminNotification[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((row: any) => ({
     id: row.id,
+    courseCode: row.course_code,
     title: row.title,
     body: row.body,
     audienceKind: row.audience,
@@ -1120,6 +1155,7 @@ export async function listPopups(): Promise<AdminPopup[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((row: any) => ({
     id: row.id,
+    courseCode: row.course_code,
     title: row.title,
     body: row.body,
     imagePath: row.image_path,
@@ -1247,6 +1283,7 @@ export async function listBanners(): Promise<AdminBanner[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((row: any) => ({
     id: row.id,
+    courseCode: row.course_code,
     title: row.title,
     subtitle: row.subtitle,
     imagePath: row.image_path,
@@ -1314,4 +1351,63 @@ export async function deleteBanner(id: string): Promise<void> {
   const supabase = await db();
   const { error } = await supabase.from("course_banners").delete().eq("id", id);
   if (error) throw new Error(`deleteBanner: ${error.message}`);
+}
+
+// ======================================================== transactions
+
+/**
+ * The newest checkouts with their payments. RLS returns rows only to a super
+ * admin (migration 8); everyone else gets an empty list.
+ *
+ * Capped at 2,000 orders, which the analytics are computed over — enough for
+ * launch; move the sums into SQL once volume passes that.
+ */
+export async function listTransactions(): Promise<AdminTransaction[]> {
+  if (isDemoMode()) return mockExtra.listTransactions();
+
+  const supabase = await db();
+  const { data, error } = await supabase
+    .from("orders")
+    .select(
+      `id, student_id, course_id, amount_inr, status, razorpay_order_id,
+       razorpay_payment_id, coupon_code, created_at, paid_at,
+       profiles ( full_name, email, student_code ),
+       courses ( title, course_code ),
+       payments ( id, razorpay_payment_id, amount_inr, status, created_at )`,
+    )
+    .order("created_at", { ascending: false })
+    .limit(2000);
+
+  if (error) throw new Error(`listTransactions: ${error.message}`);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    razorpayOrderId: row.razorpay_order_id,
+    razorpayPaymentId: row.razorpay_payment_id,
+    studentId: row.student_id,
+    studentName: row.profiles?.full_name || row.profiles?.email || "Student",
+    studentEmail: row.profiles?.email ?? null,
+    studentCode: row.profiles?.student_code ?? null,
+    courseId: row.course_id,
+    courseTitle: row.courses?.title ?? "Deleted course",
+    courseCode: row.courses?.course_code ?? null,
+    amountInr: row.amount_inr,
+    status: row.status,
+    couponCode: row.coupon_code,
+    createdAt: row.created_at,
+    paidAt: row.paid_at,
+    payments: (row.payments ?? [])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((p: any) => ({
+        id: p.id,
+        razorpayPaymentId: p.razorpay_payment_id,
+        amountInr: p.amount_inr,
+        status: p.status,
+        createdAt: p.created_at,
+      }))
+      .sort((a: { createdAt: string }, b: { createdAt: string }) =>
+        a.createdAt.localeCompare(b.createdAt),
+      ),
+  }));
 }

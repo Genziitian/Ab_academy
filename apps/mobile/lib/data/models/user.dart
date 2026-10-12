@@ -7,6 +7,7 @@ class Student {
     required this.board,
     required this.medium,
     this.stream,
+    this.studentCode,
   });
 
   final String fullName;
@@ -15,6 +16,10 @@ class Student {
   final String board;
   final String medium;
   final String? stream;
+
+  /// Permanent random id from `profiles.student_code`, e.g. ABA-S-4MZT8KQ2.
+  /// Students quote it to support; it never changes.
+  final String? studentCode;
 
   String get initials {
     final parts = fullName.trim().split(RegExp(r'\s+'));
@@ -32,6 +37,7 @@ class Student {
     board: board,
     medium: medium ?? this.medium,
     stream: stream ?? this.stream,
+    studentCode: studentCode,
   );
 }
 

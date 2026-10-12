@@ -11,6 +11,8 @@ import type {
   AdminLesson,
   AdminPopup,
   AdminStudent,
+  AdminTransaction,
+  OrderStatus,
   PopupPlacement,
 } from "./types";
 
@@ -24,6 +26,7 @@ const localStamp = (daysAgo = 0) => {
 let students: AdminStudent[] = [
   {
     id: "s-1",
+    studentCode: "ABA-S-4MZT8KQ2",
     fullName: "Rahul Kumar",
     phone: "+919876543210",
     email: "rahul.k@example.in",
@@ -38,6 +41,7 @@ let students: AdminStudent[] = [
   },
   {
     id: "s-2",
+    studentCode: "ABA-S-9RBX3HNV",
     fullName: "Priya Sharma",
     phone: "+919812345678",
     email: "priya.s@example.in",
@@ -52,6 +56,7 @@ let students: AdminStudent[] = [
   },
   {
     id: "s-3",
+    studentCode: "ABA-S-T2KW7YPC",
     fullName: "Ankit Kumar",
     phone: "+919700112233",
     email: null,
@@ -66,6 +71,7 @@ let students: AdminStudent[] = [
   },
   {
     id: "s-4",
+    studentCode: "ABA-S-H6DQ5MAE",
     fullName: "Sneha Verma",
     phone: "+919633445566",
     email: "sneha.v@example.in",
@@ -267,6 +273,7 @@ export const listStudents = (search?: string, classLevel?: number) => {
     rows = rows.filter(
       (s) =>
         s.fullName.toLowerCase().includes(q) ||
+        s.studentCode.toLowerCase().includes(q) ||
         (s.phone ?? "").includes(q) ||
         (s.email ?? "").toLowerCase().includes(q),
     );
@@ -540,3 +547,53 @@ export function saveBanner(
 export function deleteBanner(id: string) {
   banners = banners.filter((b) => b.id !== id);
 }
+
+// ------------------------------------------------------------ transactions
+
+// A month of believable checkouts, generated once per server start so the
+// Transactions page has something to chart in demo mode.
+const transactions: AdminTransaction[] = (() => {
+  const courses = listCourses();
+  const statuses: OrderStatus[] = ["paid", "paid", "paid", "paid", "failed", "created", "paid"];
+  const rows: AdminTransaction[] = [];
+  for (let i = 0; i < 48; i++) {
+    const student = students[i % students.length];
+    const course = courses[i % courses.length];
+    const status = i === 5 ? "refunded" : statuses[i % statuses.length];
+    const created = new Date(Date.now() - (i * 14.5 + 2) * 3_600_000).toISOString();
+    const paid = status === "paid" || status === "refunded";
+    const payId = paid ? `pay_demo${String(i).padStart(6, "0")}` : null;
+    rows.push({
+      id: `o-${i + 1}`,
+      razorpayOrderId: `order_demo${String(i).padStart(6, "0")}`,
+      razorpayPaymentId: payId,
+      studentId: student.id,
+      studentName: student.fullName,
+      studentEmail: student.email,
+      studentCode: student.studentCode,
+      courseId: course.id,
+      courseTitle: course.title,
+      courseCode: course.courseCode,
+      amountInr: course.priceInr,
+      status,
+      couponCode: i % 9 === 0 ? "BOARD40" : null,
+      createdAt: created,
+      paidAt: paid ? new Date(Date.parse(created) + 90_000).toISOString() : null,
+      payments:
+        status === "created"
+          ? []
+          : [
+              {
+                id: `pm-${i + 1}`,
+                razorpayPaymentId: payId ?? `pay_demofail${i}`,
+                amountInr: course.priceInr,
+                status: status === "failed" ? "failed" : "captured",
+                createdAt: new Date(Date.parse(created) + 60_000).toISOString(),
+              },
+            ],
+    });
+  }
+  return rows;
+})();
+
+export const listTransactions = () => [...transactions];

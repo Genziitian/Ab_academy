@@ -34,32 +34,40 @@ supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 ```
 
-That applies all three migrations in order:
+That applies every migration in order:
 
 | Migration | Contents |
 |---|---|
 | `20260315000100_init_schema.sql` | profiles, courses, curriculum, enrolments, orders |
 | `20260917000100_community_notifications_tickets.sql` | notifications, communities, tickets, lecture discussion |
 | `20261006000100_popups_push_and_admin_writes.sql` | popups, device tokens, push log, doubt queue, storage buckets, **all staff write policies** |
+| `20261009000100_profile_email_on_signup.sql` | copies the sign-in email onto the profile |
+| `20261012000100_course_banners_and_checkout.sql` | app course slider, Razorpay order columns |
+| `20261013000100_protect_lesson_video_refs.sql` | hides video ids from students; `lesson_playback()` |
+| `20261014000100_drive_notes.sql` | notes from Google Drive; `note_access()` |
+| `20261015000100_codes_and_transactions.sql` | random course and student codes, super-admin-only transactions |
+| `20261015000200_seed_catalog_and_demo_lectures.sql` | the six crash courses, demo lectures and notes |
+| `20261015000300_fix_protect_codes.sql` | fix for the code-lock trigger in the migration above |
 
 Prefer the dashboard? Paste each file into **SQL Editor** in that order.
 
-Verify afterwards — you should get 27 tables and 62 policies:
+Verify afterwards that every migration shows on both sides:
 
-```sql
-select count(*) from pg_tables where schemaname = 'public';
-select count(*) from pg_policies where schemaname in ('public', 'storage');
+```bash
+supabase migration list
 ```
 
 > **Why the third migration matters.** The first two enable RLS on every table
 > but define `select` policies only. Under RLS a missing policy denies, so
 > without migration 3 every admin write fails. Do not skip it.
 
-## 3. Seed the catalog (optional)
+## 3. The launch catalog
 
-```bash
-psql "$DATABASE_URL" -f supabase/seed.sql
-```
+Migration `20261015000200` already creates the six crash courses (the same
+catalog as the website), one batch each, and free demo lessons in Class 11
+and Class 12 Science → Mathematics: four Gen-Z IITian lectures on YouTube and
+two notes PDFs on Google Drive. It uses fixed ids and `on conflict do
+nothing`, so it never overwrites edits made in the console.
 
 ## 4. Create your first admin
 
@@ -75,9 +83,28 @@ set role = 'super_admin', email = 'you@akhandbharatacademy.in'
 where id = 'THE-USER-UUID-FROM-STEP-1';
 ```
 
-Roles: `super_admin` and `admin` get everything; `teacher` can manage content,
-schedule and doubts but cannot change courses, pricing or
-enrolments (`is_admin()` vs `is_staff()` in migration 3).
+Roles:
+
+| Role | Can |
+|---|---|
+| `super_admin` | everything, plus **Transactions** (order log, revenue analytics, CSV export) and granting or removing `super_admin` |
+| `admin` | the whole console except Transactions; can promote students to `teacher` or `admin` |
+| `teacher` | content, schedule and doubts; not courses, pricing or enrolments |
+
+The checks are in Postgres, not just the console: `is_super_admin()` guards
+the `orders`/`payments` read policies and the role trigger (migration
+`20261015000100`); `is_admin()` vs `is_staff()` guard everything else.
+
+Live project: `backup.sriram.mail@gmail.com` is the super admin and
+`abacademy@gmail.com` is an admin (email + password sign-in).
+
+### Course and student codes
+
+Every course gets a random `course_code` (`ABA-C-7K3Q9X`) and every account a
+random `student_code` (`ABA-S-4MZT8KQ2`) from the database. Both are unique
+and locked by a trigger, so nobody can change one, not even an admin. Codes
+show in the console's Courses and Students pages, on transactions, and as
+**Student ID** in the app's Profile.
 
 ## 5. Turn on auth providers
 

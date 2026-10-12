@@ -14,6 +14,7 @@ import type {
 let courses: AdminCourse[] = [
   {
     id: "class-10-complete-batch",
+    courseCode: "ABA-C-K7Q2MX",
     title: "Class 10 Complete Batch",
     classLevel: 10,
     board: "Bihar Board",
@@ -22,11 +23,14 @@ let courses: AdminCourse[] = [
     originalPriceInr: 4999,
     subjects: ["Mathematics", "Science", "Hindi", "English", "Social Science"],
     teachers: ["Amit Sir", "Neha Ma'am"],
+    description: "Full Class 10 syllabus with live classes, recordings and notes.",
+    highlights: ["Live classes", "Chapter notes"],
     isPublished: true,
     enrolledCount: 327,
   },
   {
     id: "mathematics-board-booster",
+    courseCode: "ABA-C-P4H9TR",
     title: "Mathematics Board Booster",
     classLevel: 10,
     board: "Bihar Board",
@@ -35,11 +39,14 @@ let courses: AdminCourse[] = [
     originalPriceInr: 2499,
     subjects: ["Mathematics"],
     teachers: ["Amit Sir"],
+    description: "Board-pattern Mathematics revision with solved papers.",
+    highlights: ["Solved board papers"],
     isPublished: true,
     enrolledCount: 184,
   },
   {
     id: "class-12-science-batch",
+    courseCode: "ABA-C-W3N8ZD",
     title: "Class 12 Science Batch",
     classLevel: 12,
     board: "Bihar Board",
@@ -48,6 +55,8 @@ let courses: AdminCourse[] = [
     originalPriceInr: 5499,
     subjects: ["Physics", "Chemistry", "Biology", "Mathematics"],
     teachers: ["Ravi Sir"],
+    description: "",
+    highlights: [],
     isPublished: false,
     enrolledCount: 0,
   },
@@ -234,13 +243,16 @@ export const dashboardCounts = () => ({
 
 // ------------------------------------------------------------------ writes
 
-export function saveCourse(input: Omit<AdminCourse, "id" | "enrolledCount"> & { id?: string }) {
+export function saveCourse(
+  input: Omit<AdminCourse, "id" | "courseCode" | "enrolledCount"> & { id?: string },
+) {
   if (input.id) {
     courses = courses.map((c) => (c.id === input.id ? { ...c, ...input, id: c.id } : c));
     return input.id;
   }
   const id = slugify(input.title) || `course-${courses.length + 1}`;
-  courses = [...courses, { ...input, id, enrolledCount: 0 }];
+  const courseCode = `ABA-C-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  courses = [...courses, { ...input, id, courseCode, enrolledCount: 0 }];
   return id;
 }
 
