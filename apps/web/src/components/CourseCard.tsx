@@ -92,17 +92,17 @@ export function CourseCard({ course, variant = "catalog", className = "" }: Prop
           className={`flex items-center justify-between gap-3 border-t border-border ${featured ? "mt-4 pt-4" : "mt-3.5 pt-3.5"}`}
         >
           {featured ? (
-            <div className="flex flex-wrap items-baseline gap-x-1.5">
-              <span className="text-xl font-bold text-navy">
+            <div className="flex min-w-0 items-baseline gap-x-1.5 whitespace-nowrap">
+              <span className="text-lg font-bold text-navy">
                 {formatInr(course.price)}
               </span>
               {course.originalPrice ? (
-                <span className="text-[13px] text-muted line-through">
+                <span className="text-xs text-muted line-through">
                   {formatInr(course.originalPrice)}
                 </span>
               ) : null}
               {off ? (
-                <span className="whitespace-nowrap text-[13px] font-semibold text-success">
+                <span className="text-xs font-semibold text-success">
                   {off}% OFF
                 </span>
               ) : null}
