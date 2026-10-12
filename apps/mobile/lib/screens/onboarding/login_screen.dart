@@ -95,32 +95,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     context.go(Routes.home);
   }
 
-  /// Supabase Auth's Google provider.
-  ///
-  /// Sign-in happens in an external browser, so this cannot navigate as soon
-  /// as `signInWithGoogle` returns — at that point the browser has only just
-  /// opened and there is no session. We wait for the login-callback deep link
-  /// to bring one back, which also means backing out of the browser correctly
-  /// leaves the user on this screen instead of on a sessionless home screen.
+  /// Google sign-in in an in-app account sheet; returns with a session or
+  /// an error, never via the browser.
   Future<void> _googleLogin() async {
     if (_busy) return;
     setState(() => _busy = true);
 
     final result = await AuthRepo.signInWithGoogle();
     if (!mounted) return;
-
-    if (!result.ok) {
-      setState(() => _busy = false);
-      _snack(result.error ?? 'Google sign-in failed.');
-      return;
-    }
-
-    final signedIn = await AuthRepo.awaitSignIn();
-    if (!mounted) return;
     setState(() => _busy = false);
 
-    if (!signedIn) {
-      _snack('Google sign-in was cancelled.');
+    if (!result.ok) {
+      // Google also reports some setup failures as a cancellation, so say
+      // something either way rather than leaving the button doing nothing.
+      _snack(
+        result.cancelled
+            ? 'Google sign-in did not complete. Try again or use your mobile number.'
+            : result.error ?? 'Google sign-in failed.',
+      );
       return;
     }
 

@@ -118,6 +118,30 @@ show in the console's Courses and Students pages, on transactions, and as
   - `https://YOUR_DOMAIN/auth/callback`
   - `in.akhandbharatacademy.app://login-callback`
 
+### Google sign-in in the app (no browser)
+
+The app signs in with Google natively: Android shows its account sheet over
+the app and the ID token goes straight to Supabase (`signInWithIdToken`). For
+Google to issue that token, the Google Cloud project that owns the **web**
+client used by Supabase (`778886774711-…apps.googleusercontent.com`) also needs
+an **Android** OAuth client:
+
+1. Google Cloud Console → that project → **APIs & Services → Credentials →
+   Create credentials → OAuth client ID → Android**.
+2. Package name `in.akhandbharatacademy.app`, and the SHA-1 of the key that
+   signs the build. Create one client per key:
+
+| Build | SHA-1 |
+|---|---|
+| Release (`~/aba-upload.jks`) | `A1:58:98:52:FF:A1:57:AB:2F:50:59:25:61:68:C3:81:6B:DE:9A:87` |
+| Debug (`~/.android/debug.keystore`, this machine) | `7C:71:E4:FB:C1:E9:04:8B:4C:D5:DC:8A:09:D1:FA:83:AD:B7:7A:A0` |
+| Play Store | the **App signing key** SHA-1 from Play Console → Setup → App integrity |
+
+No code change or rebuild is needed afterwards; the client can take a few
+minutes to take effect. Until it exists, Google answers
+`UNREGISTERED_ON_API_CONSOLE` and the app shows "Google sign-in did not
+complete".
+
 ## 6. Storage
 
 Migration 3 creates all four buckets. Confirm under **Storage**:

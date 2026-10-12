@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../config/env.dart';
@@ -61,50 +65,92 @@ abstract final class AuthRepo {
     }
   }
 
-  /// Deep link Supabase sends the browser back to once Google has consented.
-  /// Registered as an intent-filter on Android and a CFBundleURLScheme on iOS,
-  /// and must also be listed under the project's Redirect URLs.
-  static const googleRedirect = 'in.akhandbharatacademy.app://login-callback';
+  static bool _googleReady = false;
 
-  /// Starts Google sign-in in an external browser.
+  /// Google sign-in inside the app — no browser.
   ///
-  /// `ok` means only that the browser opened — this returns immediately and the
-  /// session does not exist yet. The redirect back through [googleRedirect] is
-  /// what creates it, so callers must then await [awaitSignIn] rather than
-  /// treating a true here as "signed in".
-  static Future<({bool ok, String? error})> signInWithGoogle() async {
-    if (!enabled) return (ok: true, error: null);
+  /// Android shows its own account sheet (Credential Manager) over the app;
+  /// the chosen account's ID token goes straight to Supabase with
+  /// `signInWithIdToken`, which creates the session. A random nonce, hashed
+  /// for Google and raw for Supabase, stops a captured token being replayed.
+  ///
+  /// Needs, in the Google Cloud project that owns [Env.googleWebClientId], an
+  /// **Android** OAuth client for `in.akhandbharatacademy.app` with the
+  /// SHA-1 of the signing key (docs/RELEASE.md). Without it Google answers
+  /// with a configuration error, reported here as one.
+  ///
+  /// `cancelled` is true when the student closed the sheet, so the screen
+  /// can stay quiet instead of showing an error.
+  static Future<({bool ok, bool cancelled, String? error})>
+  signInWithGoogle() async {
+    if (!enabled) return (ok: true, cancelled: false, error: null);
+
+    final rawNonce = _randomNonce();
+    final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
     try {
-      await Api.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: googleRedirect,
+      final google = GoogleSignIn.instance;
+      // The nonce is fixed at initialize, so re-initialise for every attempt.
+      if (_googleReady) await google.signOut();
+      await google.initialize(
+        serverClientId: Env.googleWebClientId,
+        nonce: hashedNonce,
       );
-      return (ok: true, error: null);
+      _googleReady = true;
+
+      final account = await google.authenticate();
+      final idToken = account.authentication.idToken;
+      if (idToken == null) {
+        return (
+          ok: false,
+          cancelled: false,
+          error: 'Google did not return an ID token.',
+        );
+      }
+
+      await Api.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+      return (ok: true, cancelled: false, error: null);
+    } on GoogleSignInException catch (e) {
+      return switch (e.code) {
+        GoogleSignInExceptionCode.canceled ||
+        GoogleSignInExceptionCode.interrupted => (
+          ok: false,
+          cancelled: true,
+          error: null,
+        ),
+        GoogleSignInExceptionCode.clientConfigurationError ||
+        GoogleSignInExceptionCode.providerConfigurationError => (
+          ok: false,
+          cancelled: false,
+          error:
+              'Google sign-in is not set up for this app build yet. '
+              'Please use your mobile number for now.',
+        ),
+        _ => (
+          ok: false,
+          cancelled: false,
+          error: e.description ?? 'Google sign-in failed.',
+        ),
+      };
     } on AuthException catch (e) {
-      return (ok: false, error: e.message);
+      return (ok: false, cancelled: false, error: e.message);
     } catch (e) {
-      return (ok: false, error: e.toString());
+      return (ok: false, cancelled: false, error: e.toString());
     }
   }
 
-  /// Waits for the deep link to deliver the session, returning false if the
-  /// user backed out of the browser instead of finishing.
-  ///
-  /// supabase_flutter picks the redirect up and emits `signedIn`; the timeout
-  /// only stops the caller hanging on a spinner forever.
-  static Future<bool> awaitSignIn({
-    Duration timeout = const Duration(minutes: 3),
-  }) async {
-    if (!enabled) return true;
-    if (isSignedIn) return true;
-    try {
-      await changes
-          .firstWhere((state) => state.event == AuthChangeEvent.signedIn)
-          .timeout(timeout);
-      return true;
-    } catch (_) {
-      return false;
-    }
+  static String _randomNonce([int length = 32]) {
+    const chars =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(
+      length,
+      (_) => chars[random.nextInt(chars.length)],
+    ).join();
   }
 
   /// Signs in as the seeded demo student with email + password, skipping the
@@ -142,5 +188,12 @@ abstract final class AuthRepo {
   static Future<void> signOut() async {
     if (!enabled) return;
     await Api.auth.signOut();
+    // Forget the Google account too, so the next sign-in offers the picker
+    // instead of silently reusing it.
+    if (_googleReady) {
+      try {
+        await GoogleSignIn.instance.signOut();
+      } catch (_) {}
+    }
   }
 }
