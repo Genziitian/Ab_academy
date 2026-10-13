@@ -65,7 +65,7 @@ Student studentFromRows(Json profile, Json? studentProfile) {
         ? profile['full_name'] as String
         : 'Student',
     phone: (profile['phone'] as String?) ?? (profile['email'] as String?) ?? '',
-    classLevel: (studentProfile?['class_level'] as int?) ?? 10,
+    classLevel: (studentProfile?['class_level'] as int?) ?? 12,
     board: (studentProfile?['board'] as String?) ?? 'Bihar Board',
     medium: (studentProfile?['medium'] as String?) ?? 'Hindi',
     stream: studentProfile?['stream'] as String?,
@@ -128,6 +128,7 @@ Course courseFromRow(Json row, {required bool isEnrolled}) {
     highlights: ((row['highlights'] as List?) ?? const []).cast<String>(),
     rating: (row['rating'] as num?)?.toDouble(),
     thumbnailHue: (row['thumbnail_hue'] as int?) ?? 214,
+    thumbnailUrl: row['thumbnail_url'] as String?,
     language: (row['language'] as String?) ?? 'Hindi + English',
   );
 }

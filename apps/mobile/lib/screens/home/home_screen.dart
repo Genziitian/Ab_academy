@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../data/mock/mock_data.dart';
+import '../../data/models/course.dart';
 import '../../data/models/schedule.dart';
 import '../../data/providers/app_providers.dart';
 import '../../data/providers/feature_providers.dart';
+import '../../data/providers/remote_providers.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
@@ -15,6 +17,7 @@ import '../../widgets/buttons.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 import '../../widgets/course_slider.dart';
+import '../../utils/format.dart';
 
 /// 06 · Home — live hero, continue learning and today's schedule.
 class HomeScreen extends ConsumerWidget {
@@ -78,8 +81,18 @@ class HomeScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 20),
-            // Admin-managed course slider (App slider in the console).
+            // Admin-managed promotional slider (App slider in the console).
             const CourseSlider(padding: EdgeInsets.only(bottom: 20)),
+            SectionHeader(
+              title: 'Courses for you',
+              trailing: TextActionButton(
+                label: 'See all →',
+                onPressed: () => context.go(Routes.store),
+              ),
+            ),
+            const SizedBox(height: 10),
+            const _HomeCourses(),
+            const SizedBox(height: 20),
             const _LiveHeroCard(),
             const SizedBox(height: 20),
             Text('Continue learning', style: AppText.sectionTitle),
@@ -446,6 +459,122 @@ class _UpcomingTestBanner extends StatelessWidget {
               LucideIcons.chevronRight,
               size: 18,
               color: AppColors.warningInk,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Horizontal row of course cards with their thumbnails; the student's
+/// enrolled courses first, then the rest of the catalog.
+class _HomeCourses extends ConsumerWidget {
+  const _HomeCourses();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final catalog = ref.watch(remoteCatalogProvider(null)).value;
+    final mine = ref.watch(remoteMyCoursesProvider).value ?? const <Course>[];
+    if (catalog == null) {
+      return const SizedBox(
+        height: 120,
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2.5)),
+      );
+    }
+    final mineIds = {for (final c in mine) c.id};
+    final courses = [
+      ...mine,
+      ...catalog.where((c) => !mineIds.contains(c.id)),
+    ];
+    if (courses.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 238,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
+        itemCount: courses.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
+        itemBuilder: (context, i) => _HomeCourseCard(
+          course: courses[i],
+          enrolled: mineIds.contains(courses[i].id),
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeCourseCard extends StatelessWidget {
+  const _HomeCourseCard({required this.course, required this.enrolled});
+
+  final Course course;
+  final bool enrolled;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 236,
+      child: AppCard(
+        clip: true,
+        padding: EdgeInsets.zero,
+        borderRadius: AppRadius.md,
+        onTap: () => context.push(Routes.courseDetails(course.id)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CourseThumbnail(
+              url: course.thumbnailUrl,
+              hue: course.thumbnailHue,
+              height: 132,
+              shade: false,
+              padding: const EdgeInsets.all(10),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryDeep.withValues(alpha: 0.75),
+                    borderRadius: AppRadius.badge,
+                  ),
+                  child: Text(
+                    'CLASS ${course.classLevel}',
+                    style: AppText.badge(color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    course.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppText.tabular(14, FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    enrolled
+                        ? '✓ Enrolled'
+                        : course.priceInr == 0
+                        ? 'Free'
+                        : formatRupees(course.priceInr),
+                    style: AppText.tabular(
+                      14,
+                      FontWeight.w700,
+                      color: enrolled || course.priceInr == 0
+                          ? AppColors.success
+                          : AppColors.ink,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

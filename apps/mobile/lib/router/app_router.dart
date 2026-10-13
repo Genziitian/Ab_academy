@@ -35,6 +35,10 @@ abstract final class Routes {
   static const setupClass = '/setup/class';
   static const setupStream = '/setup/stream';
 
+  /// The same two screens opened from Profile to change class and stream.
+  static const setupClassEdit = '/setup/class?edit=1';
+  static const setupStreamEdit = '/setup/stream?edit=1';
+
   // Bottom-nav tabs, in AppTab order.
   static const home = '/home';
   static const courses = '/courses';
@@ -81,11 +85,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.otp, builder: (_, _) => const OtpScreen()),
       GoRoute(
         path: Routes.setupClass,
-        builder: (_, _) => const SetupClassScreen(),
+        builder: (_, state) => SetupClassScreen(
+          editing: state.uri.queryParameters['edit'] == '1',
+        ),
       ),
       GoRoute(
         path: Routes.setupStream,
-        builder: (_, _) => const SetupStreamScreen(),
+        builder: (_, state) => SetupStreamScreen(
+          editing: state.uri.queryParameters['edit'] == '1',
+        ),
       ),
 
       // The four bottom-nav tabs share a shell and keep their own stacks.

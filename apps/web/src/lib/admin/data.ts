@@ -134,7 +134,8 @@ export async function listCourses(): Promise<AdminCourse[]> {
     .from("courses")
     .select(
       `id, course_code, title, class_level, board, language, price_inr,
-       original_price_inr, subjects, description, highlights, is_published,
+       original_price_inr, subjects, description, highlights, thumbnail_url,
+       is_published,
        course_teachers ( teachers ( display_name ) ),
        enrollments ( count )`,
     )
@@ -160,6 +161,7 @@ export async function listCourses(): Promise<AdminCourse[]> {
       .filter(Boolean),
     description: row.description ?? "",
     highlights: row.highlights ?? [],
+    thumbnailUrl: row.thumbnail_url ?? null,
     isPublished: row.is_published,
     enrolledCount: row.enrollments?.[0]?.count ?? 0,
   }));
@@ -183,6 +185,8 @@ export async function saveCourse(input: {
   teachers: string[];
   description: string;
   highlights: string[];
+  /** undefined keeps the current thumbnail, null removes it. */
+  thumbnailUrl?: string | null;
   isPublished: boolean;
 }): Promise<string> {
   if (isDemoMode()) return mock.saveCourse(input);
@@ -198,6 +202,7 @@ export async function saveCourse(input: {
     subjects: input.subjects,
     description: input.description,
     highlights: input.highlights,
+    ...(input.thumbnailUrl !== undefined ? { thumbnail_url: input.thumbnailUrl } : {}),
     is_published: input.isPublished,
   };
 
@@ -655,7 +660,12 @@ export async function deleteResource(
 
 /** Saves an uploaded file to a private bucket and returns its storage path. */
 export async function uploadToBucket(
-  bucket: "lesson-notes" | "lesson-videos" | "popup-images" | "banner-images",
+  bucket:
+    | "lesson-notes"
+    | "lesson-videos"
+    | "popup-images"
+    | "banner-images"
+    | "course-thumbnails",
   file: File,
   prefix: string,
 ): Promise<string> {
@@ -1410,4 +1420,11 @@ export async function listTransactions(): Promise<AdminTransaction[]> {
         a.createdAt.localeCompare(b.createdAt),
       ),
   }));
+}
+
+/** Public URL of a file in a public bucket (course thumbnails). */
+export async function publicUrl(bucket: "course-thumbnails", path: string): Promise<string> {
+  if (isDemoMode()) return `/images/feature-live-class.png`;
+  const supabase = await db();
+  return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }

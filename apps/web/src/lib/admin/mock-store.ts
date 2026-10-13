@@ -25,6 +25,7 @@ let courses: AdminCourse[] = [
     teachers: ["Amit Sir", "Neha Ma'am"],
     description: "Full Class 10 syllabus with live classes, recordings and notes.",
     highlights: ["Live classes", "Chapter notes"],
+    thumbnailUrl: null,
     isPublished: true,
     enrolledCount: 327,
   },
@@ -41,6 +42,7 @@ let courses: AdminCourse[] = [
     teachers: ["Amit Sir"],
     description: "Board-pattern Mathematics revision with solved papers.",
     highlights: ["Solved board papers"],
+    thumbnailUrl: null,
     isPublished: true,
     enrolledCount: 184,
   },
@@ -57,6 +59,7 @@ let courses: AdminCourse[] = [
     teachers: ["Ravi Sir"],
     description: "",
     highlights: [],
+    thumbnailUrl: null,
     isPublished: false,
     enrolledCount: 0,
   },
@@ -244,15 +247,25 @@ export const dashboardCounts = () => ({
 // ------------------------------------------------------------------ writes
 
 export function saveCourse(
-  input: Omit<AdminCourse, "id" | "courseCode" | "enrolledCount"> & { id?: string },
+  input: Omit<AdminCourse, "id" | "courseCode" | "enrolledCount" | "thumbnailUrl"> & {
+    id?: string;
+    thumbnailUrl?: string | null;
+  },
 ) {
   if (input.id) {
-    courses = courses.map((c) => (c.id === input.id ? { ...c, ...input, id: c.id } : c));
+    courses = courses.map((c) =>
+      c.id === input.id
+        ? { ...c, ...input, thumbnailUrl: input.thumbnailUrl ?? c.thumbnailUrl, id: c.id }
+        : c,
+    );
     return input.id;
   }
   const id = slugify(input.title) || `course-${courses.length + 1}`;
   const courseCode = `ABA-C-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-  courses = [...courses, { ...input, id, courseCode, enrolledCount: 0 }];
+  courses = [
+    ...courses,
+    { ...input, thumbnailUrl: input.thumbnailUrl ?? null, id, courseCode, enrolledCount: 0 },
+  ];
   return id;
 }
 

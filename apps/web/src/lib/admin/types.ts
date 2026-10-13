@@ -28,6 +28,8 @@ export type AdminCourse = {
   teachers: string[];
   description: string;
   highlights: string[];
+  /** Public image URL shown on cards in the app and site; null = gradient. */
+  thumbnailUrl: string | null;
   isPublished: boolean;
   enrolledCount: number;
 };

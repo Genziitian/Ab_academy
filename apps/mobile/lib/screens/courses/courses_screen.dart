@@ -200,12 +200,11 @@ class _StoreCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            height: 112,
+          CourseThumbnail(
+            url: course.thumbnailUrl,
+            hue: course.thumbnailHue,
+            height: course.thumbnailUrl == null ? 112 : 168,
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              gradient: courseGradient(course.thumbnailHue),
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

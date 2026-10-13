@@ -7,6 +7,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../data/mock/mock_data.dart';
 import '../../data/models/course.dart';
+import '../../data/models/user.dart';
 import '../../data/providers/remote_providers.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
@@ -47,6 +48,16 @@ class _Body extends StatelessWidget {
     final bilingual =
         course.language.contains('Hindi') &&
         course.language.contains('English');
+    final language = bilingual ? 'Hindi + English' : course.language;
+    final teachers = course.teachers.isEmpty
+        ? const [
+            Teacher(
+              displayName: 'Faculty Team',
+              subject: '',
+              yearsExperience: 0,
+            ),
+          ]
+        : course.teachers;
     final stats = [
       ('${course.lessonsCount}+', 'Lectures'),
       ('${MockData.planDays}', 'Days'),
@@ -63,207 +74,295 @@ class _Body extends StatelessWidget {
         backgroundColor: AppColors.background,
         body: Column(
           children: [
-            Container(
-              width: double.infinity,
-              color: AppColors.primaryDeep,
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 20, 22),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      IconButton(
-                        tooltip: 'Back',
-                        onPressed: () => context.pop(),
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          size: 22,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 6,
-                              children: [
-                                _HeaderChip(
-                                  '${MockData.planDays}-day crash course',
-                                  background: AppColors.primary,
-                                ),
-                                _HeaderChip(
-                                  bilingual
-                                      ? 'Hindi + English'
-                                      : course.language,
-                                  background: Colors.white.withValues(
-                                    alpha: 0.12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              course.title,
-                              style: AppText.h3.copyWith(
-                                color: Colors.white,
-                                height: 1.2,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text.rich(
-                              TextSpan(
-                                style: AppText.tabular(
-                                  13,
-                                  FontWeight.w400,
-                                  color: AppColors.textOnDark,
-                                ),
-                                children: [
-                                  if (course.rating != null) ...[
-                                    TextSpan(
-                                      text: '★ ${course.rating}',
-                                      style: AppText.tabular(
-                                        13,
-                                        FontWeight.w700,
-                                        color: const Color(0xFFFFC56B),
-                                      ),
-                                    ),
-                                    if (course.reviewCount != null)
-                                      TextSpan(
-                                        text:
-                                            ' (${NumberFormat.decimalPattern('en_IN').format(course.reviewCount)})',
-                                      ),
-                                    const TextSpan(text: ' · '),
-                                  ],
-                                  TextSpan(
-                                    text: course.teachers.isEmpty
-                                        ? 'Faculty Team'
-                                        : course.teachers
-                                              .map((t) => t.displayName)
-                                              .join(', '),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                padding: EdgeInsets.zero,
                 children: [
+                  // 1 · Thumbnail, full width below the status bar, with the
+                  // back button on it.
                   Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: AppRadius.card,
-                      border: Border.all(color: AppColors.border),
+                    color: AppColors.primaryDeep,
+                    padding: EdgeInsets.only(
+                      top: MediaQuery.paddingOf(context).top,
                     ),
-                    child: IntrinsicHeight(
-                      child: Row(
-                        children: [
-                          for (var i = 0; i < stats.length; i++) ...[
-                            if (i > 0)
-                              const VerticalDivider(
-                                width: 1,
-                                color: AppColors.divider,
-                              ),
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      stats[i].$1,
-                                      style: AppText.tabular(
-                                        17,
-                                        FontWeight.w700,
-                                      ),
-                                    ),
-                                    Text(
-                                      stats[i].$2,
-                                      style: AppText.tabular(
-                                        11,
-                                        FontWeight.w400,
-                                        color: AppColors.textMuted,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (course.description.isNotEmpty) ...[
-                    const SizedBox(height: 14),
-                    Text(course.description, style: AppText.body),
-                  ],
-                  const SizedBox(height: 14),
-                  Text('What you get', style: AppText.sectionTitle),
-                  const SizedBox(height: 14),
-                  AppCard(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 6,
-                    ),
-                    child: Column(
+                    child: Stack(
                       children: [
-                        for (final (i, item) in course.highlights.indexed)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            decoration: BoxDecoration(
-                              border: i < course.highlights.length - 1
-                                  ? const Border(
-                                      bottom: BorderSide(
-                                        color: AppColors.divider,
+                        AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: CourseThumbnail(
+                            url: course.thumbnailUrl,
+                            hue: course.thumbnailHue,
+                            shade: false,
+                            padding: const EdgeInsets.all(20),
+                            child: course.thumbnailUrl == null
+                                ? Align(
+                                    alignment: Alignment.bottomLeft,
+                                    child: Text(
+                                      course.stream ??
+                                          course.subjects.join(' · '),
+                                      style: AppText.tabular(
+                                        22,
+                                        FontWeight.w700,
+                                        color: Colors.white,
                                       ),
-                                    )
-                                  : null,
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '✓',
-                                  style: AppText.tabular(
-                                    14,
-                                    FontWeight.w700,
-                                    color: AppColors.success,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    item,
-                                    style: AppText.tabular(14, FontWeight.w400),
-                                  ),
-                                ),
-                              ],
+                                    ),
+                                  )
+                                : null,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Material(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            shape: const CircleBorder(),
+                            child: IconButton(
+                              tooltip: 'Back',
+                              onPressed: () => context.pop(),
+                              icon: const Icon(
+                                Icons.arrow_back,
+                                size: 22,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
+                        ),
                       ],
                     ),
                   ),
-                  if (course.validityNote != null) ...[
-                    const SizedBox(height: 14),
-                    Text(
-                      course.validityNote!,
-                      style: AppText.meta.copyWith(height: 1.5),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            _Tag(
+                              '${MockData.planDays}-day crash course',
+                              color: AppColors.primary,
+                              background: AppColors.primaryTint,
+                            ),
+                            _Tag(
+                              'Class ${course.classLevel} · ${course.board}',
+                              color: AppColors.textBody,
+                              background: AppColors.fillMuted,
+                            ),
+                            if (course.badge != null)
+                              _Tag(
+                                course.badge!,
+                                color: Colors.white,
+                                background: AppColors.warning,
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(course.title, style: AppText.h3),
+                        if (course.rating != null) ...[
+                          const SizedBox(height: 4),
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: '★ ${course.rating}',
+                                  style: AppText.tabular(
+                                    13,
+                                    FontWeight.w700,
+                                    color: const Color(0xFFE0A33A),
+                                  ),
+                                ),
+                                if (course.reviewCount != null)
+                                  TextSpan(
+                                    text:
+                                        '  (${NumberFormat.decimalPattern('en_IN').format(course.reviewCount)} ratings)',
+                                    style: AppText.meta,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+
+                        // 2 · Teacher.
+                        const SizedBox(height: 16),
+                        for (final teacher in teachers.take(3)) ...[
+                          Row(
+                            children: [
+                              InitialsAvatar(
+                                initials: teacher.initials,
+                                size: 40,
+                                fontSize: 14,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      teacher.displayName,
+                                      style: AppText.tabular(
+                                        15,
+                                        FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      course.subjects.length == 1 &&
+                                              teacher.subject ==
+                                                  course.subjects.first
+                                          ? '${teacher.subject} teacher'
+                                          : 'Course teacher',
+                                      style: AppText.meta,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+
+                        // 3 · Language and duration.
+                        const SizedBox(height: 4),
+                        Wrap(
+                          spacing: 18,
+                          runSpacing: 8,
+                          children: [
+                            _Fact(icon: LucideIcons.languages, text: language),
+                            _Fact(
+                              icon: LucideIcons.calendarDays,
+                              text: '${MockData.planDays} days',
+                            ),
+                            if (course.lessonsCount > 0)
+                              _Fact(
+                                icon: LucideIcons.playCircle,
+                                text: '${course.lessonsCount}+ lectures',
+                              ),
+                          ],
+                        ),
+
+                        // 4 · What you get.
+                        if (course.highlights.isNotEmpty) ...[
+                          const SizedBox(height: 22),
+                          Text('What you get', style: AppText.sectionTitle),
+                          const SizedBox(height: 12),
+                          AppCard(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 6,
+                            ),
+                            child: Column(
+                              children: [
+                                for (final (i, item)
+                                    in course.highlights.indexed)
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      border: i < course.highlights.length - 1
+                                          ? const Border(
+                                              bottom: BorderSide(
+                                                color: AppColors.divider,
+                                              ),
+                                            )
+                                          : null,
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '✓',
+                                          style: AppText.tabular(
+                                            14,
+                                            FontWeight.w700,
+                                            color: AppColors.success,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            item,
+                                            style: AppText.tabular(
+                                              14,
+                                              FontWeight.w400,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+
+                        if (course.description.isNotEmpty) ...[
+                          const SizedBox(height: 22),
+                          Text(
+                            'About this course',
+                            style: AppText.sectionTitle,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(course.description, style: AppText.body),
+                        ],
+                        const SizedBox(height: 18),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: AppRadius.card,
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: IntrinsicHeight(
+                            child: Row(
+                              children: [
+                                for (var i = 0; i < stats.length; i++) ...[
+                                  if (i > 0)
+                                    const VerticalDivider(
+                                      width: 1,
+                                      color: AppColors.divider,
+                                    ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            stats[i].$1,
+                                            style: AppText.tabular(
+                                              17,
+                                              FontWeight.w700,
+                                            ),
+                                          ),
+                                          Text(
+                                            stats[i].$2,
+                                            style: AppText.tabular(
+                                              11,
+                                              FontWeight.w400,
+                                              color: AppColors.textMuted,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (course.validityNote != null) ...[
+                          const SizedBox(height: 14),
+                          Text(
+                            course.validityNote!,
+                            style: AppText.meta.copyWith(height: 1.5),
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
+                  ),
                 ],
               ),
             ),
@@ -275,10 +374,11 @@ class _Body extends StatelessWidget {
   }
 }
 
-class _HeaderChip extends StatelessWidget {
-  const _HeaderChip(this.label, {required this.background});
+class _Tag extends StatelessWidget {
+  const _Tag(this.label, {required this.color, required this.background});
 
   final String label;
+  final Color color;
   final Color background;
 
   @override
@@ -291,8 +391,30 @@ class _HeaderChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: AppText.tabular(11, FontWeight.w600, color: Colors.white),
+        style: AppText.tabular(11, FontWeight.w600, color: color),
       ),
+    );
+  }
+}
+
+class _Fact extends StatelessWidget {
+  const _Fact({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: AppColors.textMuted),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: AppText.tabular(13, FontWeight.w500, color: AppColors.ink),
+        ),
+      ],
     );
   }
 }

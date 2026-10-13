@@ -108,12 +108,11 @@ class _FeaturedCourseCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            height: 96,
+          CourseThumbnail(
+            url: course.thumbnailUrl,
+            hue: course.thumbnailHue,
+            height: course.thumbnailUrl == null ? 96 : 150,
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              gradient: courseGradient(course.thumbnailHue),
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -247,6 +246,19 @@ class _CompactCourseCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              ClipRRect(
+                borderRadius: AppRadius.sm,
+                child: SizedBox(
+                  width: 88,
+                  height: 56,
+                  child: CourseThumbnail(
+                    url: course.thumbnailUrl,
+                    hue: course.thumbnailHue,
+                    shade: false,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

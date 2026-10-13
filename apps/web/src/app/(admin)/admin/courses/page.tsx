@@ -143,6 +143,32 @@ export default async function AdminCoursesPage({
                 defaultValue={String(editing?.originalPriceInr ?? 4999)}
               />
             </div>
+            <label className="block">
+              <span className="text-xs font-medium text-navy">Thumbnail image</span>
+              {editing?.thumbnailUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={editing.thumbnailUrl}
+                  alt=""
+                  className="mt-1 aspect-video w-full rounded-lg object-cover"
+                />
+              ) : null}
+              <input
+                type="file"
+                name="thumbnail"
+                accept="image/png,image/jpeg,image/webp"
+                className="mt-1 w-full text-xs text-muted"
+              />
+              <span className="mt-1 block text-xs text-muted">
+                16:9, max 5 MB. Shown on course cards and the course page in the app.
+              </span>
+            </label>
+            {editing?.thumbnailUrl ? (
+              <label className="flex items-center gap-2 text-sm text-navy">
+                <input type="checkbox" name="removeThumbnail" className="size-4" />
+                Remove current thumbnail
+              </label>
+            ) : null}
             <TextAreaField
               label="Description"
               name="description"

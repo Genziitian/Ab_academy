@@ -113,6 +113,7 @@ class Course {
     this.reviewCount,
     this.questionsCount,
     this.thumbnailHue = 214,
+    this.thumbnailUrl,
     this.planDay,
   });
 
@@ -159,6 +160,10 @@ class Course {
 
   /// Hue for the course thumbnail gradient — matches `thumbnail_hue` in the DB.
   final int thumbnailHue;
+
+  /// Uploaded course artwork (`courses.thumbnail_url`); null shows the
+  /// gradient in [thumbnailHue].
+  final String? thumbnailUrl;
 
   /// Day of the 90-day plan the student is on, for enrolled crash courses.
   final int? planDay;

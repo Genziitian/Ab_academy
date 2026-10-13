@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { deleteCourse, saveCourse } from "@/lib/admin/data";
+import { deleteCourse, publicUrl, saveCourse, uploadToBucket } from "@/lib/admin/data";
 import { requireFullAdmin } from "@/lib/admin/auth";
 
 export async function saveCourseAction(formData: FormData) {
@@ -18,8 +18,19 @@ export async function saveCourseAction(formData: FormData) {
     .map((s) => s.trim())
     .filter(Boolean);
 
+  // A new file replaces the thumbnail; "remove" clears it; otherwise keep it.
+  const image = formData.get("thumbnail");
+  let thumbnailUrl: string | null | undefined = undefined;
+  if (image instanceof File && image.size > 0) {
+    const path = await uploadToBucket("course-thumbnails", image, "courses");
+    thumbnailUrl = await publicUrl("course-thumbnails", path);
+  } else if (formData.get("removeThumbnail") === "on") {
+    thumbnailUrl = null;
+  }
+
   await saveCourse({
     id: id || undefined,
+    thumbnailUrl,
     title: String(formData.get("title") ?? "").trim(),
     classLevel: Number(formData.get("classLevel") ?? 10),
     board: String(formData.get("board") ?? "Bihar Board"),

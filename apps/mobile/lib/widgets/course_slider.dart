@@ -154,12 +154,13 @@ class _Slide extends StatelessWidget {
               if (banner.imageUrl != null)
                 DecoratedBox(
                   decoration: BoxDecoration(
+                    // Strong enough that white text reads over busy artwork.
                     gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+                      begin: Alignment.centerRight,
+                      end: Alignment.centerLeft,
                       colors: [
-                        Colors.transparent,
-                        AppColors.primaryDeep.withValues(alpha: 0.75),
+                        Colors.black.withValues(alpha: 0.15),
+                        AppColors.primaryDeep.withValues(alpha: 0.88),
                       ],
                     ),
                   ),

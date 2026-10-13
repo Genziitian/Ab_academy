@@ -120,7 +120,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => context.push(Routes.setupClass),
+                  onPressed: () => _editClassAndStream(context, ref),
                   child: Text(
                     'Edit',
                     style: AppText.tabular(
@@ -158,7 +158,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   title: 'Class & stream',
                   value:
                       '${student.classLevel}${student.stream == null ? '' : ' · ${student.stream}'}',
-                  onTap: () => context.push(Routes.setupClass),
+                  onTap: () => _editClassAndStream(context, ref),
                 ),
                 _Row(
                   title: 'My purchases',
@@ -360,4 +360,15 @@ class _Row extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Opens class → stream as an edit form, pre-filled with the student's
+/// current choices; saving returns to Profile.
+void _editClassAndStream(BuildContext context, WidgetRef ref) {
+  final student = ref.read(studentProvider);
+  ref.read(onboardingProvider.notifier)
+    ..setClassLevel(student.classLevel)
+    ..setStream(student.stream ?? 'Science')
+    ..setMedium(student.medium);
+  context.push(Routes.setupClassEdit);
 }

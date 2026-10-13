@@ -57,7 +57,7 @@ abstract final class Repo {
   static const _courseFields = '''
     id, slug, title, description, board, class_level, language, price_inr,
     original_price_inr, rating, lessons_count, highlights, subjects, thumbnail_hue,
-    is_published,
+    thumbnail_url, is_published,
     course_teachers ( is_primary, teachers ( display_name, subjects ) ),
     course_batches ( id, name )
   ''';

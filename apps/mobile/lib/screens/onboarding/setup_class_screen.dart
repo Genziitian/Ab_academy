@@ -18,7 +18,10 @@ const _classes = <(int, Color, String)>[
 
 /// 04 · Choose class.
 class SetupClassScreen extends ConsumerWidget {
-  const SetupClassScreen({super.key});
+  const SetupClassScreen({super.key, this.editing = false});
+
+  /// Opened from Profile to change class and stream rather than at sign-up.
+  final bool editing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,11 +33,14 @@ class SetupClassScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SetupProgressHeader(
-              step: 'Step 1 of 2',
-              trailing: 'Bihar Board',
-              progress: 0.5,
-            ),
+            if (editing)
+              const AppTopBar(title: 'Class & stream')
+            else
+              const SetupProgressHeader(
+                step: 'Step 1 of 2',
+                trailing: 'Bihar Board',
+                progress: 0.5,
+              ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
@@ -68,7 +74,9 @@ class SetupClassScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
               child: PrimaryButton(
                 label: 'Continue',
-                onPressed: () => context.push(Routes.setupStream),
+                onPressed: () => context.push(
+                  editing ? Routes.setupStreamEdit : Routes.setupStream,
+                ),
               ),
             ),
           ],

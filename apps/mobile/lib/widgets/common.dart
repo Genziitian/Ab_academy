@@ -727,3 +727,62 @@ void showDemoSnack(BuildContext context, String message) {
       SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
 }
+
+/// Course artwork: the uploaded thumbnail over the course's gradient, which
+/// also shows while the image loads or if it fails. [shade] darkens the lower
+/// half so white text on top stays readable.
+class CourseThumbnail extends StatelessWidget {
+  const CourseThumbnail({
+    super.key,
+    required this.url,
+    required this.hue,
+    this.height,
+    this.padding = EdgeInsets.zero,
+    this.shade = true,
+    this.child,
+  });
+
+  final String? url;
+  final int hue;
+  final double? height;
+  final EdgeInsetsGeometry padding;
+  final bool shade;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImage = url != null && url!.isNotEmpty;
+    return SizedBox(
+      height: height,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(decoration: BoxDecoration(gradient: courseGradient(hue))),
+          if (hasImage)
+            Image.network(
+              url!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          if (hasImage && shade)
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.15),
+                    Colors.black.withValues(alpha: 0.05),
+                    AppColors.primaryDeep.withValues(alpha: 0.85),
+                  ],
+                  stops: const [0, 0.4, 1],
+                ),
+              ),
+            ),
+          if (child != null) Padding(padding: padding, child: child),
+        ],
+      ),
+    );
+  }
+}

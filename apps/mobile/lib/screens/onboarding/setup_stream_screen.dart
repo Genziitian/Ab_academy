@@ -7,6 +7,7 @@ import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/buttons.dart';
+import '../../widgets/common.dart';
 import 'setup_class_screen.dart';
 
 const _streams = <(String, String)>[
@@ -21,11 +22,54 @@ const _mediums = <(String, String)>[
 ];
 
 /// 05 · Stream & medium.
-class SetupStreamScreen extends ConsumerWidget {
-  const SetupStreamScreen({super.key});
+class SetupStreamScreen extends ConsumerStatefulWidget {
+  const SetupStreamScreen({super.key, this.editing = false});
+
+  /// Opened from Profile: the button saves and returns to Profile.
+  final bool editing;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SetupStreamScreen> createState() => _SetupStreamScreenState();
+}
+
+class _SetupStreamScreenState extends ConsumerState<SetupStreamScreen> {
+  bool _saving = false;
+
+  Future<void> _save() async {
+    if (_saving) return;
+    final onboarding = ref.read(onboardingProvider);
+    final session = ref.read(sessionProvider.notifier);
+    setState(() => _saving = true);
+    try {
+      if (!widget.editing) await session.signIn();
+      await session.applySetup(
+        classLevel: onboarding.classLevel,
+        stream: onboarding.stream,
+        medium: onboarding.medium,
+      );
+      if (!mounted) return;
+      if (widget.editing) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Class & stream updated.')),
+        );
+        context.go(Routes.profile);
+      } else {
+        context.go(Routes.home);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not save. Check your connection and try again.'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final onboarding = ref.watch(onboardingProvider);
     final notifier = ref.read(onboardingProvider.notifier);
 
@@ -35,11 +79,17 @@ class SetupStreamScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SetupProgressHeader(
-              step: 'Step 2 of 2',
-              trailing: 'Class ${onboarding.classLevel}',
-              progress: 1,
-            ),
+            if (widget.editing)
+              AppTopBar(
+                title: 'Class & stream',
+                subtitle: 'Class ${onboarding.classLevel}',
+              )
+            else
+              SetupProgressHeader(
+                step: 'Step 2 of 2',
+                trailing: 'Class ${onboarding.classLevel}',
+                progress: 1,
+              ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
@@ -138,18 +188,12 @@ class SetupStreamScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
               child: PrimaryButton(
-                label: 'Start learning',
-                onPressed: () async {
-                  final session = ref.read(sessionProvider.notifier);
-                  await session.signIn();
-                  await session.applySetup(
-                    classLevel: onboarding.classLevel,
-                    stream: onboarding.stream,
-                    medium: onboarding.medium,
-                  );
-                  if (!context.mounted) return;
-                  context.go(Routes.home);
-                },
+                label: _saving
+                    ? 'Saving…'
+                    : widget.editing
+                    ? 'Save'
+                    : 'Start learning',
+                onPressed: _saving ? null : _save,
               ),
             ),
           ],
