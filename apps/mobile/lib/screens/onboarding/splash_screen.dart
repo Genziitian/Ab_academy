@@ -2,7 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../data/providers/app_providers.dart';
+import '../../data/remote/auth_repository.dart';
 
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
@@ -10,22 +14,31 @@ import '../../theme/app_text_styles.dart';
 import '../../widgets/academy_mark.dart';
 
 /// 01 · Splash — white mark on brand blue.
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer(const Duration(milliseconds: 1800), () {
-      if (mounted) context.go(Routes.login);
-    });
+    _timer = Timer(const Duration(milliseconds: 1800), _route);
+  }
+
+  /// A session saved from an earlier launch goes straight to Home; only a
+  /// signed-out student sees the login screen.
+  Future<void> _route() async {
+    if (AuthRepo.enabled && AuthRepo.isSignedIn) {
+      await ref.read(sessionProvider.notifier).signIn();
+      if (mounted) context.go(Routes.home);
+      return;
+    }
+    if (mounted) context.go(Routes.login);
   }
 
   @override

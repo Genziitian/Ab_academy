@@ -83,14 +83,21 @@ Courses, pricing and enrolments are admin-only (`is_admin`).
 
 ### Mobile app
 
-26 screens, redesigned to match the website (IBM Plex, blue/navy). The
-community feature was removed; students ask doubts under each lecture and get
-help through support tickets. Bottom tabs are Home, Courses (store + My
-courses), Academics (live, calendar, notes) and Profile. Paid courses are sold
-in the app through Razorpay via the `checkout` Edge Function. Supabase is wired for auth (phone OTP + Google), the catalog, My
-Courses, the course page and curriculum, recordings and notes over signed URLs,
-tickets, notifications and popups. FCM push
-registers a device token on launch and claims it at sign-in.
+Bottom tabs: **Home** (promotional slider, next live class, quick actions,
+courses, announcements), **Courses** (My courses with search, and Explore —
+the store, sold through Razorpay via the `checkout` Edge Function), a raised
+**Academics** button (calendar, live sessions, class notes, support,
+downloads, announcements), **Updates** (announcements and notifications) and
+**More** (profile, settings, support, policies, sign out). The community
+feature was removed; students ask doubts under each lecture.
+
+Live on Supabase: Google sign-in (native, in-app), the catalog, My courses
+with chapter / lecture / notes counts, the course page and curriculum, the
+secure YouTube player, Drive notes in the in-app viewer, live sessions,
+**announcements** (Notifications in the console, with read state and
+realtime refresh) and **support tickets** (raised in the app, answered from
+the console's Tickets page; the student gets a notification and the open
+thread refreshes). A saved session skips the login screen on launch.
 
 Without `--dart-define` values the app falls back to mock data, so the test
 suite and the route-walk harness still run offline.

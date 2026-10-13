@@ -1,189 +1,125 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../data/models/content.dart';
 import '../../data/providers/app_providers.dart';
-import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
-import '../../theme/app_theme.dart';
 import '../../widgets/common.dart';
+import '../../widgets/ui_kit.dart';
+import '../home/home_screen.dart';
 
-const _groupLabels = {
-  NotificationGroup.today: 'TODAY',
-  NotificationGroup.yesterday: 'YESTERDAY',
-  NotificationGroup.earlier: 'EARLIER',
-};
-
-/// 18 · Notifications, grouped by day; unread rows are tinted.
+/// 18 · Updates — announcements and notifications sent from the admin
+/// console (Notifications), newest first. Also the Updates tab.
 class NotificationsScreen extends ConsumerWidget {
-  const NotificationsScreen({super.key});
+  const NotificationsScreen({super.key, this.asTab = false});
+
+  /// Shown as a bottom-nav tab: no back button.
+  final bool asTab;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notifications = ref.watch(notificationsProvider);
-    final unread = notifications.any((n) => n.isUnread);
+    final items = ref.watch(notificationsProvider);
+    final unread = items.where((n) => n.isUnread).length;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppTopBar(
-        title: 'Notifications',
-        actions: [
-          TextButton(
-            onPressed: unread
-                ? () => ref.read(notificationsProvider.notifier).markAllRead()
-                : null,
-            child: Text(
-              'Mark all read',
-              style: AppText.tabular(
-                13,
-                FontWeight.w600,
-                color: unread ? AppColors.primary : AppColors.textSubtle,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: notifications.isEmpty
-          ? const Padding(
-              padding: EdgeInsets.all(20),
-              child: EmptyState(
-                icon: LucideIcons.bellOff,
-                title: 'All caught up',
-                body:
-                    'Class reminders, new notes and results will show up here.',
-              ),
-            )
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-              children: [
-                for (final group in NotificationGroup.values)
-                  if (notifications.any((n) => n.group == group)) ...[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16, bottom: 8),
-                      child: Text(
-                        _groupLabels[group]!,
-                        style: AppText.eyebrow(letterSpacing: 0.9),
-                      ),
-                    ),
-                    ListCard(
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+              child: Row(
+                children: [
+                  if (!asTab) ...[
+                    const BackSquareButton(),
+                    const SizedBox(width: 16),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        for (final n in notifications.where(
-                          (n) => n.group == group,
-                        ))
-                          _NotificationRow(notification: n),
+                        Text(
+                          'Notifications',
+                          style: AppText.h1.copyWith(letterSpacing: -0.6),
+                        ),
+                        Text(
+                          unread > 0
+                              ? '$unread unread · alerts & announcements'
+                              : 'Recent alerts & updates',
+                          style: AppText.bodyLg,
+                        ),
                       ],
                     ),
-                  ],
-              ],
-            ),
-    );
-  }
-}
-
-class _NotificationRow extends StatelessWidget {
-  const _NotificationRow({required this.notification});
-
-  final AppNotification notification;
-
-  void _act(BuildContext context) => switch (notification.kind) {
-    NotificationKind.live => context.push(Routes.liveRoom),
-    NotificationKind.recording => context.push(Routes.lesson('ch1-l3')),
-    NotificationKind.notes => context.go(Routes.notes),
-    NotificationKind.test ||
-    NotificationKind.result => context.push(Routes.calendar),
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final (bg, fg, glyph) = switch (notification.kind) {
-      NotificationKind.live => (AppColors.liveTint, AppColors.liveInk, '●'),
-      NotificationKind.test => (AppColors.amberTint, AppColors.warningInk, '✎'),
-      NotificationKind.recording => (
-        AppColors.primaryTint,
-        AppColors.primary,
-        '▶',
-      ),
-      NotificationKind.notes => (AppColors.mathsTint, AppColors.maths, '≡'),
-      NotificationKind.result => (
-        AppColors.successTint,
-        AppColors.success,
-        '✓',
-      ),
-    };
-
-    return InkWell(
-      onTap: () => _act(context),
-      child: Container(
-        color: notification.isUnread
-            ? AppColors.surfaceMuted
-            : AppColors.surface,
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 34,
-              height: 34,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(color: bg, borderRadius: AppRadius.xs),
-              child: Text(
-                glyph,
-                style: AppText.tabular(13, FontWeight.w700, color: fg),
+                  ),
+                  if (unread > 0)
+                    TextButton(
+                      onPressed: () => ref
+                          .read(notificationsProvider.notifier)
+                          .markAllRead(),
+                      child: Text(
+                        'Mark all read',
+                        style: AppText.tabular(
+                          13,
+                          FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-            const SizedBox(width: 12),
+            const Divider(height: 1, color: AppColors.border),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          notification.title,
-                          style: AppText.rowTitle,
-                        ),
-                      ),
-                      if (notification.timeAgo != null)
-                        Text(
-                          notification.timeAgo!,
-                          style: AppText.tabular(
-                            11,
-                            FontWeight.w400,
-                            color: AppColors.textSubtle,
+              child: RefreshIndicator(
+                onRefresh: () =>
+                    ref.read(notificationsProvider.notifier).refresh(),
+                child: items.isEmpty
+                    ? ListView(
+                        padding: const EdgeInsets.all(20),
+                        children: const [
+                          SizedBox(height: 40),
+                          EmptyState(
+                            icon: LucideIcons.bellOff,
+                            title: 'No notifications yet',
+                            body:
+                                'Class updates, announcements and support replies show up here.',
                           ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    notification.body,
-                    style: AppText.tabular(
-                      13,
-                      FontWeight.w400,
-                      color: AppColors.textBody,
-                    ),
-                  ),
-                  if (notification.actionLabel != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      notification.actionLabel!,
-                      style: AppText.tabular(
-                        12,
-                        FontWeight.w600,
-                        color: AppColors.primary,
+                        ],
+                      )
+                    : ListView(
+                        padding: const EdgeInsets.fromLTRB(20, 18, 20, 40),
+                        children: [
+                          for (final group in NotificationGroup.values)
+                            ..._group(group, items),
+                        ],
                       ),
-                    ),
-                  ],
-                ],
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _group(NotificationGroup group, List<AppNotification> all) {
+    final items = all.where((n) => n.group == group).toList();
+    if (items.isEmpty) return const [];
+    final label = switch (group) {
+      NotificationGroup.today => 'Today',
+      NotificationGroup.yesterday => 'Yesterday',
+      NotificationGroup.earlier => 'Earlier',
+    };
+    return [
+      GroupHeading(label),
+      for (final n in items) ...[
+        AnnouncementCard(notification: n),
+        const SizedBox(height: 12),
+      ],
+      const SizedBox(height: 10),
+    ];
   }
 }

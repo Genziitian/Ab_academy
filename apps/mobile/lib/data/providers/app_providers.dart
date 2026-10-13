@@ -247,9 +247,80 @@ final calendarMonthProvider = NotifierProvider<CalendarMonthNotifier, DateTime>(
 
 // ---------------------------------------------------------- notifications
 
+/// Announcements and notifications. With a backend this is the student's
+/// `notifications` feed (RLS limits it to everyone / their class / their
+/// courses / them) with read state from `notification_reads`; without one,
+/// the sample list.
 class NotificationsNotifier extends Notifier<List<AppNotification>> {
   @override
-  List<AppNotification> build() => MockData.notifications;
+  List<AppNotification> build() {
+    if (!AuthRepo.enabled) return MockData.notifications;
+    // Reload when the student signs in or out.
+    ref.watch(sessionProvider);
+    Future.microtask(refresh);
+    return const [];
+  }
+
+  Future<void> refresh() async {
+    if (!AuthRepo.enabled) return;
+    if (!AuthRepo.isSignedIn) {
+      state = const [];
+      return;
+    }
+    try {
+      final rows = await Repo.notificationFeed();
+      final read = await Repo.readNotificationIds();
+      state = [for (final r in rows) _fromRow(r, read)];
+    } catch (_) {
+      // Keep what is on screen; the next refresh tries again.
+    }
+  }
+
+  static AppNotification _fromRow(Map<String, dynamic> r, Set<String> read) {
+    final sent =
+        DateTime.tryParse(r['sent_at']?.toString() ?? '')?.toLocal() ??
+        DateTime.now();
+    final now = DateTime.now();
+    final days = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).difference(DateTime(sent.year, sent.month, sent.day)).inDays;
+    final title = (r['title'] as String?) ?? '';
+    final lower = title.toLowerCase();
+    final kind = lower.contains('support') || lower.contains('ticket')
+        ? NotificationKind.support
+        : lower.contains('live') || lower.contains('class')
+        ? NotificationKind.live
+        : lower.contains('test') || lower.contains('quiz')
+        ? NotificationKind.test
+        : lower.contains('record')
+        ? NotificationKind.recording
+        : lower.contains('note')
+        ? NotificationKind.notes
+        : NotificationKind.announcement;
+    final diff = now.difference(sent);
+    return AppNotification(
+      id: r['id'] as String,
+      title: title,
+      body: (r['body'] as String?) ?? '',
+      kind: kind,
+      group: days <= 0
+          ? NotificationGroup.today
+          : days == 1
+          ? NotificationGroup.yesterday
+          : NotificationGroup.earlier,
+      timeAgo: diff.inMinutes < 1
+          ? 'now'
+          : diff.inMinutes < 60
+          ? '${diff.inMinutes}m ago'
+          : diff.inHours < 24
+          ? '${diff.inHours}h ago'
+          : '${diff.inDays}d ago',
+      isUnread: !read.contains(r['id']),
+      deepLink: r['deep_link'] as String?,
+    );
+  }
 
   /// Newest first — how an admin-sent notification arrives.
   void push(AppNotification notification) {
@@ -257,19 +328,29 @@ class NotificationsNotifier extends Notifier<List<AppNotification>> {
     state = [notification, ...state];
   }
 
-  void markAllRead() {
+  Future<void> markRead(String id) async {
+    if (!state.any((n) => n.id == id && n.isUnread)) return;
     state = [
-      for (final n in state)
-        AppNotification(
-          id: n.id,
-          title: n.title,
-          body: n.body,
-          kind: n.kind,
-          group: n.group,
-          timeAgo: n.timeAgo,
-          actionLabel: n.actionLabel,
-        ),
+      for (final n in state) n.id == id ? n.copyWith(isUnread: false) : n,
     ];
+    if (AuthRepo.enabled) {
+      try {
+        await Repo.markNotificationsRead([id]);
+      } catch (_) {}
+    }
+  }
+
+  Future<void> markAllRead() async {
+    final ids = [
+      for (final n in state)
+        if (n.isUnread) n.id,
+    ];
+    state = [for (final n in state) n.copyWith(isUnread: false)];
+    if (AuthRepo.enabled) {
+      try {
+        await Repo.markNotificationsRead(ids);
+      } catch (_) {}
+    }
   }
 }
 

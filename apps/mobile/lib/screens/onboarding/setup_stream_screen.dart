@@ -52,7 +52,9 @@ class _SetupStreamScreenState extends ConsumerState<SetupStreamScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Class & stream updated.')),
         );
-        context.go(Routes.profile);
+        // Back past both edit screens to where Class & stream was opened.
+        context.pop();
+        context.pop();
       } else {
         context.go(Routes.home);
       }

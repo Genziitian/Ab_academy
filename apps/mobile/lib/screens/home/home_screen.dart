@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../data/mock/mock_data.dart';
+import '../../data/models/content.dart';
 import '../../data/models/course.dart';
 import '../../data/models/schedule.dart';
 import '../../data/providers/app_providers.dart';
@@ -13,13 +13,13 @@ import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/buttons.dart';
-import '../../widgets/chips.dart';
+import '../../utils/format.dart';
 import '../../widgets/common.dart';
 import '../../widgets/course_slider.dart';
-import '../../utils/format.dart';
+import '../../widgets/ui_kit.dart';
 
-/// 06 · Home — live hero, continue learning and today's schedule.
+/// 06 · Home — greeting, promotional slider, the next live class, quick
+/// actions, courses and the latest announcements.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -27,90 +27,103 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final student = ref.watch(studentProvider);
     final unread = ref.watch(unreadCountProvider);
-    // Stands in for the Supabase realtime subscription: an admin-sent
-    // notification lands a few seconds after Home opens.
+    // Supabase realtime on `notifications` (a timer on sample data).
     ref.watch(realtimeNotificationProvider);
-
-    final summary = [
-      'Class ${student.classLevel}',
-      if (student.stream != null) student.stream!,
-      student.board,
-    ].join(' · ');
+    final firstName = student.fullName.split(' ').first;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         bottom: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${_greeting()}, ${student.fullName.split(' ').first}',
-                        style: AppText.label,
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        summary,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppText.tabular(15, FontWeight.w600),
-                      ),
-                    ],
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(bannersProvider);
+            ref.invalidate(upcomingSessionsProvider);
+            ref.invalidate(remoteCatalogProvider(null));
+            ref.invalidate(remoteMyCoursesProvider);
+            await ref.read(notificationsProvider.notifier).refresh();
+          },
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 40),
+            children: [
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => context.go(Routes.more),
+                    child: GradientAvatar(initials: firstName, size: 58),
                   ),
-                ),
-                const SizedBox(width: 10),
-                SquareIconButton(
-                  icon: LucideIcons.bell,
-                  badge: unread > 0,
-                  onPressed: () => context.push(Routes.notifications),
-                ),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: () => context.go(Routes.profile),
-                  child: InitialsAvatar(
-                    initials: student.initials,
-                    size: 40,
-                    fontSize: 13,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text.rich(
+                          TextSpan(
+                            text: '${_greeting()}, ',
+                            children: [
+                              TextSpan(
+                                text: firstName,
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.tabular(20, FontWeight.w600),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Take a moment to review your progress.',
+                          maxLines: 2,
+                          style: AppText.tabular(
+                            14,
+                            FontWeight.w400,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 10),
+                  _RoundIconButton(
+                    icon: LucideIcons.bell,
+                    badge: unread,
+                    onTap: () => context.go(Routes.updates),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 22),
+              // Admin-managed promotional slider (App slider in the console).
+              const CourseSlider(padding: EdgeInsets.only(bottom: 26)),
+              SectionTitle(
+                'Upcoming Session',
+                trailing: ViewAllLink(onTap: () => context.push(Routes.live)),
+              ),
+              const SizedBox(height: 14),
+              const _UpcomingSession(),
+              const SizedBox(height: 22),
+              const _QuickActions(),
+              const SizedBox(height: 28),
+              SectionTitle(
+                'Courses for you',
+                trailing: ViewAllLink(
+                  label: 'See all',
+                  onTap: () => context.go(Routes.store),
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            // Admin-managed promotional slider (App slider in the console).
-            const CourseSlider(padding: EdgeInsets.only(bottom: 20)),
-            SectionHeader(
-              title: 'Courses for you',
-              trailing: TextActionButton(
-                label: 'See all →',
-                onPressed: () => context.go(Routes.store),
               ),
-            ),
-            const SizedBox(height: 10),
-            const _HomeCourses(),
-            const SizedBox(height: 20),
-            const _LiveHeroCard(),
-            const SizedBox(height: 20),
-            Text('Continue learning', style: AppText.sectionTitle),
-            const SizedBox(height: 10),
-            const _ContinueLearningCard(),
-            const SizedBox(height: 20),
-            SectionHeader(
-              title: "Today's schedule",
-              trailing: TextActionButton(
-                label: 'Calendar →',
-                onPressed: () => context.push(Routes.calendar),
+              const SizedBox(height: 14),
+              const _HomeCourses(),
+              const SizedBox(height: 28),
+              SectionTitle(
+                'Announcements',
+                trailing: ViewAllLink(onTap: () => context.go(Routes.updates)),
               ),
-            ),
-            const SizedBox(height: 10),
-            const _ScheduleCard(items: MockData.todaySchedule),
-            const SizedBox(height: 20),
-            const _UpcomingTestBanner(),
-          ],
+              const SizedBox(height: 14),
+              const _Announcements(),
+            ],
+          ),
         ),
       ),
     );
@@ -118,283 +131,254 @@ class HomeScreen extends ConsumerWidget {
 
   static String _greeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
   }
 }
 
-/// Navy "LIVE NOW" hero at the top of Home.
-class _LiveHeroCard extends StatelessWidget {
-  const _LiveHeroCard();
+class _RoundIconButton extends StatelessWidget {
+  const _RoundIconButton({
+    required this.icon,
+    required this.onTap,
+    this.badge = 0,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+  final int badge;
 
   @override
   Widget build(BuildContext context) {
-    const session = MockData.liveNow;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: AppColors.primaryDeep,
-        borderRadius: AppRadius.lg,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const LivePill(),
-              Text(
-                session.scheduleLabel.replaceAll('•', '·'),
-                style: AppText.tabular(
-                  12,
-                  FontWeight.w400,
-                  color: AppColors.textOnDarkMuted,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            session.subject.toUpperCase(),
-            style: AppText.tabular(
-              12,
-              FontWeight.w600,
-              color: AppColors.textOnDarkAccent,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Material(
+          color: AppColors.surface,
+          shape: const CircleBorder(),
+          elevation: 3,
+          shadowColor: const Color(0x22122046),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: SizedBox(
+              width: 54,
+              height: 54,
+              child: Icon(icon, size: 24, color: AppColors.ink),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(session.title, style: AppText.h4.copyWith(color: Colors.white)),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              InitialsAvatar(
-                initials: session.teacherInitials,
-                size: 30,
-                fontSize: 11,
-                background: AppColors.primaryDeepRaised,
-                foreground: const Color(0xFFC7D4FF),
+        ),
+        if (badge > 0)
+          Positioned(
+            right: -2,
+            top: -4,
+            child: Container(
+              width: 24,
+              height: 24,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.liveDot,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  session.teacherName,
-                  style: AppText.tabular(
-                    13,
-                    FontWeight.w400,
-                    color: AppColors.textOnDark,
-                  ),
+              child: Text(
+                badge > 9 ? '9+' : '$badge',
+                style: AppText.tabular(
+                  11,
+                  FontWeight.w700,
+                  color: Colors.white,
                 ),
               ),
-              Material(
-                color: Colors.white,
-                borderRadius: AppRadius.xs,
-                child: InkWell(
-                  onTap: () => context.push(Routes.liveRoom),
-                  borderRadius: AppRadius.xs,
-                  child: Container(
-                    height: 42,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    alignment: Alignment.center,
-                    child: Text(
-                      'Join Live →',
-                      style: AppText.tabular(14, FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }
 
-class _ContinueLearningCard extends StatelessWidget {
-  const _ContinueLearningCard();
+/// The next live class (or the one live now), with Join / Details.
+class _UpcomingSession extends ConsumerWidget {
+  const _UpcomingSession();
 
   @override
-  Widget build(BuildContext context) {
-    const lesson = MockData.continueLesson;
-    final palette = SubjectPalette.fromName(lesson.subject);
-    return AppCard(
-      padding: const EdgeInsets.all(12),
-      onTap: () => context.push(Routes.lesson('ch1-l3')),
-      child: Row(
-        children: [
-          Container(
-            width: 92,
-            height: 84,
-            decoration: BoxDecoration(
-              color: palette.tint,
-              borderRadius: AppRadius.xs,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sessions = ref.watch(upcomingSessionsProvider).value;
+    if (sessions == null) {
+      return const SizedBox(
+        height: 110,
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2.5)),
+      );
+    }
+    if (sessions.isEmpty) {
+      return SoftCard(
+        child: Row(
+          children: [
+            const TintIcon(
+              icon: LucideIcons.calendarClock,
+              color: AppColors.primary,
+              size: 52,
             ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.play_arrow_rounded,
-                    size: 18,
-                    color: palette.ink,
-                  ),
-                ),
-                Positioned(
-                  right: 6,
-                  bottom: 6,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 5,
-                      vertical: 1,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryDeep.withValues(alpha: 0.75),
-                      borderRadius: AppRadius.badge,
-                    ),
-                    child: Text(
-                      lesson.durationLabel,
-                      style: AppText.tabular(
-                        10,
-                        FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: SizedBox(
-              height: 84,
+            const SizedBox(width: 14),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        lesson.subject.toUpperCase(),
-                        style: AppText.eyebrow(color: palette.ink),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(lesson.title, style: AppText.cardTitleSm),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${(lesson.progress * 100).round()}% complete',
-                            style: AppText.meta,
-                          ),
-                          Text(
-                            'Continue →',
-                            style: AppText.tabular(
-                              12,
-                              FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      ProgressBar(
-                        value: lesson.progress,
-                        height: 5,
-                        color: AppColors.teal,
-                      ),
-                    ],
+                  Text('No live class scheduled', style: AppText.cardTitle),
+                  const SizedBox(height: 3),
+                  Text(
+                    'New classes appear here as soon as they are scheduled.',
+                    style: AppText.meta,
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
+      );
+    }
+
+    final session = sessions.first;
+    final live = session.status == LiveStatus.liveNow;
+    const orange = Color(0xFFFF5A1F);
+    return SoftCard(
+      padding: EdgeInsets.zero,
+      onTap: () => context.push(Routes.live),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 5, color: live ? orange : AppColors.primary),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 18, 16, 18),
+                child: Row(
+                  children: [
+                    GradientIcon(
+                      icon: LucideIcons.video,
+                      gradient: live ? AppGradients.orange : AppGradients.brand,
+                      size: 60,
+                      iconSize: 28,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            live ? '● LIVE NOW' : session.scheduleLabel,
+                            style: AppText.tabular(
+                              13,
+                              FontWeight.w600,
+                              color: live
+                                  ? AppColors.liveDot
+                                  : AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            session.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.tabular(19, FontWeight.w600),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${session.subject} × ${session.teacherName}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.meta,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 11,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: live
+                            ? AppGradients.orange
+                            : AppGradients.brand,
+                        borderRadius: AppRadius.pill,
+                      ),
+                      child: Text(
+                        live ? 'Join ›' : 'View ›',
+                        style: AppText.tabular(
+                          15,
+                          FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// Compact list of today's sessions, inside one card.
-class _ScheduleCard extends StatelessWidget {
-  const _ScheduleCard({required this.items});
-
-  final List<ScheduleItem> items;
+class _QuickActions extends StatelessWidget {
+  const _QuickActions();
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      child: Column(
+    final actions = [
+      (
+        LucideIcons.calendarDays,
+        'Calendar',
+        AppGradients.violet,
+        () => context.push(Routes.calendar),
+      ),
+      (
+        LucideIcons.fileText,
+        'Notes',
+        AppGradients.green,
+        () => context.push(Routes.notes),
+      ),
+      (
+        LucideIcons.headphones,
+        'Support',
+        AppGradients.pink,
+        () => context.push(Routes.tickets),
+      ),
+      (
+        LucideIcons.settings,
+        'Settings',
+        AppGradients.blue,
+        () => context.push(Routes.profile),
+      ),
+    ];
+    return SoftCard(
+      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 8),
+      child: Row(
         children: [
-          for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: items[i].joinable
-                  ? () => context.push(Routes.liveRoom)
-                  : null,
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  border: i < items.length - 1
-                      ? const Border(
-                          bottom: BorderSide(color: AppColors.divider),
-                        )
-                      : null,
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          for (final (icon, label, gradient, onTap) in actions)
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onTap,
+                child: Column(
                   children: [
-                    SizedBox(
-                      width: 56,
-                      child: Text(
-                        items[i].timeLabel,
-                        style: AppText.tabular(
-                          12,
-                          FontWeight.w600,
-                          color: items[i].isNow
-                              ? AppColors.ink
-                              : AppColors.textMuted,
-                        ),
-                      ),
+                    GradientIcon(
+                      icon: icon,
+                      gradient: gradient,
+                      size: 64,
+                      iconSize: 28,
+                      round: true,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  items[i].title,
-                                  style: AppText.rowTitle,
-                                ),
-                              ),
-                              if (items[i].kind == SessionKind.live) ...[
-                                const SizedBox(width: 6),
-                                const StatusBadge.live(),
-                              ],
-                            ],
-                          ),
-                          const SizedBox(height: 1),
-                          Text(
-                            items[i].subtitle.replaceAll('•', '·'),
-                            style: AppText.meta,
-                          ),
-                        ],
+                    const SizedBox(height: 10),
+                    Text(
+                      label,
+                      style: AppText.tabular(
+                        14,
+                        FontWeight.w500,
+                        color: AppColors.textBody,
                       ),
                     ),
                   ],
@@ -407,61 +391,120 @@ class _ScheduleCard extends StatelessWidget {
   }
 }
 
-class _UpcomingTestBanner extends StatelessWidget {
-  const _UpcomingTestBanner();
+/// The three newest announcements; the rest live under Updates.
+class _Announcements extends ConsumerWidget {
+  const _Announcements();
 
   @override
-  Widget build(BuildContext context) {
-    const test = MockData.upcomingTest;
-    return GestureDetector(
-      onTap: () => context.push(Routes.calendar),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.warningTint,
-          borderRadius: AppRadius.card,
-          border: Border.all(color: AppColors.warningBorder),
-        ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(notificationsProvider).take(3).toList();
+    if (items.isEmpty) {
+      return SoftCard(
         child: Row(
           children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFECD6),
-                borderRadius: AppRadius.sm,
-              ),
-              child: const Icon(
-                LucideIcons.clipboardList,
-                size: 18,
-                color: AppColors.warningInk,
-              ),
+            const TintIcon(
+              icon: LucideIcons.megaphone,
+              color: AppColors.violet,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(test.title, style: AppText.cardTitleSm),
-                  const SizedBox(height: 2),
-                  Text(
-                    test.detail.replaceAll('•', '·'),
-                    style: AppText.tabular(
-                      13,
-                      FontWeight.w400,
-                      color: AppColors.warningText,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'No announcements yet. Updates from your teachers land here.',
+                style: AppText.meta,
               ),
-            ),
-            const Icon(
-              LucideIcons.chevronRight,
-              size: 18,
-              color: AppColors.warningInk,
             ),
           ],
         ),
+      );
+    }
+    return Column(
+      children: [
+        for (final n in items) ...[
+          AnnouncementCard(notification: n),
+          const SizedBox(height: 12),
+        ],
+      ],
+    );
+  }
+}
+
+/// One announcement / notification: tinted bell, title, body, time.
+class AnnouncementCard extends ConsumerWidget {
+  const AnnouncementCard({super.key, required this.notification});
+
+  final AppNotification notification;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final n = notification;
+    final (icon, color) = switch (n.kind) {
+      NotificationKind.live => (LucideIcons.video, const Color(0xFFFF5A1F)),
+      NotificationKind.test => (LucideIcons.clipboardCheck, AppColors.warning),
+      NotificationKind.recording => (LucideIcons.playCircle, AppColors.teal),
+      NotificationKind.notes => (LucideIcons.fileText, AppColors.success),
+      NotificationKind.result => (LucideIcons.award, AppColors.primary),
+      NotificationKind.support => (LucideIcons.headphones, AppColors.english),
+      NotificationKind.announcement => (LucideIcons.bell, AppColors.violet),
+    };
+    return SoftCard(
+      padding: const EdgeInsets.all(16),
+      radius: 20,
+      onTap: () {
+        ref.read(notificationsProvider.notifier).markRead(n.id);
+        final link = n.deepLink;
+        if (link != null && link.startsWith('/')) context.push(link);
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TintIcon(icon: icon, color: color, size: 50),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        n.title,
+                        style: AppText.tabular(16, FontWeight.w600),
+                      ),
+                    ),
+                    if (n.timeAgo != null) ...[
+                      const SizedBox(width: 8),
+                      Text(n.timeAgo!, style: AppText.meta),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  n.body,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.tabular(
+                    14,
+                    FontWeight.w400,
+                    color: AppColors.textBody,
+                  ).copyWith(height: 1.4),
+                ),
+              ],
+            ),
+          ),
+          if (n.isUnread) ...[
+            const SizedBox(width: 8),
+            Container(
+              width: 9,
+              height: 9,
+              margin: const EdgeInsets.only(top: 6),
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -483,14 +526,11 @@ class _HomeCourses extends ConsumerWidget {
       );
     }
     final mineIds = {for (final c in mine) c.id};
-    final courses = [
-      ...mine,
-      ...catalog.where((c) => !mineIds.contains(c.id)),
-    ];
+    final courses = [...mine, ...catalog.where((c) => !mineIds.contains(c.id))];
     if (courses.isEmpty) return const SizedBox.shrink();
 
     return SizedBox(
-      height: 238,
+      height: 228,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,

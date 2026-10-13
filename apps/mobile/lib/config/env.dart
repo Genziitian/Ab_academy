@@ -32,6 +32,12 @@ abstract final class Env {
         '778886774711-2b8s12ria26qk6nlaods66gpbbplqs00.apps.googleusercontent.com',
   );
 
+  /// The website, for About / Terms / Privacy opened inside the app.
+  static const siteUrl = String.fromEnvironment(
+    'SITE_URL',
+    defaultValue: 'https://web-two-sand-99.vercel.app',
+  );
+
   static bool get hasDemoLogin =>
       demoEmail.isNotEmpty && demoPassword.isNotEmpty;
 }

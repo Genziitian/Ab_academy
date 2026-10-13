@@ -77,10 +77,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: const AppTopBar(title: 'Profile & settings'),
       body: SafeArea(
+        top: false,
         bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
             Row(
               children: [

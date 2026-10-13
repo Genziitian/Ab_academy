@@ -7,6 +7,7 @@ import '../models/banner.dart';
 import '../models/content.dart';
 import '../models/course.dart';
 import '../models/popup.dart';
+import '../models/schedule.dart';
 import '../models/ticket.dart';
 import '../models/user.dart';
 import '../mock/mock_data.dart';
@@ -222,3 +223,43 @@ final bannersProvider = FutureProvider<List<CourseBanner>>((ref) async {
     return const [];
   }
 });
+
+// --------------------------------------------------------- live sessions
+
+/// Live and upcoming classes, soonest first: `live_sessions` with a backend,
+/// the sample schedule without one.
+final upcomingSessionsProvider = FutureProvider<List<LiveSession>>((ref) async {
+  if (!ref.watch(hasBackendProvider)) {
+    return MockData.liveSessions
+        .where((s) => s.status != LiveStatus.ended)
+        .toList();
+  }
+  try {
+    return await Repo.upcomingSessions();
+  } catch (_) {
+    return const [];
+  }
+});
+
+/// Chapter / lecture / notes counts per course for the course cards.
+final courseStatsProvider =
+    FutureProvider.family<({int chapters, int lectures, int notes}), String>((
+      ref,
+      courseId,
+    ) async {
+      if (!ref.watch(hasBackendProvider)) {
+        return (chapters: 12, lectures: 48, notes: 18);
+      }
+      final all = await Repo.courseStats([courseId]);
+      return all[courseId] ?? (chapters: 0, lectures: 0, notes: 0);
+    });
+
+/// Notes (PDFs) in one course for the course page's Notes tab.
+final courseNotesProvider =
+    FutureProvider.family<
+      List<({String id, String title, String chapter})>,
+      String
+    >((ref, courseId) async {
+      if (!ref.watch(hasBackendProvider)) return const [];
+      return Repo.courseNotes(courseId);
+    });

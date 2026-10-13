@@ -223,7 +223,7 @@ export default async function AdminPopupsPage({
                 name="startsAt"
                 type="datetime-local"
                 defaultValue={editing?.startsAt}
-                required
+                hint="Empty starts it now"
               />
               <Field
                 label="Ends"

@@ -21,6 +21,7 @@ import '../screens/onboarding/otp_screen.dart';
 import '../screens/onboarding/setup_class_screen.dart';
 import '../screens/onboarding/setup_stream_screen.dart';
 import '../screens/onboarding/splash_screen.dart';
+import '../screens/profile/more_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/purchase/checkout_screen.dart';
 import '../screens/purchase/payment_success_screen.dart';
@@ -43,13 +44,17 @@ abstract final class Routes {
   static const home = '/home';
   static const courses = '/courses';
   static const academics = '/academics';
+  static const updates = '/updates';
+  static const more = '/more';
+
+  /// Account details and settings, pushed from More.
   static const profile = '/profile';
 
   // Sections inside those tabs.
   static const store = '/courses?tab=store';
   static const myCourses = '/courses?tab=mine';
-  static const live = '/academics?tab=live';
-  static const notes = '/academics?tab=notes';
+  static const live = '/academics/live';
+  static const notes = '/academics/notes';
 
   // Pushed full-screen routes.
   static const calendar = '/calendar';
@@ -85,9 +90,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.otp, builder: (_, _) => const OtpScreen()),
       GoRoute(
         path: Routes.setupClass,
-        builder: (_, state) => SetupClassScreen(
-          editing: state.uri.queryParameters['edit'] == '1',
-        ),
+        builder: (_, state) =>
+            SetupClassScreen(editing: state.uri.queryParameters['edit'] == '1'),
       ),
       GoRoute(
         path: Routes.setupStream,
@@ -96,7 +100,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // The four bottom-nav tabs share a shell and keep their own stacks.
+      // The five bottom-nav tabs share a shell and keep their own stacks.
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => AppShell(navigationShell: shell),
         branches: [
@@ -118,21 +122,36 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: Routes.academics,
-                builder: (_, state) => AcademicsScreen(
-                  initialTab: state.uri.queryParameters['tab'],
-                ),
+                // Old `?tab=` links open that section on top of the grid.
+                redirect: (_, state) {
+                  final tab = state.uri.queryParameters['tab'];
+                  return tab == null ? null : '/academics/$tab';
+                },
+                builder: (_, _) => const AcademicsScreen(),
               ),
             ],
           ),
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: Routes.profile,
-                builder: (_, _) => const ProfileScreen(),
+                path: Routes.updates,
+                builder: (_, _) => const NotificationsScreen(asTab: true),
               ),
             ],
           ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: Routes.more, builder: (_, _) => const MoreScreen()),
+            ],
+          ),
         ],
+      ),
+
+      GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen()),
+      GoRoute(
+        path: '/academics/:section',
+        builder: (_, state) =>
+            AcademicsSectionScreen(section: state.pathParameters['section']!),
       ),
 
       GoRoute(path: Routes.calendar, builder: (_, _) => const CalendarScreen()),

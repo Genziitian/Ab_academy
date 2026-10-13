@@ -16,27 +16,29 @@ import '../../widgets/buttons.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 import '../../widgets/course_slider.dart';
+import '../../widgets/ui_kit.dart';
 import 'my_courses_screen.dart';
 
-const _storeTab = 'Courses';
+const _storeTab = 'Explore';
 const _mineTab = 'My courses';
 
-/// Courses tab: the store where paid crash courses are sold, and the student's
-/// own courses. `?tab=mine` opens straight on My courses.
-class CoursesScreen extends StatefulWidget {
+/// Courses tab: the student's own courses and the store where crash courses
+/// are sold. `?tab=store` opens straight on Explore.
+class CoursesScreen extends ConsumerStatefulWidget {
   const CoursesScreen({super.key, this.initialTab});
 
   final String? initialTab;
 
   @override
-  State<CoursesScreen> createState() => _CoursesScreenState();
+  ConsumerState<CoursesScreen> createState() => _CoursesScreenState();
 }
 
-class _CoursesScreenState extends State<CoursesScreen> {
+class _CoursesScreenState extends ConsumerState<CoursesScreen> {
   late String _tab = _tabFor(widget.initialTab);
+  String _query = '';
 
   static String _tabFor(String? query) =>
-      query == 'mine' ? _mineTab : _storeTab;
+      query == 'store' ? _storeTab : _mineTab;
 
   @override
   void didUpdateWidget(CoursesScreen old) {
@@ -49,6 +51,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final enrolled = ref.watch(remoteMyCoursesProvider).value?.length ?? 0;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -57,24 +60,80 @@ class _CoursesScreenState extends State<CoursesScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Courses', style: AppText.h2),
-                  const SizedBox(height: 14),
-                  SegmentedTabs(
-                    tabs: const [_storeTab, _mineTab],
-                    selected: _tab,
-                    onSelected: (tab) => setState(() => _tab = tab),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: PageTitle(
+                title: _tab == _mineTab ? 'My Courses' : 'Explore',
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
                   ),
-                ],
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Text(
+                    '$enrolled Enrolled',
+                    style: AppText.tabular(15, FontWeight.w500),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            const Divider(height: 1, color: AppColors.border),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+              child: TextField(
+                onChanged: (v) => setState(() => _query = v),
+                style: AppText.tabular(16, FontWeight.w400),
+                decoration: InputDecoration(
+                  hintText: _tab == _mineTab
+                      ? 'Search your courses…'
+                      : 'Search crash courses…',
+                  hintStyle: AppText.tabular(
+                    16,
+                    FontWeight.w400,
+                    color: AppColors.textSubtle,
+                  ),
+                  prefixIcon: const Icon(
+                    LucideIcons.search,
+                    color: AppColors.textMuted,
+                  ),
+                  filled: true,
+                  fillColor: AppColors.fillMuted,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: const BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: const BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+              child: SegmentedTabs(
+                tabs: const [_mineTab, _storeTab],
+                selected: _tab,
+                onSelected: (tab) => setState(() => _tab = tab),
               ),
             ),
             Expanded(
               child: _tab == _storeTab
-                  ? const _StoreView()
+                  ? _StoreView(query: _query)
                   : MyCoursesView(
+                      query: _query,
                       onExplore: () => setState(() => _tab = _storeTab),
                     ),
             ),
@@ -100,7 +159,9 @@ bool _matches(Course c, String filter) => switch (filter) {
 
 /// 23 · The store: admin-managed slider, then every paid crash course.
 class _StoreView extends ConsumerWidget {
-  const _StoreView();
+  const _StoreView({this.query = ''});
+
+  final String query;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -149,8 +210,15 @@ class _StoreView extends ConsumerWidget {
               ),
             ],
             data: (courses) {
-              final shown = courses.where((c) => _matches(c, filter)).toList()
-                ..sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
+              final q = query.trim().toLowerCase();
+              final shown =
+                  courses
+                      .where((c) => _matches(c, filter))
+                      .where(
+                        (c) => q.isEmpty || c.title.toLowerCase().contains(q),
+                      )
+                      .toList()
+                    ..sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
               if (shown.isEmpty) {
                 return [
                   Padding(

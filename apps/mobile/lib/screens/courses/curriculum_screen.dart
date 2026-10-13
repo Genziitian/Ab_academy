@@ -5,202 +5,126 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../data/mock/mock_data.dart';
 import '../../data/models/course.dart';
-import '../../data/providers/app_providers.dart';
 import '../../data/providers/remote_providers.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
-import '../../theme/app_theme.dart';
 import '../../widgets/common.dart';
+import '../../widgets/ui_kit.dart';
 
-/// 08 · Course & curriculum — subject tabs over expandable chapters.
-class CurriculumScreen extends ConsumerWidget {
+const _tabs = ['Curriculum', 'Notes', 'Overview'];
+
+/// 08 · An enrolled course: gradient header card, then Curriculum (chapters
+/// that open into lesson tiles), Notes and Overview.
+class CurriculumScreen extends ConsumerStatefulWidget {
   const CurriculumScreen({super.key, this.courseId});
 
-  /// Falls back to the student's first course when opened without one.
+  /// Falls back to the first sample course when opened without one.
   final String? courseId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final id = courseId ?? MockData.scienceCrash.id;
-    final course = ref.watch(remoteCourseProvider(id)).value;
-    final chaptersAsync = ref.watch(remoteCurriculumProvider(id));
-    final subjects = (course?.subjects.isNotEmpty ?? false)
-        ? course!.subjects
-        : MockData.scienceSubjects;
-    final selected = ref.watch(curriculumSubjectProvider);
-    final subject = subjects.contains(selected) ? selected : subjects.first;
-    final expanded = ref.watch(expandedChapterProvider);
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppTopBar(
-        title: 'Curriculum',
-        subtitle: course?.title ?? 'My course',
-        bottom: subjects.length > 1
-            ? UnderlineTabs(
-                tabs: subjects.map(_short).toList(),
-                selected: _short(subject),
-                gap: 18,
-                onSelected: (label) => ref
-                    .read(curriculumSubjectProvider.notifier)
-                    .select(subjects.firstWhere((s) => _short(s) == label)),
-              )
-            : null,
-      ),
-      body: chaptersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Padding(
-          padding: const EdgeInsets.all(20),
-          child: EmptyState(
-            icon: LucideIcons.wifiOff,
-            title: 'Could not load the curriculum',
-            body: 'Check your connection and try again.',
-          ),
-        ),
-        data: (all) {
-          // Mock chapters and single-subject courses show everything.
-          final chapters = all.any((c) => c.subject == subject)
-              ? all.where((c) => c.subject == subject).toList()
-              : subjects.length == 1
-              ? all
-              : <Chapter>[];
-          return ListView.separated(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-            itemCount: chapters.isEmpty ? 1 : chapters.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              if (chapters.isEmpty) {
-                return EmptyState(
-                  icon: LucideIcons.bookOpen,
-                  title: 'Chapters coming soon',
-                  body: 'Teachers are still adding $subject lessons.',
-                );
-              }
-              final chapter = chapters[index];
-              return _ChapterCard(
-                chapter: chapter,
-                displayNumber: index + 1,
-                expanded: !chapter.isLocked && expanded == chapter.number,
-                onToggle: chapter.isLocked
-                    ? null
-                    : () => ref
-                          .read(expandedChapterProvider.notifier)
-                          .toggle(chapter.number),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  static String _short(String subject) =>
-      subject == 'Mathematics' ? 'Maths' : subject;
+  ConsumerState<CurriculumScreen> createState() => _CurriculumScreenState();
 }
 
-class _ChapterCard extends StatelessWidget {
-  const _ChapterCard({
-    required this.chapter,
-    required this.displayNumber,
-    required this.expanded,
-    required this.onToggle,
-  });
-
-  final Chapter chapter;
-  final int displayNumber;
-  final bool expanded;
-  final VoidCallback? onToggle;
+class _CurriculumScreenState extends ConsumerState<CurriculumScreen> {
+  String _tab = _tabs.first;
+  String? _subject;
+  int? _open;
 
   @override
   Widget build(BuildContext context) {
-    final locked = chapter.isLocked;
-    return Opacity(
-      opacity: locked ? 0.6 : 1,
-      child: AppCard(
-        padding: EdgeInsets.zero,
-        clip: true,
-        borderColor: expanded ? AppColors.primaryTintBorder : AppColors.border,
+    final id = widget.courseId ?? MockData.scienceCrash.id;
+    final course = ref.watch(remoteCourseProvider(id)).value;
+    final chaptersAsync = ref.watch(remoteCurriculumProvider(id));
+    final all = chaptersAsync.value ?? const <Chapter>[];
+
+    // Only subjects that actually have chapters get a chip.
+    final subjects = [
+      for (final s in course?.subjects ?? const <String>[])
+        if (all.any((c) => c.subject == s)) s,
+    ];
+    final subject = subjects.contains(_subject)
+        ? _subject
+        : (subjects.isEmpty ? null : subjects.first);
+    final chapters = subject == null
+        ? all
+        : all.where((c) => c.subject == subject).toList();
+    final openIndex = _open ?? (chapters.isEmpty ? null : 0);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        bottom: false,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            InkWell(
-              onTap: onToggle,
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: locked
-                            ? AppColors.fillMuted
-                            : AppColors.primaryTint,
-                        borderRadius: AppRadius.xs,
-                      ),
-                      child: Text(
-                        displayNumber.toString().padLeft(2, '0'),
-                        style: AppText.tabular(
-                          12,
-                          FontWeight.w600,
-                          color: locked
-                              ? AppColors.textSubtle
-                              : AppColors.primary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(chapter.title, style: AppText.cardTitle),
-                          const SizedBox(height: 1),
-                          Text(
-                            locked
-                                ? (chapter.unlockLabel ?? 'Locked')
-                                : chapter.progressLabel,
-                            style: AppText.meta,
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (locked)
-                      Text(
-                        'Locked',
-                        style: AppText.tabular(
-                          12,
-                          FontWeight.w400,
-                          color: AppColors.textSubtle,
-                        ),
-                      )
-                    else
-                      Text(
-                        expanded ? '−' : '+',
-                        style: AppText.tabular(
-                          16,
-                          FontWeight.w400,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                  ],
-                ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: _Header(course: course, subject: subject),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: AppColors.border)),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: UnderlineTabs(
+                tabs: _tabs,
+                selected: _tab,
+                gap: 26,
+                onSelected: (t) => setState(() => _tab = t),
               ),
             ),
-            if (expanded && chapter.lessons.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-                child: Column(
-                  children: [
-                    for (final lesson in chapter.lessons) ...[
-                      LessonRow(lesson: lesson),
-                      if (lesson != chapter.lessons.last)
-                        const SizedBox(height: 6),
-                    ],
-                  ],
-                ),
-              ),
+            Expanded(
+              child: chaptersAsync.isLoading && all.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : switch (_tab) {
+                      'Notes' => _NotesTab(courseId: id, chapters: all),
+                      'Overview' => _OverviewTab(course: course),
+                      _ => ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                        children: [
+                          if (subjects.length > 1) ...[
+                            SizedBox(
+                              height: 38,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: subjects.length,
+                                separatorBuilder: (_, _) =>
+                                    const SizedBox(width: 8),
+                                itemBuilder: (_, i) => ChoiceChip(
+                                  label: Text(subjects[i]),
+                                  selected: subjects[i] == subject,
+                                  onSelected: (_) => setState(() {
+                                    _subject = subjects[i];
+                                    _open = 0;
+                                  }),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                          ],
+                          if (chapters.isEmpty)
+                            const EmptyState(
+                              icon: LucideIcons.bookOpen,
+                              title: 'Chapters coming soon',
+                              body: 'Teachers are still adding lessons.',
+                            ),
+                          for (var i = 0; i < chapters.length; i++) ...[
+                            _ChapterCard(
+                              chapter: chapters[i],
+                              number: i + 1,
+                              expanded: openIndex == i,
+                              onToggle: () => setState(
+                                () => _open = openIndex == i ? -1 : i,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                          ],
+                        ],
+                      ),
+                    },
+            ),
           ],
         ),
       ),
@@ -208,16 +132,263 @@ class _ChapterCard extends StatelessWidget {
   }
 }
 
-/// One lesson in a chapter: status tile, title and meta line.
-class LessonRow extends StatelessWidget {
-  const LessonRow({super.key, required this.lesson});
+class _Header extends StatelessWidget {
+  const _Header({required this.course, required this.subject});
+
+  final Course? course;
+  final String? subject;
+
+  @override
+  Widget build(BuildContext context) {
+    final eyebrow = (subject ?? course?.subjects.firstOrNull ?? 'Course')
+        .toUpperCase();
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: AppGradients.brand,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.25),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -50,
+            top: -40,
+            child: Container(
+              width: 190,
+              height: 190,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Material(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      shape: CircleBorder(
+                        side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => context.pop(),
+                        child: const SizedBox(
+                          width: 46,
+                          height: 46,
+                          child: Icon(
+                            LucideIcons.chevronLeft,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: Text(
+                        '${course?.priceInr == 0 ? 'FREE' : 'PRO'} · CLASS ${course?.classLevel ?? ''}',
+                        style: AppText.tabular(
+                          13,
+                          FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 22),
+                Text(
+                  eyebrow,
+                  style: AppText.tabular(
+                    15,
+                    FontWeight.w600,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ).copyWith(letterSpacing: 0.8),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  course?.title ?? 'My course',
+                  style: AppText.tabular(
+                    26,
+                    FontWeight.w700,
+                    color: Colors.white,
+                  ).copyWith(letterSpacing: -0.6, height: 1.15),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChapterCard extends StatelessWidget {
+  const _ChapterCard({
+    required this.chapter,
+    required this.number,
+    required this.expanded,
+    required this.onToggle,
+  });
+
+  final Chapter chapter;
+  final int number;
+  final bool expanded;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final lectures = chapter.lessons.where((l) => l.state != LessonState.notes);
+    final notes = chapter.lessons.length - lectures.length;
+    final meta = [
+      '${lectures.length} lecture${lectures.length == 1 ? '' : 's'}',
+      if (notes > 0) '$notes note${notes == 1 ? '' : 's'}',
+    ].join(' · ');
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          // Accent edge, drawn over the card so the card can size itself.
+          const Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: SizedBox(
+              width: 5,
+              child: ColoredBox(color: AppColors.primary),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                InkWell(
+                  onTap: onToggle,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryTint,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Text(
+                            number.toString().padLeft(2, '0'),
+                            style: AppText.tabular(
+                              18,
+                              FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                chapter.title,
+                                style: AppText.tabular(18, FontWeight.w600),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                meta,
+                                style: AppText.tabular(
+                                  15,
+                                  FontWeight.w400,
+                                  color: AppColors.textSubtle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          expanded
+                              ? LucideIcons.chevronUp
+                              : LucideIcons.chevronDown,
+                          color: AppColors.textMuted,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (expanded && chapter.lessons.isNotEmpty) ...[
+                  const Divider(height: 1, color: AppColors.border),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final w = (constraints.maxWidth - 12) / 2;
+                        return Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: [
+                            for (final l in chapter.lessons)
+                              SizedBox(
+                                width: w,
+                                child: LessonTile(lesson: l),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A lesson as a tile: thumbnail area with a play / PDF / lock mark, then
+/// the title and its meta line.
+class LessonTile extends StatelessWidget {
+  const LessonTile({super.key, required this.lesson});
 
   final Lesson lesson;
 
   @override
   Widget build(BuildContext context) {
-    final current = lesson.state == LessonState.current;
-    final onTap = switch (lesson.state) {
+    final state = lesson.state;
+    final VoidCallback? onTap = switch (state) {
       LessonState.current ||
       LessonState.completed => () => context.push(Routes.lesson(lesson.id)),
       LessonState.live => () => context.push(Routes.liveLobby),
@@ -227,100 +398,234 @@ class LessonRow extends StatelessWidget {
       ),
       LessonState.locked => null,
     };
-
-    final meta = switch (lesson.state) {
-      LessonState.current => lesson.resumeLabel ?? lesson.durationLabel ?? '',
-      LessonState.live => lesson.scheduleLabel ?? '',
-      LessonState.notes => lesson.sizeLabel ?? '',
-      _ => lesson.durationLabel ?? '',
+    final (IconData icon, Color color, Color bg) = switch (state) {
+      LessonState.notes => (
+        LucideIcons.fileText,
+        AppColors.liveInk,
+        AppColors.pdfTint,
+      ),
+      LessonState.live => (
+        LucideIcons.radio,
+        AppColors.liveDot,
+        AppColors.liveTint,
+      ),
+      LessonState.locked => (
+        LucideIcons.lock,
+        AppColors.textSubtle,
+        AppColors.fillMuted,
+      ),
+      _ => (LucideIcons.play, AppColors.primary, const Color(0xFFD5DBE5)),
+    };
+    final meta = switch (state) {
+      LessonState.notes => lesson.sizeLabel ?? 'PDF notes',
+      LessonState.live => lesson.scheduleLabel ?? 'Live class',
+      LessonState.locked => 'Enrol to unlock',
+      _ => lesson.durationLabel ?? 'Recorded',
     }.replaceAll('•', '·');
 
-    final metaColor = switch (lesson.state) {
-      LessonState.current => AppColors.primary,
-      LessonState.live => AppColors.liveInk,
-      _ => AppColors.textMuted,
-    };
-
     return Material(
-      color: current ? AppColors.primarySoft : AppColors.background,
+      color: AppColors.background,
       shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.xs,
-        side: current
-            ? const BorderSide(color: AppColors.primaryTintBorder)
-            : BorderSide.none,
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border),
       ),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: AppRadius.xs,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-          child: Row(
-            children: [
-              _StatusTile(state: lesson.state),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      lesson.title,
-                      style: AppText.tabular(13, FontWeight.w600),
-                    ),
-                    Text(
-                      meta,
-                      style: AppText.tabular(
-                        11,
-                        FontWeight.w400,
-                        color: metaColor,
-                      ),
-                    ),
-                  ],
-                ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Container(
+                color: bg,
+                alignment: Alignment.center,
+                child: Icon(icon, size: 34, color: color),
               ),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lesson.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppText.tabular(14, FontWeight.w600),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(meta, style: AppText.meta),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _StatusTile extends StatelessWidget {
-  const _StatusTile({required this.state});
+class _NotesTab extends ConsumerWidget {
+  const _NotesTab({required this.courseId, required this.chapters});
 
-  final LessonState state;
+  final String courseId;
+  final List<Chapter> chapters;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Live: every PDF attached to the course's lessons. Sample data: the
+    // curriculum's notes lessons.
+    final remote = ref.watch(courseNotesProvider(courseId)).value;
+    final notes = <({String title, String chapter, VoidCallback open})>[
+      if (remote != null && remote.isNotEmpty)
+        for (final n in remote)
+          (
+            title: n.title,
+            chapter: n.chapter,
+            open: () => context.push(Routes.pdf(n.id), extra: n.title),
+          )
+      else
+        for (final c in chapters)
+          for (final l in c.lessons)
+            if (l.state == LessonState.notes)
+              (
+                title: l.title,
+                chapter: c.title,
+                open: () => context.push(
+                  Routes.pdf(l.id, lesson: true),
+                  extra: l.title,
+                ),
+              ),
+    ];
+    if (notes.isEmpty) {
+      return ListView(
+        padding: const EdgeInsets.all(20),
+        children: const [
+          EmptyState(
+            icon: LucideIcons.fileText,
+            title: 'No notes yet',
+            body: 'Chapter notes appear here as teachers add them.',
+          ),
+        ],
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+      itemCount: notes.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      itemBuilder: (context, i) {
+        final note = notes[i];
+        return SoftCard(
+          radius: 20,
+          padding: const EdgeInsets.all(14),
+          onTap: note.open,
+          child: Row(
+            children: [
+              const TintIcon(
+                icon: LucideIcons.fileText,
+                color: AppColors.liveInk,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      note.title,
+                      style: AppText.tabular(15, FontWeight.w600),
+                    ),
+                    Text(note.chapter, style: AppText.meta),
+                  ],
+                ),
+              ),
+              Text(
+                'Open',
+                style: AppText.tabular(
+                  14,
+                  FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _OverviewTab extends StatelessWidget {
+  const _OverviewTab({required this.course});
+
+  final Course? course;
 
   @override
   Widget build(BuildContext context) {
-    final (bg, fg, label, size) = switch (state) {
-      LessonState.completed => (
-        AppColors.successTint,
-        AppColors.success,
-        '✓',
-        11.0,
-      ),
-      LessonState.current => (AppColors.primary, Colors.white, '▶', 10.0),
-      LessonState.live => (AppColors.liveTint, AppColors.liveInk, '●', 10.0),
-      LessonState.notes => (AppColors.pdfTint, AppColors.liveInk, 'PDF', 8.0),
-      LessonState.locked => (
-        AppColors.fillMuted,
-        AppColors.textSubtle,
-        '🔒',
-        10.0,
-      ),
-    };
-    return Container(
-      width: 24,
-      height: 24,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: const BorderRadius.all(Radius.circular(6)),
-      ),
-      child: Text(
-        label,
-        style: AppText.tabular(size, FontWeight.w700, color: fg),
-      ),
+    final c = course;
+    if (c == null) return const SizedBox.shrink();
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 40),
+      children: [
+        if (c.description.isNotEmpty) ...[
+          Text('About this course', style: AppText.sectionTitle),
+          const SizedBox(height: 8),
+          Text(c.description, style: AppText.body),
+          const SizedBox(height: 22),
+        ],
+        if (c.highlights.isNotEmpty) ...[
+          Text('What you get', style: AppText.sectionTitle),
+          const SizedBox(height: 10),
+          SoftCard(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: Column(
+              children: [
+                for (final h in c.highlights)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          LucideIcons.checkCircle2,
+                          size: 18,
+                          color: AppColors.success,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            h,
+                            style: AppText.tabular(14, FontWeight.w400),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 22),
+        ],
+        Text('Teachers', style: AppText.sectionTitle),
+        const SizedBox(height: 10),
+        for (final t in c.teachers)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Row(
+              children: [
+                InitialsAvatar(initials: t.initials, size: 40, fontSize: 14),
+                const SizedBox(width: 12),
+                Text(
+                  t.displayName,
+                  style: AppText.tabular(15, FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        if (c.validityNote != null) ...[
+          const SizedBox(height: 12),
+          Text(c.validityNote!, style: AppText.meta),
+        ],
+      ],
     );
   }
 }

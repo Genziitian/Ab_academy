@@ -184,7 +184,7 @@ export default async function AdminBannersPage({
                 name="startsAt"
                 type="datetime-local"
                 defaultValue={editing?.startsAt}
-                required
+                hint="Empty starts it now"
               />
               <Field
                 label="Ends"

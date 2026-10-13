@@ -30,6 +30,7 @@ class _NewTicketScreenState extends ConsumerState<NewTicketScreen> {
   final _subject = TextEditingController();
   final _body = TextEditingController();
   TicketCategory _category = TicketCategory.payment;
+  bool _sending = false;
 
   @override
   void initState() {
@@ -48,17 +49,25 @@ class _NewTicketScreenState extends ConsumerState<NewTicketScreen> {
   bool get _canSubmit =>
       _subject.text.trim().isNotEmpty && _body.text.trim().isNotEmpty;
 
-  void _submit() {
-    if (!_canSubmit) return;
-    final id = ref
-        .read(ticketsProvider.notifier)
-        .open(
-          subject: _subject.text.trim(),
-          category: _category,
-          body: _body.text.trim(),
-        );
-    // Replace this screen so Back from the ticket lands on the list.
-    context.pushReplacement(Routes.ticket(id));
+  Future<void> _submit() async {
+    if (!_canSubmit || _sending) return;
+    setState(() => _sending = true);
+    try {
+      final id = await ref
+          .read(ticketsProvider.notifier)
+          .open(
+            subject: _subject.text.trim(),
+            category: _category,
+            body: _body.text.trim(),
+          );
+      if (!mounted) return;
+      // Replace this screen so Back from the ticket lands on the list.
+      context.pushReplacement(Routes.ticket(id));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _sending = false);
+      showDemoSnack(context, 'Could not send the ticket. Try again.');
+    }
   }
 
   @override
@@ -101,25 +110,10 @@ class _NewTicketScreenState extends ConsumerState<NewTicketScreen> {
             maxLines: 7,
             minLines: 5,
           ),
-          const SizedBox(height: 18),
-          OutlinedButton(
-            onPressed: () =>
-                showDemoSnack(context, 'Screenshot upload is coming soon.'),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
-              side: const BorderSide(color: AppColors.primaryTintBorder),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-              ),
-            ),
-            child: Text(
-              '+ Attach screenshot',
-              style: AppText.tabular(
-                14,
-                FontWeight.w600,
-                color: AppColors.primary,
-              ),
-            ),
+          const SizedBox(height: 14),
+          Text(
+            'Our team replies here — you will also get a notification.',
+            style: AppText.meta,
           ),
         ],
       ),
@@ -128,8 +122,8 @@ class _NewTicketScreenState extends ConsumerState<NewTicketScreen> {
         child: SafeArea(
           top: false,
           child: PrimaryButton(
-            label: 'Submit ticket',
-            enabled: _canSubmit,
+            label: _sending ? 'Sending…' : 'Submit ticket',
+            enabled: _canSubmit && !_sending,
             onPressed: _submit,
           ),
         ),

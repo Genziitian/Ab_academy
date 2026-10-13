@@ -576,6 +576,8 @@ export async function saveLesson(input: {
   durationSeconds: number | null;
   videoProvider: string | null;
   videoRef: string | null;
+  /** Path in lesson-videos when a file was uploaded. */
+  storagePath?: string | null;
   isPublished: boolean;
   isDemo: boolean;
   isDownloadable: boolean;
@@ -594,8 +596,14 @@ export async function saveLesson(input: {
     title: input.title,
     lesson_type: input.lessonType,
     duration_seconds: input.durationSeconds,
-    video_provider: input.videoProvider,
-    video_ref: input.videoRef,
+    // Editing without a new video keeps the lesson's current one.
+    ...(input.videoProvider
+      ? {
+          video_provider: input.videoProvider,
+          video_ref: input.videoRef,
+          storage_path: input.storagePath ?? null,
+        }
+      : {}),
     is_published: input.isPublished,
     is_demo: input.isDemo,
     is_downloadable: input.isDownloadable,
@@ -1015,6 +1023,27 @@ export async function replyToTicket(
     .update({ status: "in_progress" })
     .eq("id", ticketId)
     .eq("status", "open");
+
+  // Tell the student: an in-app notification (and a push, when FCM is set
+  // up) that opens the ticket thread in the app.
+  const { data: ticket } = await supabase
+    .from("tickets")
+    .select("student_id, reference, subject")
+    .eq("id", ticketId)
+    .maybeSingle();
+  if (ticket?.student_id) {
+    try {
+      await sendNotification({
+        title: `Support replied · ${ticket.reference}`,
+        body: body.length > 140 ? `${body.slice(0, 137)}…` : body,
+        audienceKind: "student",
+        audienceValue: ticket.student_id,
+        deepLink: `/ticket/${ticketId}`,
+      });
+    } catch {
+      // The reply is saved; a failed notice must not fail it.
+    }
+  }
 }
 
 export async function setTicketStatus(
@@ -1071,6 +1100,44 @@ export async function listNotifications(): Promise<AdminNotification[]> {
   }));
 }
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * The console lets staff type a student code (ABA-S-…), email or name, and a
+ * course code (ABA-C-…) or title; the table needs ids. Throws with a clear
+ * message when nothing — or more than one student — matches.
+ */
+async function resolveAudience(
+  kind: AudienceKind,
+  value: string | null,
+): Promise<string | null> {
+  if (!value || kind === "all" || kind === "class" || UUID.test(value)) return value;
+  const supabase = await db();
+  // Quoted so commas or brackets in a name cannot break the filter.
+  const q = (x: string) => `"${x.replace(/"/g, "")}"`;
+  if (kind === "student") {
+    const v = value.trim();
+    const { data } = await supabase
+      .from("profiles")
+      .select("id")
+      .or(
+        `student_code.eq.${q(v.toUpperCase())},email.eq.${q(v.toLowerCase())},full_name.ilike.${q(v)}`,
+      )
+      .limit(2);
+    if (!data?.length) throw new Error(`No student matches "${v}".`);
+    if (data.length > 1) throw new Error(`More than one student matches "${v}"; use their student code.`);
+    return data[0].id;
+  }
+  const v = value.trim();
+  const { data } = await supabase
+    .from("courses")
+    .select("id")
+    .or(`course_code.eq.${q(v.toUpperCase())},title.ilike.${q(v)}`)
+    .limit(2);
+  if (!data?.length) throw new Error(`No course matches "${v}".`);
+  return data[0].id;
+}
+
 export async function sendNotification(input: {
   title: string;
   body: string;
@@ -1085,6 +1152,7 @@ export async function sendNotification(input: {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const target = await resolveAudience(input.audienceKind, input.audienceValue);
 
   const { data, error } = await supabase
     .from("notifications")
@@ -1094,10 +1162,8 @@ export async function sendNotification(input: {
       audience: input.audienceKind,
       audience_class:
         input.audienceKind === "class" ? Number(input.audienceValue) : null,
-      audience_course_id:
-        input.audienceKind === "course" ? input.audienceValue : null,
-      audience_student_id:
-        input.audienceKind === "student" ? input.audienceValue : null,
+      audience_course_id: input.audienceKind === "course" ? target : null,
+      audience_student_id: input.audienceKind === "student" ? target : null,
       deep_link: input.deepLink ?? null,
       send_push: input.sendPush ?? true,
       created_by: user?.id,

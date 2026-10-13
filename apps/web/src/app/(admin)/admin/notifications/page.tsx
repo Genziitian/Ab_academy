@@ -62,7 +62,7 @@ export default async function AdminNotificationsPage() {
                 <input
                   name="audienceValue"
                   list="audience-options"
-                  placeholder="10 / course id / name"
+                  placeholder="12 · ABA-C-… course code · ABA-S-… student code or email"
                   className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-navy outline-none focus:border-primary"
                 />
                 <datalist id="audience-options">

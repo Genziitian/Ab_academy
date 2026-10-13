@@ -4,7 +4,15 @@ enum DownloadKind { video, pdf }
 
 enum DownloadState { available, downloading }
 
-enum NotificationKind { live, test, recording, notes, result }
+enum NotificationKind {
+  live,
+  test,
+  recording,
+  notes,
+  result,
+  announcement,
+  support,
+}
 
 enum NotificationGroup { today, yesterday, earlier }
 
@@ -38,7 +46,8 @@ class StudyMaterial {
 
   String get badge => kind == MaterialKind.pdf ? 'PDF' : 'DOC';
 
-  String get metaLine => [sizeLabel, if (updatedLabel != null) updatedLabel!].join(' • ');
+  String get metaLine =>
+      [sizeLabel, if (updatedLabel != null) updatedLabel!].join(' • ');
 }
 
 class DownloadItem {
@@ -73,6 +82,7 @@ class AppNotification {
     this.timeAgo,
     this.actionLabel,
     this.isUnread = false,
+    this.deepLink,
   });
 
   final String id;
@@ -87,10 +97,29 @@ class AppNotification {
   /// "Join Class →" / "Watch Now →"
   final String? actionLabel;
   final bool isUnread;
+
+  /// In-app route the admin attached, e.g. `/course/<id>`.
+  final String? deepLink;
+
+  AppNotification copyWith({bool? isUnread}) => AppNotification(
+    id: id,
+    title: title,
+    body: body,
+    kind: kind,
+    group: group,
+    timeAgo: timeAgo,
+    actionLabel: actionLabel,
+    isUnread: isUnread ?? this.isUnread,
+    deepLink: deepLink,
+  );
 }
 
 class PaymentMethodOption {
-  const PaymentMethodOption({required this.name, required this.subtitle, required this.short});
+  const PaymentMethodOption({
+    required this.name,
+    required this.subtitle,
+    required this.short,
+  });
 
   final String name;
 

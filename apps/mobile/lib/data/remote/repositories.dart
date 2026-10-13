@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart'
 import '../models/banner.dart';
 import '../models/course.dart';
 import '../models/popup.dart';
+import '../models/schedule.dart';
 import '../models/ticket.dart';
 import '../models/user.dart';
 import 'mappers.dart';
@@ -399,6 +400,168 @@ abstract final class Repo {
       'notification_id': notificationId,
       'student_id': id,
     });
+  }
+
+  /// Ids of the notifications this student has opened or marked read.
+  static Future<Set<String>> readNotificationIds() async {
+    final id = Api.currentUserId;
+    if (id == null) return {};
+    final rows = await Api.client
+        .from('notification_reads')
+        .select('notification_id')
+        .eq('student_id', id);
+    return {for (final r in rows) r['notification_id'] as String};
+  }
+
+  /// Notifications (announcements) for this student with their read state.
+  static Future<List<Json>> notificationFeed() async {
+    final rows = await Api.client
+        .from('notifications')
+        .select('id, title, body, sent_at, deep_link, audience')
+        .order('sent_at', ascending: false)
+        .limit(100);
+    return rows.cast<Json>();
+  }
+
+  static Future<void> markNotificationsRead(Iterable<String> ids) async {
+    final student = Api.currentUserId;
+    if (student == null || ids.isEmpty) return;
+    await Api.client.from('notification_reads').upsert([
+      for (final id in ids) {'notification_id': id, 'student_id': student},
+    ]);
+  }
+
+  // ----------------------------------------------------- live sessions
+
+  /// Live and upcoming classes the student can see (enrolled batches and
+  /// the public schedule), soonest first.
+  static Future<List<LiveSession>> upcomingSessions() async {
+    final rows = await Api.client
+        .from('live_sessions')
+        .select(
+          'id, title, starts_at, ends_at, status, '
+          'subjects ( name ), teachers ( display_name ), chapters ( title )',
+        )
+        .inFilter('status', ['SCHEDULED', 'LIVE'])
+        .gte(
+          'starts_at',
+          DateTime.now()
+              .subtract(const Duration(hours: 3))
+              .toUtc()
+              .toIso8601String(),
+        )
+        .order('starts_at')
+        .limit(10);
+
+    return [
+      for (final r in rows)
+        () {
+          final starts = parseTs(r['starts_at']);
+          final teacher =
+              ((r['teachers'] as Json?)?['display_name'] as String?) ??
+              'Faculty';
+          final live = r['status'] == 'LIVE';
+          return LiveSession(
+            id: r['id'] as String,
+            subject: ((r['subjects'] as Json?)?['name'] as String?) ?? 'Class',
+            title: (r['title'] as String?) ?? 'Live class',
+            teacherName: teacher,
+            teacherInitials: initialsOf(teacher),
+            scheduleLabel: sessionLabel(starts),
+            studentsEnrolled: 0,
+            startsInSeconds: starts.difference(DateTime.now()).inSeconds,
+            status: live ? LiveStatus.liveNow : LiveStatus.upcoming,
+            chapterLabel: (r['chapters'] as Json?)?['title'] as String?,
+          );
+        }(),
+    ];
+  }
+
+  // ------------------------------------------------------- course notes
+
+  /// Every note (PDF resource) in a course, with its lesson and chapter.
+  static Future<List<({String id, String title, String chapter})>> courseNotes(
+    String courseId,
+  ) async {
+    final rows = await Api.client
+        .from('lesson_resources')
+        .select(
+          'id, title, created_at, lessons!inner ( title, chapters!inner ( title, '
+          'subjects!inner ( course_batches!inner ( course_id ) ) ) )',
+        )
+        .eq('lessons.chapters.subjects.course_batches.course_id', courseId)
+        .order('created_at');
+    return [
+      for (final r in rows)
+        (
+          id: r['id'] as String,
+          title: (r['title'] as String?) ?? 'Class notes',
+          chapter:
+              (((r['lessons'] as Json)['chapters'] as Json)['title']
+                  as String?) ??
+              '',
+        ),
+    ];
+  }
+
+  // ------------------------------------------------------- course stats
+
+  /// Chapters, video lectures and notes per course, for the course cards.
+  static Future<Map<String, ({int chapters, int lectures, int notes})>>
+  courseStats(List<String> courseIds) async {
+    if (courseIds.isEmpty) return {};
+    final rows = await Api.client
+        .from('lessons')
+        .select(
+          'id, lesson_type, chapter_id, '
+          'chapters!inner ( subjects!inner ( course_batches!inner ( course_id ) ) )',
+        )
+        .eq('is_published', true)
+        .inFilter('chapters.subjects.course_batches.course_id', courseIds);
+
+    final chapters = <String, Set<String>>{};
+    final lectures = <String, int>{};
+    final notes = <String, int>{};
+    for (final r in rows) {
+      final course =
+          (((r['chapters'] as Json)['subjects'] as Json)['course_batches']
+                  as Json)['course_id']
+              as String;
+      chapters.putIfAbsent(course, () => {}).add(r['chapter_id'] as String);
+      if (r['lesson_type'] == 'PDF') {
+        notes[course] = (notes[course] ?? 0) + 1;
+      } else {
+        lectures[course] = (lectures[course] ?? 0) + 1;
+      }
+    }
+    // Notes are the PDFs students can open: resources attached to lessons.
+    final resources = await Api.client
+        .from('lesson_resources')
+        .select(
+          'id, lessons!inner ( chapters!inner ( subjects!inner ( '
+          'course_batches!inner ( course_id ) ) ) )',
+        )
+        .inFilter(
+          'lessons.chapters.subjects.course_batches.course_id',
+          courseIds,
+        );
+    final resourceCount = <String, int>{};
+    for (final r in resources) {
+      final course =
+          ((((r['lessons'] as Json)['chapters'] as Json)['subjects']
+                      as Json)['course_batches']
+                  as Json)['course_id']
+              as String;
+      resourceCount[course] = (resourceCount[course] ?? 0) + 1;
+    }
+    return {
+      for (final id in courseIds)
+        id: (
+          chapters: chapters[id]?.length ?? 0,
+          lectures: lectures[id] ?? 0,
+          notes: resourceCount[id] ?? notes[id] ?? 0,
+        ),
+    };
   }
 
   /// RLS already filters this to notifications aimed at the signed-in student.

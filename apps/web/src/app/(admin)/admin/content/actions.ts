@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { youtubeId } from "@/lib/admin/youtube";
 import { requireAdmin } from "@/lib/admin/auth";
 import {
   addResource,
@@ -24,17 +25,20 @@ export async function saveLessonAction(formData: FormData) {
 
   const id = String(formData.get("id") ?? "").trim() || undefined;
   const videoFile = formData.get("videoFile");
-  const youtubeId = String(formData.get("videoRef") ?? "").trim();
+  const youtubeInput = String(formData.get("videoRef") ?? "").trim();
 
   let videoProvider: string | null = null;
   let videoRef: string | null = null;
+  let storagePath: string | null = null;
 
   if (videoFile instanceof File && videoFile.size > 0) {
-    await uploadToBucket("lesson-videos", videoFile, "lessons");
+    storagePath = await uploadToBucket("lesson-videos", videoFile, "lessons");
     videoProvider = "storage";
-  } else if (youtubeId) {
+  } else if (youtubeInput) {
+    // Staff paste full links; the player needs the bare id.
+    videoRef = youtubeId(youtubeInput);
+    if (!videoRef) throw new Error(`"${youtubeInput}" is not a YouTube video link or id.`);
     videoProvider = "youtube";
-    videoRef = youtubeId;
   }
 
   const minutes = Number(formData.get("durationMinutes") ?? 0);
@@ -51,6 +55,7 @@ export async function saveLessonAction(formData: FormData) {
     durationSeconds: minutes > 0 ? minutes * 60 : null,
     videoProvider,
     videoRef,
+    storagePath,
     isPublished: formData.get("isPublished") !== null,
     isDemo: formData.get("isDemo") !== null,
     isDownloadable: formData.get("isDownloadable") !== null,

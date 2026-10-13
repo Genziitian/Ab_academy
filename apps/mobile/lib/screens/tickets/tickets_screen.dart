@@ -9,49 +9,11 @@ import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/buttons.dart';
 import '../../widgets/common.dart';
+import '../../widgets/ui_kit.dart';
 
-/// Badge colours per status, used by the list and the detail header.
-({Color ink, Color tint}) ticketStatusPalette(
-  TicketStatus status,
-) => switch (status) {
-  TicketStatus.open => (ink: AppColors.primary, tint: AppColors.primaryTint),
-  TicketStatus.inProgress => (
-    ink: AppColors.warningInk,
-    tint: AppColors.amberTint,
-  ),
-  TicketStatus.resolved => (
-    ink: AppColors.success,
-    tint: AppColors.successTint,
-  ),
-  TicketStatus.closed => (ink: AppColors.textMuted, tint: AppColors.fillMuted),
-};
-
-/// Uppercase status badge, e.g. "IN PROGRESS".
-class TicketStatusBadge extends StatelessWidget {
-  const TicketStatusBadge({super.key, required this.status});
-
-  final TicketStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = ticketStatusPalette(status);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-      decoration: BoxDecoration(
-        color: palette.tint,
-        borderRadius: AppRadius.badge,
-      ),
-      child: Text(
-        status.label.toUpperCase(),
-        style: AppText.badge(color: palette.ink),
-      ),
-    );
-  }
-}
-
-/// 20 · Help & support — the student's tickets.
+/// 21 · Support — the student's tickets; the academy replies from the admin
+/// console (Tickets) and the thread updates here.
 class TicketsScreen extends ConsumerWidget {
   const TicketsScreen({super.key});
 
@@ -61,56 +23,167 @@ class TicketsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppTopBar(title: 'Help & support'),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-        children: [
-          PrimaryButton(
-            label: '+ Raise a ticket',
-            height: 48,
-            onPressed: () => context.push(Routes.newTicket),
-          ),
-          const SizedBox(height: 12),
-          if (tickets.isEmpty)
-            const EmptyState(
-              icon: LucideIcons.lifeBuoy,
-              title: 'No tickets yet',
-              body: 'Raise a ticket for payment, video or course problems.',
-            ),
-          for (final ticket in tickets) ...[
-            AppCard(
-              padding: const EdgeInsets.all(14),
-              onTap: () => context.push(Routes.ticket(ticket.id)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        ticket.reference,
-                        style: AppText.mono(11, color: AppColors.textMuted),
-                      ),
-                      TicketStatusBadge(status: ticket.status),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(ticket.subject, style: AppText.rowTitle),
-                  const SizedBox(height: 3),
-                  Text(
-                    '${ticket.category.label} · ${ticket.openedLabel}',
-                    style: AppText.meta,
+                  const BackSquareButton(),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Support',
+                          style: AppText.h1.copyWith(letterSpacing: -0.6),
+                        ),
+                        Text(
+                          'We usually reply within a day',
+                          style: AppText.bodyLg,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 12),
+            const Divider(height: 1, color: AppColors.border),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => ref.read(ticketsProvider.notifier).refresh(),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 40),
+                  children: [
+                    SoftCard(
+                      onTap: () => context.push(Routes.newTicket),
+                      child: Row(
+                        children: [
+                          GradientIcon(
+                            icon: LucideIcons.messageSquarePlus,
+                            gradient: AppGradients.sky,
+                            size: 54,
+                            iconSize: 24,
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Raise a new ticket',
+                                  style: AppText.tabular(17, FontWeight.w600),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Payments, course content, the app or anything else',
+                                  style: AppText.meta,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            LucideIcons.chevronRight,
+                            color: AppColors.textSubtle,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 26),
+                    const GroupHeading('Your tickets'),
+                    if (tickets.isEmpty)
+                      const EmptyState(
+                        icon: LucideIcons.lifeBuoy,
+                        title: 'No tickets yet',
+                        body: 'Raise one and our team will reply here.',
+                      )
+                    else
+                      for (final t in tickets) ...[
+                        _TicketCard(ticket: t),
+                        const SizedBox(height: 12),
+                      ],
+                  ],
+                ),
+              ),
+            ),
           ],
-          const SizedBox(height: 8),
-          Text(
-            'Mon–Sat, 9 AM – 7 PM IST · We usually reply within 24 hours.',
-            style: AppText.meta,
+        ),
+      ),
+    );
+  }
+}
+
+class TicketStatusPill extends StatelessWidget {
+  const TicketStatusPill({super.key, required this.status});
+
+  final TicketStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final (bg, fg) = switch (status) {
+      TicketStatus.open => (AppColors.warningTint, AppColors.warning),
+      TicketStatus.inProgress => (AppColors.primaryTint, AppColors.primary),
+      TicketStatus.resolved => (AppColors.successTint, AppColors.success),
+      TicketStatus.closed => (AppColors.fillMuted, AppColors.textMuted),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+      decoration: BoxDecoration(color: bg, borderRadius: AppRadius.pill),
+      child: Text(
+        status.label.toUpperCase(),
+        style: AppText.badge(color: fg, size: 10),
+      ),
+    );
+  }
+}
+
+class _TicketCard extends StatelessWidget {
+  const _TicketCard({required this.ticket});
+
+  final Ticket ticket;
+
+  @override
+  Widget build(BuildContext context) {
+    final latest = ticket.latest;
+    final awaitingYou = latest?.fromSupport ?? false;
+    return SoftCard(
+      radius: 20,
+      padding: const EdgeInsets.all(16),
+      onTap: () => context.push(Routes.ticket(ticket.id)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                ticket.reference,
+                style: AppText.mono(12, color: AppColors.textMuted),
+              ),
+              const SizedBox(width: 8),
+              TicketStatusPill(status: ticket.status),
+              const Spacer(),
+              Text(latest?.timeLabel ?? '', style: AppText.meta),
+            ],
           ),
+          const SizedBox(height: 8),
+          Text(ticket.subject, style: AppText.tabular(16, FontWeight.w600)),
+          if (latest != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              '${latest.fromSupport ? '${latest.authorName ?? 'Support'}: ' : 'You: '}${latest.body}',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppText.tabular(
+                14,
+                awaitingYou ? FontWeight.w600 : FontWeight.w400,
+                color: awaitingYou ? AppColors.ink : AppColors.textMuted,
+              ),
+            ),
+          ],
         ],
       ),
     );

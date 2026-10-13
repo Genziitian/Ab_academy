@@ -7,6 +7,8 @@ import '../models/content.dart';
 import '../models/lesson_extras.dart';
 import '../models/schedule.dart';
 import '../models/ticket.dart';
+import '../remote/auth_repository.dart';
+import '../remote/repositories.dart';
 import 'app_providers.dart';
 
 // ----------------------------------------------------------- live sessions
@@ -84,19 +86,50 @@ final lessonFeedbackProvider =
       LessonFeedbackNotifier.new,
     );
 
-
 // --------------------------------------------------------------- tickets
 
+/// Support tickets. With a backend: the student's `tickets` with their
+/// `ticket_messages`, replies from the admin console included; without one,
+/// the sample tickets kept in memory.
 class TicketsNotifier extends Notifier<List<Ticket>> {
   @override
-  List<Ticket> build() => MockData.tickets;
+  List<Ticket> build() {
+    if (!AuthRepo.enabled) return MockData.tickets;
+    ref.watch(sessionProvider);
+    Future.microtask(refresh);
+    return const [];
+  }
 
-  /// Returns the new ticket's id so the caller can open it.
-  String open({
+  bool loaded = false;
+
+  Future<void> refresh() async {
+    if (!AuthRepo.enabled) return;
+    if (!AuthRepo.isSignedIn) {
+      state = const [];
+      return;
+    }
+    try {
+      state = await Repo.tickets();
+      loaded = true;
+    } catch (_) {}
+  }
+
+  /// Opens a ticket with its first message; returns the new ticket's id.
+  Future<String> open({
     required String subject,
     required TicketCategory category,
     required String body,
-  }) {
+  }) async {
+    if (AuthRepo.enabled) {
+      final id = await Repo.createTicket(
+        subject: subject,
+        category: category,
+        body: body,
+      );
+      await refresh();
+      if (id == null) throw StateError('Not signed in');
+      return id;
+    }
     final id = 't${DateTime.now().microsecondsSinceEpoch}';
     state = [
       Ticket(
@@ -120,7 +153,8 @@ class TicketsNotifier extends Notifier<List<Ticket>> {
     return id;
   }
 
-  void reply(String ticketId, String body) {
+  Future<void> reply(String ticketId, String body) async {
+    // Show it straight away; the refresh replaces it with the stored row.
     state = [
       for (final ticket in state)
         if (ticket.id != ticketId)
@@ -138,16 +172,10 @@ class TicketsNotifier extends Notifier<List<Ticket>> {
             ],
           ),
     ];
-  }
-
-  void close(String ticketId) {
-    state = [
-      for (final ticket in state)
-        if (ticket.id != ticketId)
-          ticket
-        else
-          ticket.copyWith(status: TicketStatus.closed),
-    ];
+    if (AuthRepo.enabled) {
+      await Repo.replyToTicket(ticketId, body);
+      await refresh();
+    }
   }
 }
 
@@ -155,9 +183,8 @@ final ticketsProvider = NotifierProvider<TicketsNotifier, List<Ticket>>(
   TicketsNotifier.new,
 );
 
-final ticketByIdProvider = Provider.family<Ticket, String>((ref, id) {
-  final tickets = ref.watch(ticketsProvider);
-  return tickets.firstWhere((t) => t.id == id, orElse: () => tickets.first);
+final ticketByIdProvider = Provider.family<Ticket?, String>((ref, id) {
+  return ref.watch(ticketsProvider).where((t) => t.id == id).firstOrNull;
 });
 
 final openTicketCountProvider = Provider<int>(
@@ -171,6 +198,15 @@ final openTicketCountProvider = Provider<int>(
 /// update while you watch. Swap this single provider for the real stream when
 /// the backend lands.
 final realtimeNotificationProvider = Provider<void>((ref) {
+  if (AuthRepo.enabled) {
+    // Supabase realtime: any change to `notifications` reloads the feed.
+    final sub = Repo.notificationStream().listen(
+      (_) => ref.read(notificationsProvider.notifier).refresh(),
+      onError: (_) {},
+    );
+    ref.onDispose(sub.cancel);
+    return;
+  }
   final timer = Timer(const Duration(seconds: 6), () {
     ref
         .read(notificationsProvider.notifier)

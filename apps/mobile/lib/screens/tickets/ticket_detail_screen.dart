@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,17 +8,43 @@ import '../../data/providers/feature_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/common.dart';
+import '../../widgets/ui_kit.dart';
 import 'tickets_screen.dart';
 
 /// 21 · Ticket detail — the conversation with support, plus a reply box.
-class TicketDetailScreen extends ConsumerWidget {
+class TicketDetailScreen extends ConsumerStatefulWidget {
   const TicketDetailScreen({super.key, required this.ticketId});
 
   final String ticketId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final ticket = ref.watch(ticketByIdProvider(ticketId));
+  ConsumerState<TicketDetailScreen> createState() => _TicketDetailScreenState();
+}
+
+class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
+  Timer? _poll;
+
+  @override
+  void initState() {
+    super.initState();
+    // Replies are written from the admin console; check for new ones while
+    // the thread is open.
+    Future.microtask(() => ref.read(ticketsProvider.notifier).refresh());
+    _poll = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) => ref.read(ticketsProvider.notifier).refresh(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ticket = ref.watch(ticketByIdProvider(widget.ticketId));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -30,64 +58,84 @@ class TicketDetailScreen extends ConsumerWidget {
                 color: AppColors.surface,
                 border: Border(bottom: BorderSide(color: AppColors.border)),
               ),
-              padding: const EdgeInsets.fromLTRB(8, 4, 20, 14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        tooltip: 'Back',
-                        onPressed: () => Navigator.of(context).maybePop(),
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          size: 22,
-                          color: AppColors.ink,
-                        ),
-                      ),
-                      Text(
-                        ticket.reference,
-                        style: AppText.mono(12, color: AppColors.textMuted),
-                      ),
-                      const SizedBox(width: 10),
-                      TicketStatusBadge(status: ticket.status),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 12),
-                    child: Text(
-                      ticket.subject,
-                      style: AppText.tabular(16, FontWeight.w600),
-                    ),
+                  const BackSquareButton(),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: ticket == null
+                        ? Text('Loading…', style: AppText.meta)
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    ticket.reference,
+                                    style: AppText.mono(
+                                      12,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  TicketStatusPill(status: ticket.status),
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                ticket.subject,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppText.tabular(16, FontWeight.w600),
+                              ),
+                            ],
+                          ),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                itemCount: ticket.messages.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (_, i) => _Bubble(message: ticket.messages[i]),
-              ),
-            ),
-            if (ticket.isClosed)
-              Container(
-                width: double.infinity,
-                color: AppColors.surface,
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
-                child: Text(
-                  'This ticket is ${ticket.status.label.toLowerCase()}. Raise a new one if the problem comes back.',
-                  textAlign: TextAlign.center,
-                  style: AppText.meta,
+            if (ticket == null)
+              const Expanded(child: Center(child: CircularProgressIndicator()))
+            else ...[
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => ref.read(ticketsProvider.notifier).refresh(),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    itemCount: ticket.messages.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (_, i) => _Bubble(message: ticket.messages[i]),
+                  ),
                 ),
-              )
-            else
-              MessageComposer(
-                hint: 'Write a reply…',
-                onSend: (body) =>
-                    ref.read(ticketsProvider.notifier).reply(ticketId, body),
               ),
+              if (ticket.isClosed)
+                Container(
+                  width: double.infinity,
+                  color: AppColors.surface,
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+                  child: Text(
+                    'This ticket is ${ticket.status.label.toLowerCase()}. Raise a new one if the problem comes back.',
+                    textAlign: TextAlign.center,
+                    style: AppText.meta,
+                  ),
+                )
+              else
+                MessageComposer(
+                  hint: 'Write a reply…',
+                  onSend: (body) async {
+                    try {
+                      await ref
+                          .read(ticketsProvider.notifier)
+                          .reply(widget.ticketId, body);
+                    } catch (_) {
+                      if (context.mounted) {
+                        showDemoSnack(context, 'Could not send. Try again.');
+                      }
+                    }
+                  },
+                ),
+            ],
           ],
         ),
       ),

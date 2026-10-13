@@ -30,6 +30,35 @@ String relativeLabel(DateTime when) {
   return '${when.day} ${months[when.month - 1]}';
 }
 
+/// "Today · 6:00 PM", "Tomorrow · 5:00 PM", "Thu 16 Oct · 4:00 PM".
+String sessionLabel(DateTime when) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final day = DateTime(when.year, when.month, when.day);
+  final h = when.hour % 12 == 0 ? 12 : when.hour % 12;
+  final time =
+      '$h:${when.minute.toString().padLeft(2, '0')} ${when.hour < 12 ? 'AM' : 'PM'}';
+  final diff = day.difference(today).inDays;
+  if (diff == 0) return 'Today · $time';
+  if (diff == 1) return 'Tomorrow · $time';
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return '${days[when.weekday - 1]} ${when.day} ${months[when.month - 1]} · $time';
+}
+
 DateTime parseTs(Object? value) =>
     DateTime.tryParse(value?.toString() ?? '')?.toLocal() ?? DateTime.now();
 
