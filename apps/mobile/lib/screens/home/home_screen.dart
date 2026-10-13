@@ -5,7 +5,6 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../data/models/content.dart';
 import '../../data/models/course.dart';
-import '../../data/models/schedule.dart';
 import '../../data/providers/app_providers.dart';
 import '../../data/providers/feature_providers.dart';
 import '../../data/providers/remote_providers.dart';
@@ -18,8 +17,7 @@ import '../../widgets/common.dart';
 import '../../widgets/course_slider.dart';
 import '../../widgets/ui_kit.dart';
 
-/// 06 · Home — greeting, promotional slider, the next live class, quick
-/// actions, courses and the latest announcements.
+/// 06 · Home — greeting, promotional slider, courses, then quick actions.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -90,22 +88,13 @@ class HomeScreen extends ConsumerWidget {
                   _RoundIconButton(
                     icon: LucideIcons.bell,
                     badge: unread,
-                    onTap: () => context.go(Routes.updates),
+                    onTap: () => context.push(Routes.notifications),
                   ),
                 ],
               ),
               const SizedBox(height: 22),
               // Admin-managed promotional slider (App slider in the console).
               const CourseSlider(padding: EdgeInsets.only(bottom: 26)),
-              SectionTitle(
-                'Upcoming Session',
-                trailing: ViewAllLink(onTap: () => context.push(Routes.live)),
-              ),
-              const SizedBox(height: 14),
-              const _UpcomingSession(),
-              const SizedBox(height: 22),
-              const _QuickActions(),
-              const SizedBox(height: 28),
               SectionTitle(
                 'Courses for you',
                 trailing: ViewAllLink(
@@ -115,13 +104,8 @@ class HomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 14),
               const _HomeCourses(),
-              const SizedBox(height: 28),
-              SectionTitle(
-                'Announcements',
-                trailing: ViewAllLink(onTap: () => context.go(Routes.updates)),
-              ),
-              const SizedBox(height: 14),
-              const _Announcements(),
+              const SizedBox(height: 26),
+              const _QuickActions(),
             ],
           ),
         ),
@@ -196,133 +180,6 @@ class _RoundIconButton extends StatelessWidget {
   }
 }
 
-/// The next live class (or the one live now), with Join / Details.
-class _UpcomingSession extends ConsumerWidget {
-  const _UpcomingSession();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final sessions = ref.watch(upcomingSessionsProvider).value;
-    if (sessions == null) {
-      return const SizedBox(
-        height: 110,
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2.5)),
-      );
-    }
-    if (sessions.isEmpty) {
-      return SoftCard(
-        child: Row(
-          children: [
-            const TintIcon(
-              icon: LucideIcons.calendarClock,
-              color: AppColors.primary,
-              size: 52,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('No live class scheduled', style: AppText.cardTitle),
-                  const SizedBox(height: 3),
-                  Text(
-                    'New classes appear here as soon as they are scheduled.',
-                    style: AppText.meta,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final session = sessions.first;
-    final live = session.status == LiveStatus.liveNow;
-    const orange = Color(0xFFFF5A1F);
-    return SoftCard(
-      padding: EdgeInsets.zero,
-      onTap: () => context.push(Routes.live),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(width: 5, color: live ? orange : AppColors.primary),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 18, 16, 18),
-                child: Row(
-                  children: [
-                    GradientIcon(
-                      icon: LucideIcons.video,
-                      gradient: live ? AppGradients.orange : AppGradients.brand,
-                      size: 60,
-                      iconSize: 28,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            live ? '● LIVE NOW' : session.scheduleLabel,
-                            style: AppText.tabular(
-                              13,
-                              FontWeight.w600,
-                              color: live
-                                  ? AppColors.liveDot
-                                  : AppColors.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            session.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppText.tabular(19, FontWeight.w600),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${session.subject} × ${session.teacherName}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppText.meta,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 11,
-                      ),
-                      decoration: BoxDecoration(
-                        gradient: live
-                            ? AppGradients.orange
-                            : AppGradients.brand,
-                        borderRadius: AppRadius.pill,
-                      ),
-                      child: Text(
-                        live ? 'Join ›' : 'View ›',
-                        style: AppText.tabular(
-                          15,
-                          FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _QuickActions extends StatelessWidget {
   const _QuickActions();
 
@@ -387,43 +244,6 @@ class _QuickActions extends StatelessWidget {
             ),
         ],
       ),
-    );
-  }
-}
-
-/// The three newest announcements; the rest live under Updates.
-class _Announcements extends ConsumerWidget {
-  const _Announcements();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final items = ref.watch(notificationsProvider).take(3).toList();
-    if (items.isEmpty) {
-      return SoftCard(
-        child: Row(
-          children: [
-            const TintIcon(
-              icon: LucideIcons.megaphone,
-              color: AppColors.violet,
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                'No announcements yet. Updates from your teachers land here.',
-                style: AppText.meta,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    return Column(
-      children: [
-        for (final n in items) ...[
-          AnnouncementCard(notification: n),
-          const SizedBox(height: 12),
-        ],
-      ],
     );
   }
 }

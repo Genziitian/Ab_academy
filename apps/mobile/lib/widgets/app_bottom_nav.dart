@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../data/providers/app_providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import 'ui_kit.dart';
 
 /// Order matches the shell branches in the router.
-enum AppTab { home, courses, academics, updates, more }
+enum AppTab { home, academics, courses, more }
 
-/// Bottom bar: Home, Courses, a raised Academics button in the middle,
-/// Updates (announcements and notifications) and More.
+/// Bottom bar: Home, Academics, a raised blue Courses button in the middle,
+/// and More. Notifications open from the bell on Home.
 class AppBottomNav extends ConsumerWidget {
   const AppBottomNav({
     super.key,
@@ -25,8 +24,6 @@ class AppBottomNav extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final safeBottom = MediaQuery.viewPaddingOf(context).bottom;
-    final unread = ref.watch(unreadCountProvider);
-
     Widget item(AppTab tab, IconData icon, String label, {int badge = 0}) =>
         Expanded(
           child: _NavItem(
@@ -58,19 +55,19 @@ class AppBottomNav extends ConsumerWidget {
               child: Row(
                 children: [
                   item(AppTab.home, LucideIcons.home, 'Home'),
-                  item(AppTab.courses, LucideIcons.bookOpen, 'Courses'),
+                  item(AppTab.academics, LucideIcons.graduationCap, 'Academics'),
                   Expanded(
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
-                      onTap: () => onSelected(AppTab.academics),
+                      onTap: () => onSelected(AppTab.courses),
                       child: Align(
                         alignment: Alignment.bottomCenter,
                         child: Text(
-                          'Academics',
+                          'Courses',
                           style: AppText.tabular(
                             12,
                             FontWeight.w600,
-                            color: active == AppTab.academics
+                            color: active == AppTab.courses
                                 ? AppColors.primary
                                 : AppColors.textSubtle,
                           ),
@@ -78,13 +75,17 @@ class AppBottomNav extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  item(
-                    AppTab.updates,
-                    LucideIcons.bell,
-                    'Updates',
-                    badge: unread,
+                  // More takes the whole right half so the centre button
+                  // stays centred.
+                  Expanded(
+                    flex: 2,
+                    child: _NavItem(
+                      icon: LucideIcons.menu,
+                      label: 'More',
+                      selected: active == AppTab.more,
+                      onTap: () => onSelected(AppTab.more),
+                    ),
                   ),
-                  item(AppTab.more, LucideIcons.menu, 'More'),
                 ],
               ),
             ),
@@ -94,19 +95,19 @@ class AppBottomNav extends ConsumerWidget {
             top: -26,
             child: Semantics(
               button: true,
-              selected: active == AppTab.academics,
-              label: 'Academics',
+              selected: active == AppTab.courses,
+              label: 'Courses',
               child: GestureDetector(
-                onTap: () => onSelected(AppTab.academics),
+                onTap: () => onSelected(AppTab.courses),
                 child: Container(
                   padding: const EdgeInsets.all(5),
                   decoration: const BoxDecoration(
                     color: AppColors.surface,
                     shape: BoxShape.circle,
                   ),
-                  child: const GradientIcon(
-                    icon: LucideIcons.graduationCap,
-                    gradient: AppGradients.brand,
+                  child: GradientIcon(
+                    icon: LucideIcons.bookOpen,
+                    gradient: AppGradients.blue,
                     size: 62,
                     iconSize: 28,
                     round: true,

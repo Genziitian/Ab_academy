@@ -22,8 +22,8 @@ import 'my_courses_screen.dart';
 const _storeTab = 'Explore';
 const _mineTab = 'My courses';
 
-/// Courses tab: the student's own courses and the store where crash courses
-/// are sold. `?tab=store` opens straight on Explore.
+/// Courses tab: the store where crash courses are sold (Explore, the
+/// default) and the student's own courses.
 class CoursesScreen extends ConsumerStatefulWidget {
   const CoursesScreen({super.key, this.initialTab});
 
@@ -37,8 +37,9 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
   late String _tab = _tabFor(widget.initialTab);
   String _query = '';
 
+  /// Explore by default; `?tab=mine` opens My courses.
   static String _tabFor(String? query) =>
-      query == 'store' ? _storeTab : _mineTab;
+      query == 'mine' ? _mineTab : _storeTab;
 
   @override
   void didUpdateWidget(CoursesScreen old) {

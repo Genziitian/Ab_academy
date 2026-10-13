@@ -51,7 +51,7 @@ class AcademicsScreen extends StatelessWidget {
         LucideIcons.bell,
         'Announcements',
         AppGradients.blue,
-        () => context.go(Routes.updates),
+        () => context.push(Routes.notifications),
       ),
     ];
 

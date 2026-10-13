@@ -100,22 +100,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // The five bottom-nav tabs share a shell and keep their own stacks.
+      // The four bottom-nav tabs share a shell and keep their own stacks.
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => AppShell(navigationShell: shell),
         branches: [
           StatefulShellBranch(
             routes: [
               GoRoute(path: Routes.home, builder: (_, _) => const HomeScreen()),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: Routes.courses,
-                builder: (_, state) =>
-                    CoursesScreen(initialTab: state.uri.queryParameters['tab']),
-              ),
             ],
           ),
           StatefulShellBranch(
@@ -134,8 +125,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: Routes.updates,
-                builder: (_, _) => const NotificationsScreen(asTab: true),
+                path: Routes.courses,
+                builder: (_, state) =>
+                    CoursesScreen(initialTab: state.uri.queryParameters['tab']),
               ),
             ],
           ),
@@ -163,6 +155,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.notifications,
         builder: (_, _) => const NotificationsScreen(),
       ),
+      GoRoute(path: Routes.updates, redirect: (_, _) => Routes.notifications),
       // Old paths, kept so existing deep links and notifications still land.
       GoRoute(path: '/explore', redirect: (_, _) => Routes.store),
       GoRoute(path: '/live', redirect: (_, _) => Routes.live),
