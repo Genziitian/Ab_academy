@@ -36,29 +36,58 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
   String _tab = 'About';
   bool _fullscreen = false;
 
+  /// True after the full-screen button was used: the orientation is then
+  /// pinned to what the button chose, and turning the device is ignored until
+  /// the student leaves the lecture. Otherwise the player follows the device
+  /// like YouTube: landscape is full screen, portrait is not.
+  bool _pinned = false;
+
+  static const _portrait = [
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ];
+  static const _landscape = [
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // The rest of the app is portrait-only (main.dart); the lecture may turn.
+    SystemChrome.setPreferredOrientations([..._portrait, ..._landscape]);
+  }
+
   @override
   void dispose() {
-    if (_fullscreen) _restoreOrientation();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setPreferredOrientations(_portrait);
     super.dispose();
   }
 
+  /// The full-screen button: landscape + immersive, or back to portrait.
   Future<void> _toggleFullscreen() async {
-    final next = !_fullscreen;
-    setState(() => _fullscreen = next);
-    if (next) {
-      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      await SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-    } else {
-      await _restoreOrientation();
+    _pinned = true;
+    await _setFullscreen(!_fullscreen);
+  }
+
+  Future<void> _setFullscreen(bool value) async {
+    if (mounted) setState(() => _fullscreen = value);
+    await SystemChrome.setEnabledSystemUIMode(
+      value ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge,
+    );
+    if (_pinned) {
+      await SystemChrome.setPreferredOrientations(
+        value ? _landscape : _portrait,
+      );
     }
   }
 
-  Future<void> _restoreOrientation() async {
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    await SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+  /// Device turned while orientation is free: follow it.
+  void _followOrientation(Orientation orientation) {
+    if (_pinned) return;
+    final landscape = orientation == Orientation.landscape;
+    if (landscape != _fullscreen) _setFullscreen(landscape);
   }
 
   void _back() {
@@ -72,6 +101,12 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
+    final orientation = MediaQuery.orientationOf(context);
+    if ((orientation == Orientation.landscape) != _fullscreen && !_pinned) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _followOrientation(orientation),
+      );
+    }
     final topInset = _fullscreen ? 0.0 : MediaQuery.paddingOf(context).top;
     // The player stays the first child in both layouts, so going full screen
     // resizes it instead of reloading the video.
