@@ -11,13 +11,12 @@ import '../../data/providers/remote_providers.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
-import '../../theme/app_theme.dart';
 import '../../utils/format.dart';
 import '../../widgets/common.dart';
 import '../../widgets/course_slider.dart';
 import '../../widgets/ui_kit.dart';
 
-/// 06 · Home — greeting, promotional slider, courses, then quick actions.
+/// 06 · Home — greeting, promotional slider, then every course top to bottom.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -42,43 +41,36 @@ class HomeScreen extends ConsumerWidget {
             await ref.read(notificationsProvider.notifier).refresh();
           },
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 40),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
             children: [
               Row(
                 children: [
                   GestureDetector(
                     onTap: () => context.go(Routes.more),
-                    child: GradientAvatar(initials: firstName, size: 58),
+                    child: GradientAvatar(initials: firstName, size: 48),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text.rich(
-                          TextSpan(
-                            text: '${_greeting()}, ',
-                            children: [
-                              TextSpan(
-                                text: firstName,
-                                style: const TextStyle(
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ],
+                        Text(
+                          _greeting(),
+                          style: AppText.tabular(
+                            13,
+                            FontWeight.w500,
+                            color: AppColors.textMuted,
                           ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          firstName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppText.tabular(20, FontWeight.w600),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          'Take a moment to review your progress.',
-                          maxLines: 2,
                           style: AppText.tabular(
-                            14,
-                            FontWeight.w400,
-                            color: AppColors.textMuted,
+                            22,
+                            FontWeight.w700,
+                            letterSpacing: -0.5,
                           ),
                         ),
                       ],
@@ -92,20 +84,37 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 20),
               // Admin-managed promotional slider (App slider in the console).
-              const CourseSlider(padding: EdgeInsets.only(bottom: 26)),
-              SectionTitle(
-                'Courses for you',
-                trailing: ViewAllLink(
-                  label: 'See all',
-                  onTap: () => context.go(Routes.store),
-                ),
+              const CourseSlider(padding: EdgeInsets.only(bottom: 28)),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Courses for you',
+                      style: AppText.tabular(
+                        20,
+                        FontWeight.w700,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => context.go(Routes.store),
+                    child: Text(
+                      'See all',
+                      style: AppText.tabular(
+                        14,
+                        FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               const _HomeCourses(),
-              const SizedBox(height: 26),
-              const _QuickActions(),
             ],
           ),
         ),
@@ -176,74 +185,6 @@ class _RoundIconButton extends StatelessWidget {
             ),
           ),
       ],
-    );
-  }
-}
-
-class _QuickActions extends StatelessWidget {
-  const _QuickActions();
-
-  @override
-  Widget build(BuildContext context) {
-    final actions = [
-      (
-        LucideIcons.calendarDays,
-        'Calendar',
-        AppGradients.violet,
-        () => context.push(Routes.calendar),
-      ),
-      (
-        LucideIcons.fileText,
-        'Notes',
-        AppGradients.green,
-        () => context.push(Routes.notes),
-      ),
-      (
-        LucideIcons.headphones,
-        'Support',
-        AppGradients.pink,
-        () => context.push(Routes.tickets),
-      ),
-      (
-        LucideIcons.settings,
-        'Settings',
-        AppGradients.blue,
-        () => context.push(Routes.profile),
-      ),
-    ];
-    return SoftCard(
-      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 8),
-      child: Row(
-        children: [
-          for (final (icon, label, gradient, onTap) in actions)
-            Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: onTap,
-                child: Column(
-                  children: [
-                    GradientIcon(
-                      icon: icon,
-                      gradient: gradient,
-                      size: 64,
-                      iconSize: 28,
-                      round: true,
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      label,
-                      style: AppText.tabular(
-                        14,
-                        FontWeight.w500,
-                        color: AppColors.textBody,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }
@@ -330,8 +271,8 @@ class AnnouncementCard extends ConsumerWidget {
   }
 }
 
-/// Horizontal row of course cards with their thumbnails; the student's
-/// enrolled courses first, then the rest of the catalog.
+/// Courses, top to bottom: the student's own first, then the rest of the
+/// catalog.
 class _HomeCourses extends ConsumerWidget {
   const _HomeCourses();
 
@@ -340,98 +281,164 @@ class _HomeCourses extends ConsumerWidget {
     final catalog = ref.watch(remoteCatalogProvider(null)).value;
     final mine = ref.watch(remoteMyCoursesProvider).value ?? const <Course>[];
     if (catalog == null) {
-      return const SizedBox(
-        height: 120,
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 40),
         child: Center(child: CircularProgressIndicator(strokeWidth: 2.5)),
       );
     }
     final mineIds = {for (final c in mine) c.id};
     final courses = [...mine, ...catalog.where((c) => !mineIds.contains(c.id))];
-    if (courses.isEmpty) return const SizedBox.shrink();
-
-    return SizedBox(
-      height: 228,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        itemCount: courses.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 12),
-        itemBuilder: (context, i) => _HomeCourseCard(
-          course: courses[i],
-          enrolled: mineIds.contains(courses[i].id),
-        ),
-      ),
+    return Column(
+      children: [
+        for (final c in courses) ...[
+          HomeCourseCard(course: c, enrolled: mineIds.contains(c.id)),
+          const SizedBox(height: 16),
+        ],
+      ],
     );
   }
 }
 
-class _HomeCourseCard extends StatelessWidget {
-  const _HomeCourseCard({required this.course, required this.enrolled});
+/// Full-width course card: artwork, then class and language, title,
+/// teacher and lectures, and the price or enrolment.
+class HomeCourseCard extends StatelessWidget {
+  const HomeCourseCard({
+    super.key,
+    required this.course,
+    required this.enrolled,
+  });
 
   final Course course;
   final bool enrolled;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 236,
-      child: AppCard(
-        clip: true,
-        padding: EdgeInsets.zero,
-        borderRadius: AppRadius.md,
+    final teacher = course.teachers.isEmpty
+        ? 'Faculty Team'
+        : course.teachers.first.displayName;
+    final language =
+        course.language.contains('Hindi') && course.language.contains('English')
+        ? 'Hindi + English'
+        : course.language;
+    final free = course.priceInr == 0;
+
+    return Material(
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: Color(0xFFE7EBF3)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
         onTap: () => context.push(Routes.courseDetails(course.id)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            CourseThumbnail(
-              url: course.thumbnailUrl,
-              hue: course.thumbnailHue,
-              height: 132,
-              shade: false,
-              padding: const EdgeInsets.all(10),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 7,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryDeep.withValues(alpha: 0.75),
-                    borderRadius: AppRadius.badge,
-                  ),
-                  child: Text(
-                    'CLASS ${course.classLevel}',
-                    style: AppText.badge(color: Colors.white),
-                  ),
-                ),
+            AspectRatio(
+              aspectRatio: 16 / 8,
+              child: CourseThumbnail(
+                url: course.thumbnailUrl,
+                hue: course.thumbnailHue,
+                shade: false,
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
+                    'CLASS ${course.classLevel}  ·  ${language.toUpperCase()}',
+                    style: AppText.tabular(
+                      11,
+                      FontWeight.w700,
+                      color: AppColors.primary,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
                     course.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: AppText.tabular(14, FontWeight.w600),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    enrolled
-                        ? '✓ Enrolled'
-                        : course.priceInr == 0
-                        ? 'Free'
-                        : formatRupees(course.priceInr),
                     style: AppText.tabular(
-                      14,
+                      17,
                       FontWeight.w700,
-                      color: enrolled || course.priceInr == 0
-                          ? AppColors.success
-                          : AppColors.ink,
+                      letterSpacing: -0.3,
+                    ).copyWith(height: 1.25),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    [
+                      teacher,
+                      if (course.lessonsCount > 0)
+                        '${course.lessonsCount}+ lectures',
+                    ].join('  ·  '),
+                    style: AppText.tabular(
+                      13,
+                      FontWeight.w500,
+                      color: AppColors.textMuted,
                     ),
+                  ),
+                  const SizedBox(height: 14),
+                  const Divider(height: 1, color: Color(0xFFEFF2F7)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      if (enrolled)
+                        _Badge(
+                          label: 'Enrolled',
+                          color: AppColors.success,
+                          icon: LucideIcons.checkCircle2,
+                        )
+                      else if (free)
+                        _Badge(
+                          label: 'Free',
+                          color: AppColors.success,
+                          icon: LucideIcons.gift,
+                        )
+                      else ...[
+                        Text(
+                          formatRupees(course.priceInr),
+                          style: AppText.tabular(18, FontWeight.w800),
+                        ),
+                        if (course.discountPercent > 0) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            formatRupees(course.originalPriceInr),
+                            style: AppText.tabular(
+                              13,
+                              FontWeight.w500,
+                              color: AppColors.textSubtle,
+                            ).copyWith(decoration: TextDecoration.lineThrough),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${course.discountPercent}% off',
+                            style: AppText.tabular(
+                              13,
+                              FontWeight.w700,
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ],
+                      ],
+                      const Spacer(),
+                      Text(
+                        enrolled ? 'Continue' : 'View',
+                        style: AppText.tabular(
+                          14,
+                          FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(
+                        LucideIcons.chevronRight,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -439,6 +446,26 @@ class _HomeCourseCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.label, required this.color, required this.icon});
+
+  final String label;
+  final Color color;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: 6),
+        Text(label, style: AppText.tabular(14, FontWeight.w700, color: color)),
+      ],
     );
   }
 }

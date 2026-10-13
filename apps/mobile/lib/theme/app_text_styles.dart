@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
-/// IBM Plex Sans for Latin, with IBM Plex Sans Devanagari as the fallback so
-/// Hindi strings mixed into English copy render in the matching family.
+/// Plus Jakarta Sans for the interface, with IBM Plex Sans Devanagari as the
+/// fallback so Hindi mixed into English copy renders in a matching weight.
+/// Both are bundled (pubspec `fonts:`), so text never waits on a download.
 abstract final class AppText {
-  static final List<String> _fallback = [
-    GoogleFonts.ibmPlexSansDevanagari().fontFamily!,
-  ];
+  static const _family = 'Jakarta';
+  static const _devanagari = 'PlexDevanagari';
+  static const List<String> _fallback = [_devanagari];
 
   static TextStyle _base(
     double size,
@@ -17,14 +17,17 @@ abstract final class AppText {
     Color? color,
     double? letterSpacing,
   }) {
-    return GoogleFonts.ibmPlexSans(
+    return TextStyle(
+      fontFamily: _family,
+      fontFamilyFallback: _fallback,
       fontSize: size,
-      // Plex ships up to 700; heavier requests would be synthesised.
-      fontWeight: weight.value > 700 ? FontWeight.w700 : weight,
+      fontWeight: weight,
       height: height,
       color: color ?? AppColors.ink,
-      letterSpacing: letterSpacing,
-    ).copyWith(fontFamilyFallback: _fallback);
+      // Jakarta is set slightly wide; a touch of negative tracking on larger
+      // sizes keeps headings tight and crisp.
+      letterSpacing: letterSpacing ?? (size >= 18 ? -0.2 : 0),
+    );
   }
 
   /// Devanagari-first style for copy that is entirely Hindi.
@@ -34,9 +37,10 @@ abstract final class AppText {
     double? height,
     Color? color,
   }) {
-    return GoogleFonts.ibmPlexSansDevanagari(
+    return TextStyle(
+      fontFamily: _devanagari,
       fontSize: size,
-      fontWeight: weight.value > 600 ? FontWeight.w600 : weight,
+      fontWeight: weight.value > 700 ? FontWeight.w700 : weight,
       height: height,
       color: color ?? AppColors.ink,
     );
@@ -47,7 +51,8 @@ abstract final class AppText {
     double size, {
     Color? color,
     FontWeight weight = FontWeight.w500,
-  }) => GoogleFonts.ibmPlexMono(
+  }) => TextStyle(
+    fontFamily: 'PlexMono',
     fontSize: size,
     fontWeight: weight,
     color: color ?? AppColors.ink,

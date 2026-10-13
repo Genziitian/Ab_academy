@@ -262,132 +262,110 @@ class _ChapterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lectures = chapter.lessons.where((l) => l.state != LessonState.notes);
-    final notes = chapter.lessons.length - lectures.length;
+    final lectures = chapter.lessons
+        .where(
+          (l) => l.kind != LessonKind.notes && l.state != LessonState.notes,
+        )
+        .length;
+    final notes = chapter.lessons.length - lectures;
     final meta = [
-      '${lectures.length} lecture${lectures.length == 1 ? '' : 's'}',
+      '$lectures lecture${lectures == 1 ? '' : 's'}',
       if (notes > 0) '$notes note${notes == 1 ? '' : 's'}',
-    ].join(' · ');
+    ].join('  ·  ');
 
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: expanded ? const Color(0xFFC9D6F5) : const Color(0xFFE7EBF3),
+        ),
       ),
       clipBehavior: Clip.antiAlias,
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Accent edge, drawn over the card so the card can size itself.
-          const Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            child: SizedBox(
-              width: 5,
-              child: ColoredBox(color: AppColors.primary),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 5),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                InkWell(
-                  onTap: onToggle,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-                    child: Row(
+          InkWell(
+            onTap: onToggle,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryTint,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Text(
-                            number.toString().padLeft(2, '0'),
-                            style: AppText.tabular(
-                              18,
-                              FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
+                        Text(
+                          'CHAPTER ${number.toString().padLeft(2, '0')}',
+                          style: AppText.tabular(
+                            11,
+                            FontWeight.w700,
+                            color: AppColors.primary,
+                            letterSpacing: 1,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                chapter.title,
-                                style: AppText.tabular(18, FontWeight.w600),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                meta,
-                                style: AppText.tabular(
-                                  15,
-                                  FontWeight.w400,
-                                  color: AppColors.textSubtle,
-                                ),
-                              ),
-                            ],
-                          ),
+                        const SizedBox(height: 4),
+                        Text(
+                          chapter.title,
+                          style: AppText.tabular(
+                            17,
+                            FontWeight.w700,
+                            letterSpacing: -0.3,
+                          ).copyWith(height: 1.25),
                         ),
-                        Icon(
-                          expanded
-                              ? LucideIcons.chevronUp
-                              : LucideIcons.chevronDown,
-                          color: AppColors.textMuted,
+                        const SizedBox(height: 4),
+                        Text(
+                          meta,
+                          style: AppText.tabular(
+                            13,
+                            FontWeight.w500,
+                            color: AppColors.textMuted,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                if (expanded && chapter.lessons.isNotEmpty) ...[
-                  const Divider(height: 1, color: AppColors.border),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final w = (constraints.maxWidth - 12) / 2;
-                        return Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          children: [
-                            for (final l in chapter.lessons)
-                              SizedBox(
-                                width: w,
-                                child: LessonTile(lesson: l),
-                              ),
-                          ],
-                        );
-                      },
+                  AnimatedRotation(
+                    turns: expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: const Icon(
+                      LucideIcons.chevronDown,
+                      size: 22,
+                      color: AppColors.textMuted,
                     ),
                   ),
                 ],
-              ],
+              ),
             ),
           ),
+          if (expanded && chapter.lessons.isNotEmpty) ...[
+            const Divider(height: 1, color: Color(0xFFEFF2F7)),
+            for (final (i, l) in chapter.lessons.indexed) ...[
+              if (i > 0)
+                const Divider(height: 1, indent: 70, color: Color(0xFFF1F3F8)),
+              LessonRow(lesson: l),
+            ],
+          ],
         ],
       ),
     );
   }
 }
 
-/// A lesson as a tile: thumbnail area with a play / PDF / lock mark, then
-/// the title and its meta line.
-class LessonTile extends StatelessWidget {
-  const LessonTile({super.key, required this.lesson});
+/// One lesson in a chapter, as a row: a video lecture or a set of notes.
+class LessonRow extends StatelessWidget {
+  const LessonRow({super.key, required this.lesson});
 
   final Lesson lesson;
 
   @override
   Widget build(BuildContext context) {
-    final state = lesson.state;
+    // Notes are notes by type, whatever their access state.
+    final isNotes =
+        lesson.kind == LessonKind.notes || lesson.state == LessonState.notes;
+    final state = isNotes && lesson.state != LessonState.locked
+        ? LessonState.notes
+        : lesson.state;
     final VoidCallback? onTap = switch (state) {
       LessonState.current ||
       LessonState.completed => () => context.push(Routes.lesson(lesson.id)),
@@ -398,53 +376,41 @@ class LessonTile extends StatelessWidget {
       ),
       LessonState.locked => null,
     };
-    final (IconData icon, Color color, Color bg) = switch (state) {
+    final (IconData icon, Color color, String kind) = switch (state) {
       LessonState.notes => (
         LucideIcons.fileText,
-        AppColors.liveInk,
-        AppColors.pdfTint,
+        const Color(0xFFD9480F),
+        'Notes',
       ),
-      LessonState.live => (
-        LucideIcons.radio,
-        AppColors.liveDot,
-        AppColors.liveTint,
-      ),
-      LessonState.locked => (
-        LucideIcons.lock,
-        AppColors.textSubtle,
-        AppColors.fillMuted,
-      ),
-      _ => (LucideIcons.play, AppColors.primary, const Color(0xFFD5DBE5)),
+      LessonState.live => (LucideIcons.radio, AppColors.liveDot, 'Live class'),
+      LessonState.locked => (LucideIcons.lock, AppColors.textSubtle, 'Lecture'),
+      _ => (LucideIcons.play, AppColors.primary, 'Lecture'),
     };
-    final meta = switch (state) {
-      LessonState.notes => lesson.sizeLabel ?? 'PDF notes',
-      LessonState.live => lesson.scheduleLabel ?? 'Live class',
+    final detail = switch (state) {
+      LessonState.notes => 'PDF',
+      LessonState.live => lesson.scheduleLabel ?? '',
       LessonState.locked => 'Enrol to unlock',
       _ => lesson.durationLabel ?? 'Recorded',
-    }.replaceAll('•', '·');
+    }.replaceAll('•', '·').replaceAll('Recorded · ', '');
 
-    return Material(
-      color: AppColors.background,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.border),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 14, 14, 14),
+        child: Row(
           children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Container(
-                color: bg,
-                alignment: Alignment.center,
-                child: Icon(icon, size: 34, color: color),
+            Container(
+              width: 38,
+              height: 38,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
+              child: Icon(icon, size: isNotes ? 18 : 17, color: color),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+            const SizedBox(width: 14),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -452,13 +418,43 @@ class LessonTile extends StatelessWidget {
                     lesson.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: AppText.tabular(14, FontWeight.w600),
+                    style: AppText.tabular(
+                      15,
+                      FontWeight.w600,
+                      color: state == LessonState.locked
+                          ? AppColors.textMuted
+                          : AppColors.ink,
+                    ).copyWith(height: 1.3),
                   ),
                   const SizedBox(height: 3),
-                  Text(meta, style: AppText.meta),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: kind,
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        if (detail.isNotEmpty) TextSpan(text: '  ·  $detail'),
+                      ],
+                    ),
+                    style: AppText.tabular(
+                      12,
+                      FontWeight.w500,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
                 ],
               ),
             ),
+            if (onTap != null)
+              const Icon(
+                LucideIcons.chevronRight,
+                size: 18,
+                color: Color(0xFFB4BCCB),
+              ),
           ],
         ),
       ),

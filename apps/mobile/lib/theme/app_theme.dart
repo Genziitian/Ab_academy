@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -35,7 +34,11 @@ abstract final class AppShadow {
 
 abstract final class AppTheme {
   static ThemeData get light {
-    final base = ThemeData(brightness: Brightness.light, useMaterial3: true);
+    final base = ThemeData(
+      brightness: Brightness.light,
+      useMaterial3: true,
+      fontFamily: 'Jakarta',
+    );
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: ColorScheme.fromSeed(
@@ -44,9 +47,11 @@ abstract final class AppTheme {
         surface: AppColors.surface,
         error: AppColors.liveInk,
       ),
-      textTheme: GoogleFonts.ibmPlexSansTextTheme(
-        base.textTheme,
-      ).apply(bodyColor: AppColors.ink, displayColor: AppColors.ink),
+      textTheme: base.textTheme.apply(
+        fontFamily: 'Jakarta',
+        bodyColor: AppColors.ink,
+        displayColor: AppColors.ink,
+      ),
       splashFactory: InkRipple.splashFactory,
       dividerColor: AppColors.divider,
       snackBarTheme: const SnackBarThemeData(

@@ -85,7 +85,9 @@ abstract final class Repo {
 
     if (classLevel != null) query = query.eq('class_level', classLevel);
 
-    final rows = await query.order('class_level').order('title');
+    final rows = await query
+        .order('class_level', ascending: false)
+        .order('title', ascending: true);
     final enrolled = await enrolledCourseIds();
 
     return rows
@@ -132,7 +134,7 @@ abstract final class Repo {
         ''')
         .eq('is_published', true)
         .eq('chapters.subjects.course_batches.course_id', courseId)
-        .order('sort_order');
+        .order('sort_order', ascending: true);
 
     final enrolled = await enrolledCourseIds();
     return chaptersFromLessons(
@@ -174,7 +176,7 @@ abstract final class Repo {
         .from('lesson_resources')
         .select('id, title, size_bytes, source')
         .eq('lesson_id', lessonId)
-        .order('created_at');
+        .order('created_at', ascending: true);
 
     return [
       for (final r in rows)
@@ -248,7 +250,7 @@ abstract final class Repo {
         )
         .eq('lesson_id', lessonId)
         .isFilter('parent_id', null)
-        .order('created_at');
+        .order('created_at', ascending: true);
 
     return rows.map((r) {
       final author = r['profiles'] as Json?;
@@ -450,7 +452,7 @@ abstract final class Repo {
               .toUtc()
               .toIso8601String(),
         )
-        .order('starts_at')
+        .order('starts_at', ascending: true)
         .limit(10);
 
     return [
@@ -477,6 +479,64 @@ abstract final class Repo {
     ];
   }
 
+  // ------------------------------------------------------- lesson info
+
+  /// A lesson's real details for the lecture page, with the other lessons in
+  /// its chapter in order.
+  static Future<LessonInfo?> lessonInfo(String lessonId) async {
+    final row = await Api.client
+        .from('lessons')
+        .select(
+          'id, title, lesson_type, duration_seconds, chapter_id, '
+          'chapters ( title, subjects ( name, course_batches ( courses ( '
+          'id, title, course_teachers ( is_primary, teachers ( display_name ) ) '
+          ') ) ) )',
+        )
+        .eq('id', lessonId)
+        .maybeSingle();
+    if (row == null) return null;
+
+    final chapter = row['chapters'] as Json?;
+    final subject = chapter?['subjects'] as Json?;
+    final course = ((subject?['course_batches'] as Json?)?['courses']) as Json?;
+    final teachers =
+        ((course?['course_teachers'] as List?) ?? const []).cast<Json>()..sort(
+          (a, b) => ((b['is_primary'] as bool? ?? false) ? 1 : 0).compareTo(
+            (a['is_primary'] as bool? ?? false) ? 1 : 0,
+          ),
+        );
+
+    final siblings = await Api.client
+        .from('lessons')
+        .select('id, title, lesson_type, duration_seconds, sort_order')
+        .eq('chapter_id', row['chapter_id'] as String)
+        .eq('is_published', true)
+        .order('sort_order', ascending: true);
+
+    return LessonInfo(
+      title: (row['title'] as String?) ?? 'Lecture',
+      chapter: (chapter?['title'] as String?) ?? '',
+      subject: (subject?['name'] as String?) ?? '',
+      courseTitle: (course?['title'] as String?) ?? '',
+      courseId: course?['id'] as String?,
+      teacher: teachers.isEmpty
+          ? 'Faculty'
+          : ((teachers.first['teachers'] as Json?)?['display_name']
+                    as String?) ??
+                'Faculty',
+      durationMinutes: ((row['duration_seconds'] as int?) ?? 0) ~/ 60,
+      chapterLessons: [
+        for (final s in siblings)
+          (
+            id: s['id'] as String,
+            title: (s['title'] as String?) ?? '',
+            isNotes: s['lesson_type'] == 'PDF',
+            minutes: ((s['duration_seconds'] as int?) ?? 0) ~/ 60,
+          ),
+      ],
+    );
+  }
+
   // ------------------------------------------------------- course notes
 
   /// Every note (PDF resource) in a course, with its lesson and chapter.
@@ -490,7 +550,7 @@ abstract final class Repo {
           'subjects!inner ( course_batches!inner ( course_id ) ) ) )',
         )
         .eq('lessons.chapters.subjects.course_batches.course_id', courseId)
-        .order('created_at');
+        .order('created_at', ascending: true);
     return [
       for (final r in rows)
         (
@@ -673,8 +733,8 @@ abstract final class Repo {
     final rows = await Api.client
         .from('course_banners')
         .select('id, title, subtitle, image_path, course_id, cta_label, hue')
-        .order('sort_order')
-        .order('created_at');
+        .order('sort_order', ascending: true)
+        .order('created_at', ascending: true);
 
     final base =
         '${Api.client.storage.url.replaceAll(RegExp(r'/storage/v1$'), '')}'
@@ -735,4 +795,28 @@ class NoteUnavailable implements Exception {
 
   @override
   String toString() => message;
+}
+
+/// What the lecture page shows about one lesson.
+class LessonInfo {
+  const LessonInfo({
+    required this.title,
+    required this.chapter,
+    required this.subject,
+    required this.courseTitle,
+    required this.courseId,
+    required this.teacher,
+    required this.durationMinutes,
+    required this.chapterLessons,
+  });
+
+  final String title;
+  final String chapter;
+  final String subject;
+  final String courseTitle;
+  final String? courseId;
+  final String teacher;
+  final int durationMinutes;
+  final List<({String id, String title, bool isNotes, int minutes})>
+  chapterLessons;
 }

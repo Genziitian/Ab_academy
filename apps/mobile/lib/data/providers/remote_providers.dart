@@ -263,3 +263,12 @@ final courseNotesProvider =
       if (!ref.watch(hasBackendProvider)) return const [];
       return Repo.courseNotes(courseId);
     });
+
+/// Real details of one lesson for the lecture page; null without a backend.
+final lessonInfoProvider = FutureProvider.family<LessonInfo?, String>((
+  ref,
+  lessonId,
+) async {
+  if (!ref.watch(hasBackendProvider)) return null;
+  return Repo.lessonInfo(lessonId);
+});

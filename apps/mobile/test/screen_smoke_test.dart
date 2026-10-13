@@ -3,7 +3,6 @@ import 'package:akhand_bharat_academy/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Every route in the app, with the label used in failure messages.
 const _routes = <(String, String)>[
@@ -37,14 +36,12 @@ const _routes = <(String, String)>[
 ];
 
 void main() {
-  setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
-
   testWidgets('every screen builds and lays out without errors', (
     tester,
   ) async {
     // Deliberately wider than the 390pt design. Widget tests substitute a font
     // whose every glyph is a full em square, so text measures about twice as
-    // wide here as in IBM Plex Sans; at 390 that reports overflows the
+    // wide here as in the bundled Jakarta; at 390 that reports overflows the
     // design does not have on a device. The generous surface keeps those false
     // positives out while still catching what this test is for: structural
     // layout errors (unbounded constraints, bad state, missing providers),

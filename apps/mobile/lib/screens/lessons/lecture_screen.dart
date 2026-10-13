@@ -14,12 +14,11 @@ import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/buttons.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 import '../../widgets/secure_youtube_player.dart';
 
-/// 09 / 10 · Lecture — player, then About / Discussion / Notes / Feedback.
+/// 09 / 10 · Lecture — player, then About / Discussion / Notes.
 /// Discussion is the doubt thread: questions land in the teacher's queue.
 class LectureScreen extends ConsumerStatefulWidget {
   const LectureScreen({super.key, required this.lessonId});
@@ -31,7 +30,7 @@ class LectureScreen extends ConsumerStatefulWidget {
 }
 
 class _LectureScreenState extends ConsumerState<LectureScreen> {
-  static const _tabs = ['About', 'Discussion', 'Notes', 'Feedback'];
+  static const _tabs = ['About', 'Discussion', 'Notes'];
 
   String _tab = 'About';
   bool _fullscreen = false;
@@ -159,8 +158,7 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
                   child: switch (_tab) {
                     'Discussion' => _DiscussionTab(lessonId: widget.lessonId),
                     'Notes' => _NotesTab(lessonId: widget.lessonId),
-                    'Feedback' => _FeedbackTab(lessonId: widget.lessonId),
-                    _ => const _AboutTab(),
+                    _ => _AboutTab(lessonId: widget.lessonId),
                   },
                 ),
               ],
@@ -291,157 +289,206 @@ class _MessageText extends StatelessWidget {
   }
 }
 
-class _AboutTab extends StatefulWidget {
-  const _AboutTab();
+class _AboutTab extends ConsumerWidget {
+  const _AboutTab({required this.lessonId});
+
+  final String lessonId;
 
   @override
-  State<_AboutTab> createState() => _AboutTabState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(lessonInfoProvider(lessonId));
+    if (async.isLoading) {
+      return const Center(child: CircularProgressIndicator(strokeWidth: 2.5));
+    }
+    final info = async.value;
+    // Sample data (no backend): keep the design preview.
+    final title = info?.title ?? MockData.lectureTitle;
+    final eyebrow = info == null
+        ? MockData.lectureEyebrow
+        : [
+            if (info.subject.isNotEmpty) info.subject,
+            if (info.chapter.isNotEmpty) info.chapter,
+          ].join('  ·  ').toUpperCase();
+    final teacher = info?.teacher ?? 'Amit Sir';
 
-class _AboutTabState extends State<_AboutTab> {
-  bool _saved = false;
-  bool _complete = false;
-
-  @override
-  Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
       children: [
         Text(
-          MockData.lectureEyebrow,
-          style: AppText.eyebrow(color: AppColors.primary, size: 12),
-        ),
-        const SizedBox(height: 8),
-        Text(MockData.lectureTitle, style: AppText.h5),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            const InitialsAvatar(initials: 'AS', size: 26, fontSize: 10),
-            const SizedBox(width: 8),
-            Text('Amit Sir', style: AppText.tabular(14, FontWeight.w500)),
-          ],
-        ),
-        const SizedBox(height: 20),
-        Row(
-          children: [
-            _LectureAction(
-              icon: LucideIcons.download,
-              label: 'Download',
-              onTap: () =>
-                  showDemoSnack(context, 'Downloading for offline use'),
-            ),
-            const SizedBox(width: 8),
-            _LectureAction(
-              icon: _saved ? Icons.star_rounded : Icons.star_outline_rounded,
-              label: _saved ? 'Saved' : 'Save',
-              onTap: () => setState(() => _saved = !_saved),
-            ),
-            const SizedBox(width: 8),
-            _LectureAction(
-              icon: LucideIcons.check,
-              label: _complete ? 'Completed' : 'Complete',
-              iconColor: AppColors.success,
-              highlighted: _complete,
-              onTap: () => setState(() => _complete = !_complete),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        Text('About this lesson', style: AppText.cardTitle),
-        const SizedBox(height: 6),
-        Text(MockData.lectureAbout, style: AppText.body),
-        const SizedBox(height: 20),
-        Text('Next lesson', style: AppText.cardTitle),
-        const SizedBox(height: 8),
-        AppCard(
-          padding: const EdgeInsets.all(12),
-          borderRadius: AppRadius.sm,
-          onTap: () => context.push(Routes.liveLobby),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 36,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: AppColors.liveTint,
-                  borderRadius: AppRadius.xs,
-                ),
-                child: const LiveDot(color: AppColors.liveInk),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Class 04 · Practice Session',
-                      style: AppText.tabular(13, FontWeight.w600),
-                    ),
-                    Text(
-                      'Live today · 6:00 PM',
-                      style: AppText.tabular(
-                        11,
-                        FontWeight.w400,
-                        color: AppColors.liveInk,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                LucideIcons.chevronRight,
-                size: 18,
-                color: AppColors.textSubtle,
-              ),
-            ],
+          eyebrow,
+          style: AppText.tabular(
+            11,
+            FontWeight.w700,
+            color: AppColors.primary,
+            letterSpacing: 0.9,
           ),
         ),
+        const SizedBox(height: 8),
+        Text(
+          title,
+          style: AppText.tabular(
+            20,
+            FontWeight.w700,
+            letterSpacing: -0.4,
+          ).copyWith(height: 1.3),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            InitialsAvatar(
+              initials: teacher.trim().isEmpty ? 'T' : teacher.trim()[0],
+              size: 30,
+              fontSize: 12,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                [
+                  teacher,
+                  if ((info?.durationMinutes ?? 0) > 0)
+                    '${info!.durationMinutes} min',
+                ].join('  ·  '),
+                style: AppText.tabular(
+                  14,
+                  FontWeight.w500,
+                  color: AppColors.textBody,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (info != null && info.courseTitle.isNotEmpty) ...[
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE7EBF3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  LucideIcons.bookOpen,
+                  size: 18,
+                  color: AppColors.textMuted,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    info.courseTitle,
+                    style: AppText.tabular(14, FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        if (info != null && info.chapterLessons.length > 1) ...[
+          const SizedBox(height: 26),
+          Text(
+            'In this chapter',
+            style: AppText.tabular(16, FontWeight.w700, letterSpacing: -0.2),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE7EBF3)),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                for (final (i, l) in info.chapterLessons.indexed) ...[
+                  if (i > 0)
+                    const Divider(
+                      height: 1,
+                      indent: 62,
+                      color: Color(0xFFF1F3F8),
+                    ),
+                  _ChapterLessonRow(lesson: l, playing: l.id == lessonId),
+                ],
+              ],
+            ),
+          ),
+        ],
+        if (info == null) ...[
+          const SizedBox(height: 20),
+          Text('About this lesson', style: AppText.cardTitle),
+          const SizedBox(height: 6),
+          Text(MockData.lectureAbout, style: AppText.body),
+        ],
       ],
     );
   }
 }
 
-class _LectureAction extends StatelessWidget {
-  const _LectureAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.iconColor = AppColors.primary,
-    this.highlighted = false,
-  });
+class _ChapterLessonRow extends StatelessWidget {
+  const _ChapterLessonRow({required this.lesson, required this.playing});
 
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final Color iconColor;
-  final bool highlighted;
+  final ({String id, String title, bool isNotes, int minutes}) lesson;
+  final bool playing;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Material(
-        color: highlighted ? AppColors.successTint : AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.sm,
-          side: BorderSide(
-            color: highlighted ? AppColors.successTint : AppColors.border,
-          ),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadius.sm,
-          child: SizedBox(
-            height: 62,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 17, color: iconColor),
-                const SizedBox(height: 4),
-                Text(label, style: AppText.tabular(11, FontWeight.w600)),
-              ],
+    final color = lesson.isNotes ? const Color(0xFFD9480F) : AppColors.primary;
+    return InkWell(
+      onTap: playing
+          ? null
+          : () => lesson.isNotes
+                ? context.push(
+                    Routes.pdf(lesson.id, lesson: true),
+                    extra: lesson.title,
+                  )
+                : context.pushReplacement(Routes.lesson(lesson.id)),
+      child: Container(
+        color: playing ? AppColors.primary.withValues(alpha: 0.05) : null,
+        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                lesson.isNotes ? LucideIcons.fileText : LucideIcons.play,
+                size: 16,
+                color: color,
+              ),
             ),
-          ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lesson.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppText.tabular(14, FontWeight.w600),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    playing
+                        ? 'Now playing'
+                        : lesson.isNotes
+                        ? 'Notes  ·  PDF'
+                        : 'Lecture${lesson.minutes > 0 ? '  ·  ${lesson.minutes} min' : ''}',
+                    style: AppText.tabular(
+                      12,
+                      playing ? FontWeight.w700 : FontWeight.w500,
+                      color: playing ? AppColors.primary : AppColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -653,112 +700,6 @@ class _NotesTab extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
         ],
-      ],
-    );
-  }
-}
-
-class _FeedbackTab extends ConsumerStatefulWidget {
-  const _FeedbackTab({required this.lessonId});
-
-  final String lessonId;
-
-  @override
-  ConsumerState<_FeedbackTab> createState() => _FeedbackTabState();
-}
-
-class _FeedbackTabState extends ConsumerState<_FeedbackTab> {
-  final _controller = TextEditingController();
-  int _pending = 0;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final feedback = ref.watch(lessonFeedbackProvider(widget.lessonId));
-    final selected = _pending > 0 ? _pending : (feedback.myRating ?? 0);
-
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Row(
-          children: [
-            Text(
-              feedback.averageRating.toStringAsFixed(1),
-              style: AppText.tabular(36, FontWeight.w700, letterSpacing: -0.6),
-            ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '★★★★★',
-                  style: AppText.tabular(
-                    18,
-                    FontWeight.w400,
-                    color: const Color(0xFFE0A33A),
-                    letterSpacing: 2,
-                  ),
-                ),
-                Text('${feedback.ratingCount} ratings', style: AppText.meta),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        Text(
-          feedback.hasRated ? 'Your rating' : 'Rate this lesson',
-          style: AppText.cardTitle,
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            for (var star = 1; star <= 5; star++)
-              Semantics(
-                button: true,
-                label: '$star star${star > 1 ? 's' : ''}',
-                child: GestureDetector(
-                  onTap: () => setState(() => _pending = star),
-                  behavior: HitTestBehavior.opaque,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: Icon(
-                      Icons.star_rounded,
-                      size: 34,
-                      color: star <= selected
-                          ? const Color(0xFFE0A33A)
-                          : AppColors.textDisabled,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        AppTextField(
-          controller: _controller,
-          hint: 'What worked, what could be clearer? (optional)',
-          maxLines: 4,
-          minLines: 3,
-        ),
-        const SizedBox(height: 12),
-        PrimaryButton(
-          label: feedback.hasRated ? 'Update feedback' : 'Submit feedback',
-          height: 46,
-          enabled: selected > 0,
-          onPressed: () {
-            ref
-                .read(lessonFeedbackProvider(widget.lessonId).notifier)
-                .rate(selected, comment: _controller.text.trim());
-            setState(() => _pending = 0);
-            FocusScope.of(context).unfocus();
-            showDemoSnack(context, 'Thanks — your feedback reached Amit Sir');
-          },
-        ),
       ],
     );
   }

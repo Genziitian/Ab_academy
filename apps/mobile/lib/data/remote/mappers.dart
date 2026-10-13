@@ -208,10 +208,23 @@ List<Chapter> chaptersFromLessons(List<Json> rows, {required bool hasAccess}) {
     (byChapter[id] ??= []).add(row);
   }
 
+  // Chapters and lessons in the order teachers set in the console.
+  int order(Json? row) => (row?['sort_order'] as int?) ?? 0;
+  final chapterOrder = <String, int>{
+    for (final row in rows)
+      ((row['chapters'] as Json?)?['id'] as String?) ?? 'unknown': order(
+        row['chapters'] as Json?,
+      ),
+  };
+  final entries = byChapter.entries.toList()
+    ..sort(
+      (a, b) => (chapterOrder[a.key] ?? 0).compareTo(chapterOrder[b.key] ?? 0),
+    );
+
   var number = 0;
-  return byChapter.entries.map((entry) {
+  return entries.map((entry) {
     number++;
-    final lessons = entry.value
+    final lessons = (entry.value..sort((a, b) => order(a).compareTo(order(b))))
         .map((r) => lessonFromRow(r, hasAccess: hasAccess))
         .toList();
     return Chapter(

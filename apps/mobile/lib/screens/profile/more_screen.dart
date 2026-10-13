@@ -132,12 +132,6 @@ class MoreScreen extends ConsumerWidget {
                   onTap: () => context.push(Routes.tickets),
                 ),
                 MenuRow(
-                  icon: LucideIcons.star,
-                  color: const Color(0xFFF59E0B),
-                  label: 'Course Feedback',
-                  onTap: () => context.push(Routes.newTicket),
-                ),
-                MenuRow(
                   icon: LucideIcons.settings,
                   color: AppColors.primary,
                   label: 'Settings',

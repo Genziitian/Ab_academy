@@ -131,11 +131,12 @@ class GradientIcon extends StatelessWidget {
         gradient: gradient,
         shape: round ? BoxShape.circle : BoxShape.rectangle,
         borderRadius: round ? null : BorderRadius.circular(size * 0.3),
+        // A faint, tight shadow: depth without a coloured glow.
         boxShadow: [
           BoxShadow(
-            color: colors.last.withValues(alpha: 0.28),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+            color: colors.last.withValues(alpha: 0.16),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
