@@ -291,7 +291,7 @@ export function CheckoutView({ enrolled, initialLanguage, student, course }: Pro
 
       {/* Phones: the pay button stays in reach. */}
       {enrolled ? null : (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-sand bg-cream/95 px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 backdrop-blur md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-sand bg-cream px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 md:hidden">
           <div className="flex items-center gap-4">
             <div>
               <p className="text-xs text-taupe">Total</p>

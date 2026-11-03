@@ -102,7 +102,7 @@ export function MyCourses({
                   type="button"
                   onClick={() => setSubject(name)}
                   className={`h-[30px] whitespace-nowrap rounded-md px-2.5 text-xs font-semibold ${
-                    subject === name ? "bg-navy text-white" : "bg-[#f2f3f7] text-ink hover:text-navy"
+                    subject === name ? "bg-navy text-white" : "bg-[#f3ede3] text-ink hover:text-navy"
                   }`}
                 >
                   {name}

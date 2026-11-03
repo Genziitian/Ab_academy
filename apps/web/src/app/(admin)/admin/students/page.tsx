@@ -1,3 +1,4 @@
+import { ConfirmDelete } from "@/components/admin/Dialog";
 import Link from "next/link";
 import { Card, EmptyRow, PageHeader } from "@/components/admin/AdminChrome";
 import { Field, SelectField } from "@/components/admin/Fields";
@@ -248,24 +249,14 @@ export default async function AdminStudentsPage({
                         >
                           <span className="text-sm text-navy">{courseTitle}</span>
                           {course ? (
-                            <form action={unenrollAction}>
-                              <input
-                                type="hidden"
-                                name="studentId"
-                                value={editing.id}
-                              />
-                              <input
-                                type="hidden"
-                                name="courseId"
-                                value={course.id}
-                              />
-                              <button
-                                type="submit"
-                                className="text-xs font-medium text-pink hover:underline"
-                              >
-                                Remove
-                              </button>
-                            </form>
+                            <ConfirmDelete
+                              action={unenrollAction}
+                              fields={{ studentId: editing.id, courseId: course.id }}
+                              label="Remove"
+                              title="Remove from course?"
+                              message={<><strong className="text-coal">{editing.fullName}</strong> will lose access to <strong className="text-coal">{course.title}</strong>.</>}
+                              confirmLabel="Remove access"
+                            />
                           ) : null}
                         </li>
                       );

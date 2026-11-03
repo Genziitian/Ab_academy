@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BrandMark } from "@/components/icons";
+import { BrandMark, Wordmark } from "@/components/icons";
 import { isDemoMode } from "@/lib/admin/auth";
 import { AccessForm } from "./AccessForm";
 
@@ -22,7 +22,7 @@ export default async function AccessPage({
       <div className="w-full max-w-[400px]">
         <Link href="/" className="mb-10 flex items-center gap-3 text-navy">
           <BrandMark />
-          <span className="font-serif text-[28px] leading-none">AB Academy</span>
+          <Wordmark />
         </Link>
         {error === "not-staff" ? (
           <p role="alert" className="mb-6 rounded-lg bg-danger-soft px-3 py-2.5 text-sm text-danger">

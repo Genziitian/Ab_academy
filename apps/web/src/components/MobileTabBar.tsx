@@ -84,7 +84,7 @@ export function MobileTabBar() {
 
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-4 border-t border-border bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-4 border-t border-border bg-cream pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         <Link href="/" aria-current={pathname === "/" ? "page" : undefined} className={tab(pathname === "/" && !moreOpen)}>
           <HomeIcon size={22} />

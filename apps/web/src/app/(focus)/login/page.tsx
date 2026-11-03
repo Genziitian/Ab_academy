@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BrandMark } from "@/components/icons";
+import { BrandMark, Wordmark } from "@/components/icons";
 import { isDemoMode } from "@/lib/admin/auth";
 import { LoginForm } from "./LoginForm";
 
@@ -24,7 +24,7 @@ export default async function LoginPage({
       <div className="flex flex-col bg-coal px-6 py-8 text-cream sm:px-14 sm:py-10">
         <Link href="/" className="flex items-center gap-3 text-cream">
           <BrandMark />
-          <span className="font-serif text-[28px] leading-none">AB Academy</span>
+          <Wordmark />
         </Link>
         <div className="mt-auto hidden pt-12 lg:block">
           <p className="font-hindi text-base text-saffron">

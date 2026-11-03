@@ -47,10 +47,9 @@ export async function saveCourseAction(formData: FormData) {
     isPublished: formData.get("isPublished") === "on",
   });
 
-  revalidatePath("/admin/courses");
+  revalidatePath("/admin/courses", "layout");
   revalidatePath("/admin");
-  revalidatePath("/courses");
-  if (id) redirect("/admin/courses");
+  revalidatePath("/", "layout");
 }
 
 export async function deleteCourseAction(formData: FormData) {
@@ -58,4 +57,7 @@ export async function deleteCourseAction(formData: FormData) {
   await deleteCourse(String(formData.get("id") ?? ""));
   revalidatePath("/admin/courses");
   revalidatePath("/admin");
+  revalidatePath("/", "layout");
+  // Deleting from the course's own page leaves nothing to show there.
+  if (formData.get("from") === "detail") redirect("/admin/courses");
 }

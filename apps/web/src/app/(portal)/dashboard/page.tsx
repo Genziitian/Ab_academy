@@ -39,21 +39,21 @@ export default async function DashboardPage() {
             <div className="min-w-0 flex-[1_1_280px]">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 <LiveNowBadge />
-                <span className="whitespace-nowrap text-[13px] text-[#9aa7c2]">
+                <span className="whitespace-nowrap text-[13px] text-[#bdb4a7]">
                   {liveNow.time} · {liveNow.students} students
                 </span>
               </div>
-              <p className="mt-5 whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.04em] text-[#9fb8ff]">
+              <p className="mt-5 whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.04em] text-[#f2a86b]">
                 {liveNow.subject} · Chapter 0{currentChapter.number}
               </p>
               <h2 className="mt-1.5 text-[26px] font-bold tracking-[-0.02em] sm:text-[30px]">
                 {currentChapter.title}
               </h2>
               <div className="mt-4 flex items-center gap-2.5">
-                <span className="flex size-8 items-center justify-center rounded-full bg-[#2a3a6e] text-xs font-semibold text-[#c7d4ff]">
+                <span className="flex size-8 items-center justify-center rounded-full bg-[#3a342d] text-xs font-semibold text-[#f6dcc6]">
                   {liveNow.initials}
                 </span>
-                <span className="text-sm text-[#c8d1e4]">{liveNow.teacher}</span>
+                <span className="text-sm text-[#d9d1c4]">{liveNow.teacher}</span>
               </div>
             </div>
             <Link

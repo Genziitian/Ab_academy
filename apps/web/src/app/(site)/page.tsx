@@ -82,7 +82,7 @@ export default async function HomePage() {
           <p className="mt-6 max-w-[540px] text-lg leading-[1.55] text-pretty text-taupe sm:text-xl">
             Classes start {BATCH_START_LABEL}. Recorded classes you can watch anytime, live doubt sessions with{" "}
             {TEACHER.name}, chapter notes and board-pattern tests. Physics, Chemistry and Maths
-            {from ? `, from ${from} per subject` : ""}. Hindi and English medium.
+            {from ? `, from ${from} per subject` : ""}. Taught in Hindi or Hinglish — you choose.
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
             <Link href="#courses" className={joinBtn}>
@@ -96,14 +96,23 @@ export default async function HomePage() {
             ) : null}
           </div>
         </div>
-        <div className="relative h-[380px] overflow-hidden rounded-3xl bg-sand sm:h-[480px] lg:h-[580px]">
+        <div className="relative h-[420px] overflow-hidden rounded-3xl bg-[radial-gradient(120%_90%_at_50%_100%,#f2a86b_0%,#e8742a_38%,#b4521a_100%)] sm:h-[500px] lg:h-[580px]">
+          {/* Soft rings behind the teacher. */}
+          <div aria-hidden className="absolute left-1/2 top-[18%] size-[120%] -translate-x-1/2 rounded-full border border-white/15" />
+          <div aria-hidden className="absolute left-1/2 top-[30%] size-[86%] -translate-x-1/2 rounded-full border border-white/20" />
+          <p className="absolute left-6 top-6 z-10 font-serif text-[40px] leading-none text-cream sm:left-8 sm:top-8 sm:text-[52px]">
+            {TEACHER.name}
+            <span className="mt-2 block font-sans text-xs font-bold uppercase tracking-[0.16em] text-cream/85">
+              Founder · {TEACHER.subjects}
+            </span>
+          </p>
           <Image
-            src="/images/hero-students.png"
-            alt="Students learning with AB Academy"
+            src="/images/ajit-sir-cutout.png"
+            alt={`${TEACHER.name}, founder and teacher at AB Academy`}
             fill
             priority
             sizes="(min-width: 1024px) 560px, 100vw"
-            className="object-cover"
+            className="object-contain object-bottom pt-24"
           />
           <div className="absolute inset-x-4 bottom-4 flex flex-wrap items-center gap-3 rounded-2xl bg-cream px-5 py-4 sm:inset-x-6 sm:bottom-6 sm:gap-3.5">
             <span className="whitespace-nowrap rounded-full bg-[#c8321e] px-2.5 py-1 text-xs font-bold tracking-[0.06em] text-white">

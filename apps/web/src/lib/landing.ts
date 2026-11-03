@@ -94,12 +94,12 @@ export function subjectKey(subject: string): SubjectKey | null {
 export const FEATURES = [
   ["Recorded classes", "Every chapter as a recorded class. Pause, rewind and rewatch as often as you need."],
   ["Live doubt sessions", "Bring your questions to live sessions with Ajit Sir and get them solved on the spot."],
-  ["Chapter notes", "A notes PDF for every chapter, in Hindi and English, readable in the app."],
+  ["Chapter notes", "A notes PDF for every chapter, readable on the website and in the app."],
   ["Board-pattern tests", "Practice questions in Bihar Board pattern so the exam has no surprises."],
 ] as const;
 
 export const FAQS = [
-  ["Is it Hindi or English medium?", "Both. Classes are taught in Hindi medium with English terms, and chapter notes are available in Hindi and English."],
+  ["Is it in Hindi or Hinglish?", "You choose. Every course is taught in Hindi or in Hinglish (Hindi with English terms) — pick your language when you enroll."],
   ["When do classes start?", "Monday, 16 November 2026. Enrol before then and the first classes are waiting in your account on day one."],
   ["Are classes live or recorded?", "Classes are recorded so you can watch at your own time and rewatch anytime. Doubts are solved live in regular doubt sessions."],
   ["Where do I ask doubts?", "Under each lecture. Your question goes to the teacher’s doubt queue and you get a notification when it is answered."],

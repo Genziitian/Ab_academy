@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CurriculumAccordion, FaqAccordion } from "@/components/CurriculumAccordion";
 import { PlayIcon } from "@/components/icons";
 import { fetchCourseBySlug, listCourseSlugs } from "@/lib/catalog";
+import { AdminManageButton } from "@/components/AdminManageButton";
 import { EnrollWithLanguage } from "@/components/LanguagePicker";
 import { CONTACT, TEACHER } from "@/lib/landing";
 import {
@@ -250,6 +251,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
           </div>
         </aside>
       </div>
+      {course.id ? <AdminManageButton courseId={course.id} /> : null}
     </>
   );
 }

@@ -82,7 +82,7 @@ export function LectureView({
               <span>
                 {lecture.position} / {lecture.duration}
               </span>
-              <span className="flex gap-4 text-[#c8d1e4]">
+              <span className="flex gap-4 text-[#d9d1c4]">
                 <span>1.0×</span>
                 <span>480p</span>
                 <span>CC</span>
@@ -261,7 +261,7 @@ export function LectureView({
                           type="button"
                           aria-label={`${n} star${n > 1 ? "s" : ""}`}
                           onClick={() => setRating(n)}
-                          className={`text-[32px] leading-none ${n <= rating ? "text-[#e0a33a]" : "text-[#c7cad3]"}`}
+                          className={`text-[32px] leading-none ${n <= rating ? "text-[#e0a33a]" : "text-[#cfc4b3]"}`}
                         >
                           ★
                         </button>

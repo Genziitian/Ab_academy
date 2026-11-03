@@ -7,6 +7,7 @@ import {
   BellIcon,
   BookIcon,
   BrandMark,
+  Wordmark,
   CalendarIcon,
   CloseIcon,
   DashboardIcon,
@@ -89,7 +90,7 @@ function Footer({ demo }: { demo: boolean }) {
     <div className="flex flex-col gap-2.5 border-t border-border p-4">
       <Link
         href="/courses"
-        className="flex h-[38px] items-center justify-center rounded-lg bg-primary-soft text-[13px] font-semibold text-primary hover:bg-[#dbe6ff]"
+        className="flex h-[38px] items-center justify-center rounded-lg bg-primary-soft text-[13px] font-semibold text-primary hover:bg-[#f6dcc6]"
       >
         Browse more courses
       </Link>
@@ -119,8 +120,8 @@ function Footer({ demo }: { demo: boolean }) {
 function Brand() {
   return (
     <Link href="/" className="flex items-center gap-2.5">
-      <BrandMark size={32} />
-      <span className="text-sm font-bold tracking-[-0.01em] text-navy">Akhand Bharat Academy</span>
+      <BrandMark size={36} />
+      <Wordmark size="sm" />
     </Link>
   );
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BrandMark } from "@/components/icons";
+import { BrandMark, Wordmark } from "@/components/icons";
 import { LEGAL_DOCS } from "@/components/LegalPage";
 import { listCourses } from "@/lib/catalog";
 import { formatInr } from "@/lib/courses";
@@ -60,11 +60,11 @@ export async function SiteHeader() {
         </p>
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-sand bg-cream/95 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-sand bg-cream">
         <div className="mx-auto flex h-[72px] max-w-[1280px] items-center gap-6 px-4 sm:h-[84px] sm:px-6 lg:px-16">
           <Link href="/" className="flex shrink-0 items-center gap-3">
             <BrandMark size={40} />
-            <span className="font-serif text-[28px] leading-none text-coal sm:text-[34px]">AB Academy</span>
+            <Wordmark />
           </Link>
 
           <nav aria-label="Main" className="hidden min-w-0 flex-1 items-center justify-center gap-8 text-[15px] font-medium lg:flex">

@@ -24,7 +24,7 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium text-navy">{label}</span>
+      <span className="text-[13px] font-semibold text-coal">{label}</span>
       <input
         name={name}
         type={type}
@@ -33,7 +33,7 @@ export function Field({
         required={required}
         step={step}
         min={min}
-        className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-navy outline-none focus:border-primary"
+        className="mt-1.5 h-11 w-full rounded-xl border border-sand bg-white px-3.5 text-[15px] text-coal outline-none transition focus:border-clay focus:ring-2 focus:ring-clay/15"
       />
       {hint ? <span className="mt-1 block text-xs text-muted">{hint}</span> : null}
     </label>
@@ -59,14 +59,14 @@ export function TextAreaField({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium text-navy">{label}</span>
+      <span className="text-[13px] font-semibold text-coal">{label}</span>
       <textarea
         name={name}
         rows={rows}
         placeholder={placeholder}
         defaultValue={defaultValue}
         required={required}
-        className="mt-1 w-full resize-y rounded-xl border border-border bg-surface px-3 py-2 text-sm text-navy outline-none focus:border-primary"
+        className="mt-1.5 w-full resize-y rounded-xl border border-sand bg-white px-3.5 py-2.5 text-[15px] text-coal outline-none transition focus:border-clay focus:ring-2 focus:ring-clay/15"
       />
       {hint ? <span className="mt-1 block text-xs text-muted">{hint}</span> : null}
     </label>
@@ -96,12 +96,12 @@ export function SelectField({
 
   return (
     <label className="block">
-      <span className="text-xs font-medium text-navy">{label}</span>
+      <span className="text-[13px] font-semibold text-coal">{label}</span>
       <select
         id={id}
         name={name}
         defaultValue={defaultValue}
-        className="mt-1 w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-navy outline-none focus:border-primary"
+        className="mt-1.5 h-11 w-full rounded-xl border border-sand bg-white px-3.5 text-[15px] text-coal outline-none transition focus:border-clay focus:ring-2 focus:ring-clay/15"
       >
         {normalised.map((option) => (
           <option key={option.value} value={option.value}>
@@ -124,12 +124,12 @@ export function CheckboxField({
   defaultChecked?: boolean;
 }) {
   return (
-    <label className="flex items-center gap-2 pt-1 text-sm text-navy">
+    <label className="flex items-center gap-2.5 pt-1 text-[15px] text-coal">
       <input
         type="checkbox"
         name={name}
         defaultChecked={defaultChecked}
-        className="size-4"
+        className="size-[18px] accent-[#b4521a]"
       />
       {label}
     </label>

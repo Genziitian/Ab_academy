@@ -1,3 +1,4 @@
+import { ConfirmDelete } from "@/components/admin/Dialog";
 import Link from "next/link";
 import { Card, EmptyRow, PageHeader } from "@/components/admin/AdminChrome";
 import { CheckboxField, Field, SelectField, SubmitButton } from "@/components/admin/Fields";
@@ -92,12 +93,13 @@ export default async function AdminBannersPage({
                     >
                       Edit
                     </Link>
-                    <form action={deleteBannerAction}>
-                      <input type="hidden" name="id" value={banner.id} />
-                      <button type="submit" className="text-xs font-medium text-pink hover:underline">
-                        Delete
-                      </button>
-                    </form>
+                    <ConfirmDelete
+                      action={deleteBannerAction}
+                      fields={{ id: banner.id }}
+                      title="Delete this slide?"
+                      message={<><strong className="text-coal">{banner.title}</strong> will be removed from the app&apos;s home slider.</>}
+                      confirmLabel="Delete slide"
+                    />
                   </div>
                 </Card>
               );

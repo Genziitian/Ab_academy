@@ -291,3 +291,32 @@ export function LinkedInIcon(props: IconProps) {
     </Svg>
   );
 }
+
+/** The name beside the logo: "Akhand Bharat" over a spaced-out "ACADEMY". */
+export function Wordmark({
+  size = "md",
+  tone = "dark",
+  className = "",
+}: {
+  size?: "sm" | "md" | "lg";
+  tone?: "dark" | "light";
+  className?: string;
+}) {
+  const [top, bottom] = {
+    sm: ["text-[21px]", "text-[9px] tracking-[0.46em]"],
+    md: ["text-[26px] sm:text-[29px]", "text-[10px] sm:text-[11px] tracking-[0.5em]"],
+    lg: ["text-[34px]", "text-[13px] tracking-[0.5em]"],
+  }[size];
+  return (
+    <span className={`inline-flex flex-col leading-none ${className}`}>
+      <span className={`whitespace-nowrap font-serif ${top} ${tone === "dark" ? "text-coal" : "text-cream"}`}>
+        Akhand Bharat
+      </span>
+      <span
+        className={`mt-1 whitespace-nowrap font-bold uppercase ${bottom} ${tone === "dark" ? "text-clay" : "text-saffron"}`}
+      >
+        Academy
+      </span>
+    </span>
+  );
+}

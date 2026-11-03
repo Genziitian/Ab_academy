@@ -167,7 +167,7 @@ export function SupportDesk({ initial }: { initial: Ticket[] }) {
               <div key={index} className={`flex ${m.support ? "justify-start" : "justify-end"}`}>
                 <div
                   className={`max-w-[85%] rounded-[10px] border px-4 py-3 sm:max-w-[75%] ${
-                    m.support ? "border-[#dbe6ff] bg-surface-soft" : "border-border bg-white"
+                    m.support ? "border-[#f6dcc6] bg-surface-soft" : "border-border bg-white"
                   }`}
                 >
                   <p className={`text-xs font-semibold ${m.support ? "text-primary" : "text-muted"}`}>

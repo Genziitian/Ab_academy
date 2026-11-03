@@ -8,7 +8,7 @@ const KIND: Record<NotificationKind, { className: string; glyph: string }> = {
   live: { className: "bg-danger-soft text-danger", glyph: "●" },
   test: { className: "bg-amber-soft text-amber", glyph: "✎" },
   recording: { className: "bg-primary-soft text-primary", glyph: "▶" },
-  notes: { className: "bg-violet-soft text-[#6b4fd8]", glyph: "≡" },
+  notes: { className: "bg-violet-soft text-[#7a3e8e]", glyph: "≡" },
   result: { className: "bg-success-soft text-success", glyph: "✓" },
 };
 

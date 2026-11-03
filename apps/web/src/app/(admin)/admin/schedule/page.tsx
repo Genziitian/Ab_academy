@@ -1,3 +1,4 @@
+import { ConfirmDelete } from "@/components/admin/Dialog";
 import { Card, EmptyRow, PageHeader, Pill } from "@/components/admin/AdminChrome";
 import { formatWhen } from "@/lib/admin/format";
 import { listCourses, listSessions } from "@/lib/admin/data";
@@ -39,15 +40,14 @@ export default async function AdminSchedulePage() {
                         {formatWhen(session.startsAt)} · {session.durationMinutes} min
                       </p>
                     </div>
-                    <form action={deleteSessionAction}>
-                      <input type="hidden" name="id" value={session.id} />
-                      <button
-                        type="submit"
-                        className="text-xs font-medium text-pink hover:underline"
-                      >
-                        Cancel
-                      </button>
-                    </form>
+                    <ConfirmDelete
+                      action={deleteSessionAction}
+                      fields={{ id: session.id }}
+                      label="Cancel class"
+                      title="Cancel this live class?"
+                      message={<><strong className="text-coal">{session.title}</strong> will be removed from every student&apos;s schedule.</>}
+                      confirmLabel="Cancel class"
+                    />
                   </li>
                 ))}
               </ul>

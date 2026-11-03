@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BrandMark } from "@/components/icons";
+import { BrandMark, Wordmark } from "@/components/icons";
 import { fetchCourseBySlug } from "@/lib/catalog";
 import { courseArt, getCourse, isCourseLanguage } from "@/lib/courses";
 import { getStudent } from "@/lib/portal/student";
@@ -55,7 +55,7 @@ export default async function CheckoutPage({
         <div className="mx-auto flex h-16 max-w-[1080px] items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
             <BrandMark size={34} />
-            <span className="font-serif text-2xl leading-none text-coal">AB Academy</span>
+            <Wordmark size="sm" />
           </Link>
           <span className="flex items-center gap-1.5 text-[13px] font-semibold text-taupe">
             <LockGlyph />

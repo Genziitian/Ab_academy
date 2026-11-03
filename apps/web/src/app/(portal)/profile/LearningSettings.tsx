@@ -53,7 +53,7 @@ export function LearningSettings() {
             aria-label={t.label}
             onClick={() => setOn({ ...on, [t.key]: !on[t.key] })}
             className={`flex h-6 w-[42px] shrink-0 rounded-full p-[3px] ${
-              on[t.key] ? "justify-end bg-primary" : "justify-start bg-[#d5dae4]"
+              on[t.key] ? "justify-end bg-primary" : "justify-start bg-[#e4dccf]"
             }`}
           >
             <span className="size-[18px] rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.2)]" />

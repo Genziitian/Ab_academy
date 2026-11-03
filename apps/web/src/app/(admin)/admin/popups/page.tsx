@@ -1,3 +1,4 @@
+import { ConfirmDelete } from "@/components/admin/Dialog";
 import Link from "next/link";
 import { Card, EmptyRow, PageHeader } from "@/components/admin/AdminChrome";
 import {
@@ -119,15 +120,13 @@ export default async function AdminPopupsPage({
                     >
                       Edit
                     </Link>
-                    <form action={deletePopupAction}>
-                      <input type="hidden" name="id" value={popup.id} />
-                      <button
-                        type="submit"
-                        className="text-xs font-medium text-pink hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </form>
+                    <ConfirmDelete
+                      action={deletePopupAction}
+                      fields={{ id: popup.id }}
+                      title="Delete this pop-up?"
+                      message={<><strong className="text-coal">{popup.title}</strong> will stop showing to students.</>}
+                      confirmLabel="Delete pop-up"
+                    />
                   </div>
                 </Card>
               );

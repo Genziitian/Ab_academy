@@ -133,7 +133,7 @@ export async function listCourses(): Promise<AdminCourse[]> {
   const { data, error } = await supabase
     .from("courses")
     .select(
-      `id, course_code, title, class_level, board, language, price_inr,
+      `id, course_code, slug, title, class_level, board, language, price_inr,
        original_price_inr, subjects, description, highlights, thumbnail_url,
        is_published,
        course_teachers ( teachers ( display_name ) ),
@@ -148,6 +148,7 @@ export async function listCourses(): Promise<AdminCourse[]> {
   return (data ?? []).map((row: any) => ({
     id: row.id,
     courseCode: row.course_code,
+    slug: row.slug ?? undefined,
     title: row.title,
     classLevel: row.class_level,
     board: row.board,
@@ -573,6 +574,8 @@ export async function saveLesson(input: {
   courseId: string;
   subjectName: string;
   chapterTitle: string;
+  /** When set, the lesson goes straight into this chapter. */
+  chapterId?: string;
   durationSeconds: number | null;
   videoProvider: string | null;
   videoRef: string | null;
@@ -585,11 +588,8 @@ export async function saveLesson(input: {
   if (isDemoMode()) return mockExtra.saveLesson(input);
 
   const supabase = await db();
-  const chapterId = await ensureChapter(
-    input.courseId,
-    input.subjectName,
-    input.chapterTitle,
-  );
+  const chapterId =
+    input.chapterId ?? (await ensureChapter(input.courseId, input.subjectName, input.chapterTitle));
 
   const row = {
     chapter_id: chapterId,
@@ -622,6 +622,123 @@ export async function saveLesson(input: {
     .single();
   if (error) throw new Error(`saveLesson: ${error.message}`);
   return data.id;
+}
+
+// ======================================================== course tree
+
+export type TreeChapter = { id: string; title: string; sortOrder: number; lessons: AdminLesson[] };
+export type TreeSubject = { id: string; name: string; chapters: TreeChapter[] };
+
+/** A course's subjects → chapters → lessons, in teaching order. */
+export async function getCourseTree(courseId: string): Promise<TreeSubject[]> {
+  const lessons = await listLessons(courseId);
+  const byChapter = new Map<string, AdminLesson[]>();
+  for (const l of [...lessons].sort((a, b) => a.sortOrder - b.sortOrder)) {
+    byChapter.set(l.chapterId, [...(byChapter.get(l.chapterId) ?? []), l]);
+  }
+
+  if (isDemoMode()) {
+    // The mock has no chapter table; group the lessons it has.
+    const subjects = new Map<string, TreeSubject>();
+    for (const l of lessons) {
+      const subject = subjects.get(l.subjectName) ?? { id: l.subjectName, name: l.subjectName, chapters: [] };
+      if (!subject.chapters.some((c) => c.id === l.chapterId)) {
+        subject.chapters.push({
+          id: l.chapterId,
+          title: l.chapterTitle,
+          sortOrder: subject.chapters.length + 1,
+          lessons: byChapter.get(l.chapterId) ?? [],
+        });
+      }
+      subjects.set(l.subjectName, subject);
+    }
+    return [...subjects.values()];
+  }
+
+  const supabase = await db();
+  const { data, error } = await supabase
+    .from("course_batches")
+    .select("id, is_active, subjects ( id, name, sort_order, chapters ( id, title, sort_order ) )")
+    .eq("course_id", courseId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(`getCourseTree: ${error.message}`);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const batch = (data ?? []).find((b: any) => b.is_active) ?? data?.[0];
+  if (!batch) return [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ((batch as any).subjects ?? [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .sort((a: any, b: any) => a.sort_order - b.sort_order)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((s: any) => ({
+      id: s.id,
+      name: s.name,
+      chapters: (s.chapters ?? [])
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .sort((a: any, b: any) => a.sort_order - b.sort_order)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((c: any) => ({
+          id: c.id,
+          title: c.title,
+          sortOrder: c.sort_order,
+          lessons: byChapter.get(c.id) ?? [],
+        })),
+    }));
+}
+
+function demoOnly(): never {
+  throw new Error("Editing chapters needs a connected Supabase project.");
+}
+
+export async function addChapter(courseId: string, subjectName: string, title: string): Promise<void> {
+  if (isDemoMode()) demoOnly();
+  const supabase = await db();
+  const id = await ensureChapter(courseId, subjectName, title);
+  const { data: chapter } = await supabase.from("chapters").select("subject_id").eq("id", id).single();
+  const { data: last } = await supabase
+    .from("chapters")
+    .select("sort_order")
+    .eq("subject_id", chapter!.subject_id)
+    .neq("id", id)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  await supabase.from("chapters").update({ sort_order: (last?.sort_order ?? 0) + 1 }).eq("id", id);
+}
+
+export async function renameChapter(id: string, title: string): Promise<void> {
+  if (isDemoMode()) demoOnly();
+  const supabase = await db();
+  const { error } = await supabase.from("chapters").update({ title }).eq("id", id);
+  if (error) throw new Error(`renameChapter: ${error.message}`);
+}
+
+export async function deleteChapter(id: string): Promise<void> {
+  if (isDemoMode()) demoOnly();
+  const supabase = await db();
+  const { error } = await supabase.from("chapters").delete().eq("id", id);
+  if (error) throw new Error(`deleteChapter: ${error.message}`);
+}
+
+/** Swaps a chapter with its neighbour above or below. */
+export async function moveChapter(id: string, direction: "up" | "down"): Promise<void> {
+  if (isDemoMode()) demoOnly();
+  const supabase = await db();
+  const { data: me } = await supabase.from("chapters").select("id, subject_id, sort_order").eq("id", id).single();
+  if (!me) return;
+  const query = supabase
+    .from("chapters")
+    .select("id, sort_order")
+    .eq("subject_id", me.subject_id)
+    .limit(1);
+  const { data: other } = await (direction === "up"
+    ? query.lt("sort_order", me.sort_order).order("sort_order", { ascending: false })
+    : query.gt("sort_order", me.sort_order).order("sort_order", { ascending: true })
+  ).maybeSingle();
+  if (!other) return;
+  await supabase.from("chapters").update({ sort_order: other.sort_order }).eq("id", me.id);
+  await supabase.from("chapters").update({ sort_order: me.sort_order }).eq("id", other.id);
 }
 
 export async function deleteLesson(id: string): Promise<void> {

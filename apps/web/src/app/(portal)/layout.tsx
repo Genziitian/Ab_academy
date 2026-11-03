@@ -14,7 +14,7 @@ export default async function PortalLayout({ children }: { children: React.React
   const demo = isPortalDemo();
 
   return (
-    <div className="flex min-h-screen flex-1 bg-[#fafbfd]">
+    <div className="theme-saffron flex min-h-screen flex-1 bg-paper">
       <PortalSidebar unread={unreadCount} demo={demo} />
       <div className="flex min-w-0 flex-1 flex-col">
         <PortalMobileNav unread={unreadCount} demo={demo} />

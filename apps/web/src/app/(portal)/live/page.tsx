@@ -16,11 +16,11 @@ export default function LiveClassesPage() {
             <span className="self-start">
               <LiveNowBadge />
             </span>
-            <p className="mt-5 text-[13px] text-[#9fb8ff]">{liveNow.chapter}</p>
+            <p className="mt-5 text-[13px] text-[#f2a86b]">{liveNow.chapter}</p>
             <h2 className="mt-1.5 text-[26px] font-bold tracking-[-0.02em] sm:text-[28px]">
               {liveNow.title}
             </h2>
-            <p className="mt-2.5 text-sm text-[#c8d1e4]">
+            <p className="mt-2.5 text-sm text-[#d9d1c4]">
               {liveNow.teacher} · {liveNow.time} · {liveNow.students} students enrolled
             </p>
             <div className="mt-auto flex gap-2.5 pt-6">

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { PdfBadge } from "@/components/PdfBadge";
 import { NOTES_LIVE, SYLLABUS, type SubjectKey } from "@/lib/landing";
+import { getFreeNotes } from "@/lib/notes";
 import { createServerClient } from "@/lib/supabase/server";
 
 export const metadata = {
@@ -35,6 +36,11 @@ async function listNotes() {
 
 export default async function NotesPage() {
   const notes = NOTES_LIVE ? await listNotes() : [];
+  // The free library from Admin → Free notes; it switches the page on.
+  const library = (await getFreeNotes())
+    .map((s) => ({ ...s, chapters: s.chapters.filter((c) => c.notes.length) }))
+    .filter((s) => s.chapters.length);
+  const hasLibrary = library.length > 0;
 
   return (
     <>
@@ -42,13 +48,13 @@ export default async function NotesPage() {
         <div>
           <p className="kicker text-clay">Free notes</p>
           <h1 className="mt-3 font-serif text-[52px] leading-[0.95] tracking-[-0.02em] text-balance sm:text-[84px]">
-            {NOTES_LIVE ? "Read before you pay." : "Notes are coming soon."}
+            {hasLibrary || NOTES_LIVE ? "Free notes for every chapter." : "Notes are coming soon."}
           </h1>
           <p className="mt-5 max-w-[520px] text-lg leading-[1.6] text-taupe">
             A notes PDF and solved PYQs for every Class 12 chapter, in Hindi and English. They open in a secure
             viewer on the website and in the app — sign in once and read anywhere.
           </p>
-          {!NOTES_LIVE ? (
+          {!NOTES_LIVE && !hasLibrary ? (
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/#courses"
@@ -79,7 +85,36 @@ export default async function NotesPage() {
 
       <section className="border-t border-sand bg-paper">
         <div className="mx-auto max-w-[1280px] px-4 py-16 sm:px-6 lg:px-16 lg:py-20">
-          {NOTES_LIVE && notes.length ? (
+          {hasLibrary ? (
+            <div className="grid gap-10 lg:grid-cols-3">
+              {library.map((subject) => (
+                <div key={subject.id}>
+                  <h2 className="font-serif text-4xl">{subject.name}</h2>
+                  <ol className="mt-4 border-t-2 border-coal">
+                    {subject.chapters.map((chapter, i) => (
+                      <li key={chapter.id} className="border-b border-sand py-3">
+                        <p className="flex gap-3 text-[15px] font-semibold text-coal">
+                          <span className="w-6 shrink-0 tabular-nums">{i + 1}.</span>
+                          {chapter.title}
+                        </p>
+                        <ul className="mt-1.5 flex flex-col gap-1 pl-9">
+                          {chapter.notes.map((n) => (
+                            <li key={n.id}>
+                              <Link href={`/notes/free/${n.id}`} className="flex items-center gap-2.5 py-1 text-[15px] text-taupe hover:text-clay">
+                                <PdfBadge size={26} />
+                                <span className="flex-1">{n.title}</span>
+                                <span className="text-sm font-semibold text-clay">Read →</span>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ))}
+            </div>
+          ) : NOTES_LIVE && notes.length ? (
             <div className="grid gap-10 lg:grid-cols-3">
               {[...new Set(notes.map((n) => n.subject))].map((subject) => (
                 <div key={subject}>
