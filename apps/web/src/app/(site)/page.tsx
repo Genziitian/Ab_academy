@@ -361,7 +361,7 @@ export default async function HomePage() {
 
       {/* Final CTA */}
       <section className="overflow-hidden bg-saffron text-coal">
-        <div className="mx-auto max-w-[1280px] px-4 pt-20 sm:px-6 lg:px-16 lg:pt-28">
+        <div className="mx-auto max-w-[1280px] px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
           <div className="grid items-end gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.16em] sm:text-[13px]">
@@ -410,12 +410,7 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
-          <p
-            aria-hidden
-            className="mt-16 whitespace-nowrap font-serif text-[22vw] leading-[0.72] tracking-[-0.04em] lg:mt-[88px] xl:text-[300px]"
-          >
-            AB Academy
-          </p>
+
         </div>
       </section>
     </div>

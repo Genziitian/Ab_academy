@@ -117,9 +117,20 @@ export const FREE_NOTES = [
 ];
 
 export const FOUNDERS = [
-  { name: "Ajit Sir", role: "Co-founder" },
+  { name: "Ajit Sir", role: "Founder" },
   { name: "Sriram", role: "Co-founder & Developer" },
 ];
+
+/**
+ * Social profiles for the footer. An icon shows only once its link is set.
+ * WhatsApp falls back to NEXT_PUBLIC_WHATSAPP_NUMBER (see lib/support.ts).
+ */
+export const SOCIAL_LINKS = {
+  youtube: "",
+  instagram: "",
+  whatsapp: "",
+  linkedin: "",
+};
 
 /**
  * Real board results and student quotes. Each section stays hidden while its

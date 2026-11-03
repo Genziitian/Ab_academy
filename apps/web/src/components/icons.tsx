@@ -249,3 +249,40 @@ export function BrandMark({ size = 36 }: { size?: number }) {
     </span>
   );
 }
+
+export function YouTubeIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="2.5" y="5" width="19" height="14" rx="4" />
+      <path d="m10 9.5 5 2.5-5 2.5z" />
+    </Svg>
+  );
+}
+
+export function InstagramIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+    </Svg>
+  );
+}
+
+export function WhatsAppIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3.5 20.5 5 16a8.5 8.5 0 1 1 3 3z" />
+      <path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 1c-1.2-.5-2.5-1.8-3-3l1-1-1-2z" />
+    </Svg>
+  );
+}
+
+export function LinkedInIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <path d="M8 10.5V16M8 7.8v.1M12 16v-5.5M12 13c0-1.6 1-2.6 2.3-2.6S16.5 11.4 16.5 13v3" />
+    </Svg>
+  );
+}
