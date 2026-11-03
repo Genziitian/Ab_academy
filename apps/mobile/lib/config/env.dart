@@ -48,6 +48,12 @@ abstract final class Env {
   /// up in Supabase.
   static const phoneLogin = bool.fromEnvironment('PHONE_LOGIN');
 
+  /// Selling courses inside the app. Off by default for Google Play: Play's
+  /// Payments policy requires Play Billing for in-app purchases, so students
+  /// buy on the website and their courses appear here when they sign in.
+  /// Build with --dart-define=IN_APP_PURCHASE=true to show checkout again.
+  static const inAppPurchase = bool.fromEnvironment('IN_APP_PURCHASE');
+
   static bool get hasDemoLogin =>
       demoEmail.isNotEmpty && demoPassword.isNotEmpty;
 }

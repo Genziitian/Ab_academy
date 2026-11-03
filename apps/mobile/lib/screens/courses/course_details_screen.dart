@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../config/env.dart';
 import '../../data/mock/mock_data.dart';
 import '../../data/models/course.dart';
 import '../../data/models/user.dart';
@@ -440,6 +441,24 @@ class _BottomBar extends StatelessWidget {
                 label: 'Go to course',
                 onPressed: () =>
                     context.push(Routes.curriculum, extra: course.id),
+              )
+            : !Env.inAppPurchase
+            ? Row(
+                children: [
+                  const Icon(
+                    LucideIcons.info,
+                    size: 20,
+                    color: AppColors.textMuted,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Not enrolled yet. Courses on your account appear here '
+                      'automatically when you sign in.',
+                      style: AppText.bodyCompact,
+                    ),
+                  ),
+                ],
               )
             : Row(
                 children: [

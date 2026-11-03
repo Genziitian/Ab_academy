@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../config/env.dart';
 import '../mock/mock_data.dart';
 import '../models/content.dart';
 import '../models/lesson_extras.dart';
@@ -13,8 +14,10 @@ import 'app_providers.dart';
 
 // ----------------------------------------------------------- live sessions
 
+/// Sample sessions only for the offline design preview. With a backend the
+/// list is empty until live classes are scheduled (classes start 16 Nov).
 final liveSessionsProvider = Provider<List<LiveSession>>(
-  (ref) => MockData.liveSessions,
+  (ref) => Env.hasBackend ? const [] : MockData.liveSessions,
 );
 
 final liveSessionByIdProvider = Provider.family<LiveSession, String>((ref, id) {

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../data/mock/mock_data.dart';
 import '../../data/providers/app_providers.dart';
 import '../../data/providers/feature_providers.dart';
 import '../../router/app_router.dart';
@@ -173,15 +172,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             _Group(
               label: 'LEARNING',
               rows: [
-                _Row(
-                  title: 'Downloads',
-                  value: MockData.downloadsUsedLabel.replaceAll(' used', ''),
-                  onTap: () => context.push(Routes.downloads),
-                ),
-                _Row(
-                  title: 'Calendar',
-                  onTap: () => context.push(Routes.calendar),
-                ),
                 _Row(
                   title: 'Video quality',
                   value: _quality,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../config/env.dart';
 import '../../data/mock/mock_data.dart';
 import '../../data/models/course.dart';
 import '../../data/providers/app_providers.dart';
@@ -395,7 +396,11 @@ class _StoreCard extends StatelessWidget {
                             ),
                     ),
                     PrimaryButton(
-                      label: enrolled ? 'Open' : 'Enroll',
+                      label: enrolled
+                          ? 'Open'
+                          : Env.inAppPurchase
+                          ? 'Enroll'
+                          : 'Details',
                       height: 40,
                       expand: false,
                       onPressed: enrolled
@@ -403,7 +408,9 @@ class _StoreCard extends StatelessWidget {
                               Routes.curriculum,
                               extra: course.id,
                             )
-                          : () => context.push(Routes.checkout(course.id)),
+                          : Env.inAppPurchase
+                          ? () => context.push(Routes.checkout(course.id))
+                          : () => context.push(Routes.courseDetails(course.id)),
                     ),
                   ],
                 ),

@@ -237,8 +237,8 @@ class _QuickActions extends StatelessWidget {
     final items = [
       (LucideIcons.messageCircle, 'Live doubts', AppColors.accent, Routes.live),
       (LucideIcons.fileText, 'Free notes', AppColors.teal, Routes.notes),
-      (LucideIcons.calendarDays, 'Calendar', AppColors.violet, Routes.calendar),
-      (LucideIcons.download, 'Downloads', AppColors.primary, Routes.downloads),
+      (LucideIcons.bookOpen, 'My courses', AppColors.violet, Routes.myCourses),
+      (LucideIcons.headphones, 'Support', AppColors.primary, Routes.tickets),
     ];
     return Row(
       children: [

@@ -115,12 +115,6 @@ class MoreScreen extends ConsumerWidget {
             MenuList(
               rows: [
                 MenuRow(
-                  icon: LucideIcons.download,
-                  color: AppColors.primary,
-                  label: 'Downloads',
-                  onTap: () => context.push(Routes.downloads),
-                ),
-                MenuRow(
                   icon: LucideIcons.headphones,
                   color: AppColors.primary,
                   label: 'Support',

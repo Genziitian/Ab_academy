@@ -18,12 +18,6 @@ class AcademicsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final tiles = [
       (
-        LucideIcons.calendarDays,
-        'Calendar',
-        AppGradients.violet,
-        () => context.push(Routes.calendar),
-      ),
-      (
         LucideIcons.video,
         'Live Sessions',
         AppGradients.orange,
@@ -40,12 +34,6 @@ class AcademicsScreen extends StatelessWidget {
         'Support',
         AppGradients.sky,
         () => context.push(Routes.tickets),
-      ),
-      (
-        LucideIcons.download,
-        'Downloads',
-        AppGradients.violet,
-        () => context.push(Routes.downloads),
       ),
       (
         LucideIcons.bell,
