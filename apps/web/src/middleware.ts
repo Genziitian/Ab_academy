@@ -59,7 +59,8 @@ export async function middleware(request: NextRequest) {
 
   if (needsLogin && !user) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
+    // Staff sign in at /access; the student login page has no staff option.
+    loginUrl.pathname = pathname.startsWith("/admin") ? "/access" : "/login";
     loginUrl.search = "";
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
@@ -67,7 +68,7 @@ export async function middleware(request: NextRequest) {
 
   // Already signed in and visiting /login — staff go to the console, students
   // to their dashboard (or wherever `next` points).
-  if (pathname === "/login" && user) {
+  if ((pathname === "/login" || pathname === "/access") && user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")

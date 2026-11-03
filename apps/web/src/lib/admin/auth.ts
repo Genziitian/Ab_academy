@@ -22,7 +22,7 @@ export function isDemoMode() {
 }
 
 /**
- * The signed-in staff member, or a redirect to /login.
+ * The signed-in staff member, or a redirect to /access.
  *
  * Authorisation is enforced twice on purpose: here, so an unauthorised visitor
  * never sees the console, and in Postgres via `is_staff()` / `is_admin()` RLS
@@ -39,12 +39,12 @@ export async function requireAdmin(): Promise<AdminUser> {
   }
 
   const supabase = await createServerClient();
-  if (!supabase) redirect("/login?next=/admin");
+  if (!supabase) redirect("/access");
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=/admin");
+  if (!user) redirect("/access");
 
   const { data: profile } = await supabase
     .from("profiles")

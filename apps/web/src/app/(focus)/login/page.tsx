@@ -6,7 +6,7 @@ import { LoginForm } from "./LoginForm";
 
 export const metadata = {
   title: "Log in",
-  description: "Student and staff sign-in for AB Academy.",
+  description: "Student sign-in for AB Academy.",
 };
 
 export default async function LoginPage({
@@ -16,8 +16,8 @@ export default async function LoginPage({
 }) {
   const { next, error } = await searchParams;
   const demo = isDemoMode();
-  // A `next` inside the console means a staff member was bounced here.
-  const staff = next?.startsWith("/admin") ?? false;
+  // The console has its own sign-in at /access.
+  const studentNext = next && !next.startsWith("/admin") ? next : "/dashboard";
 
   return (
     <div className="theme-saffron grid min-h-screen flex-1 lg:grid-cols-2">
@@ -55,17 +55,10 @@ export default async function LoginPage({
               role="alert"
               className="mb-6 rounded-lg bg-danger-soft px-3 py-2.5 text-sm text-danger"
             >
-              {error === "not-staff"
-                ? "That account is not a staff account."
-                : decodeURIComponent(error)}
+              {decodeURIComponent(error)}
             </p>
           ) : null}
-          <LoginForm
-            studentNext={!staff && next ? next : "/dashboard"}
-            staffNext={staff && next ? next : "/admin"}
-            demo={demo}
-            initialTab={staff ? "staff" : "student"}
-          />
+          <LoginForm next={studentNext} demo={demo} />
         </div>
       </div>
     </div>

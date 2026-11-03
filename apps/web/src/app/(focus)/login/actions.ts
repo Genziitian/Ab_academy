@@ -14,7 +14,10 @@ function safeNext(value: FormDataEntryValue | null, fallback: string) {
   return next.startsWith("/") && !next.startsWith("//") ? next : fallback;
 }
 
-/** Staff sign-in. Email + password is the only flow the console needs. */
+/**
+ * Email + password sign-in, used by /access for teachers and admins. Accounts
+ * without a staff role (e.g. a demo student) go to the student dashboard.
+ */
 export async function signInWithPassword(
   _prev: LoginState,
   formData: FormData,
@@ -28,10 +31,19 @@ export async function signInWithPassword(
   const supabase = await createServerClient();
   if (!supabase) return { error: NOT_CONFIGURED };
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: error.message };
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  // One message for every failure, so the form does not reveal which emails
+  // have accounts. Supabase rate-limits repeated attempts.
+  if (error || !data.user) return { error: "Incorrect email or password." };
 
-  redirect(next);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .maybeSingle();
+  const staff = ["teacher", "admin", "super_admin"].includes(profile?.role ?? "");
+
+  redirect(staff ? next : "/dashboard");
 }
 
 /** Student sign-in: phone OTP. Step 1 — send the code. */

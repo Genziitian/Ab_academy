@@ -112,7 +112,7 @@ show in the console's Courses and Students pages, on transactions, and as
 
 - **Phone** — students sign in with an OTP. Needs an SMS provider; Twilio or
   MSG91 both work, and MSG91 is usually cheaper for Indian numbers.
-- **Email** — staff sign-in for the admin console.
+- **Email** — staff sign-in for the admin console, at `/access` (not linked anywhere; the student login page has no staff option).
 - **Google** (optional) — add the OAuth client, then add both redirect URLs
   under **URL Configuration → Redirect URLs**:
   - `https://YOUR_DOMAIN/auth/callback`

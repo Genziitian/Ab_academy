@@ -6,45 +6,28 @@ import { GoogleMark } from "@/components/icons";
 import {
   sendPhoneOtp,
   signInWithGoogle,
-  signInWithPassword,
   verifyPhoneOtp,
   type LoginState,
 } from "./actions";
 
 const initial: LoginState = {};
 
-const input =
+export const input =
   "h-[46px] rounded-lg border border-field px-3 text-[15px] font-normal outline-none focus:border-primary";
-const primaryButton =
+export const primaryButton =
   "flex h-12 w-full items-center justify-center rounded-full bg-primary text-[15px] font-semibold text-white hover:bg-primary-dark disabled:opacity-60";
 
-type Props = {
-  /** Where students land after sign-in. */
-  studentNext: string;
-  /** Where staff land after sign-in. */
-  staffNext: string;
-  demo: boolean;
-  initialTab: "student" | "staff";
-};
-
-export function LoginForm({ studentNext, staffNext, demo, initialTab }: Props) {
-  const [tab, setTab] = useState(initialTab);
-
-  return tab === "student" ? (
-    <StudentLogin next={studentNext} demo={demo} onStaff={() => setTab("staff")} />
-  ) : (
-    <StaffLogin next={staffNext} demo={demo} onStudent={() => setTab("student")} />
-  );
+/** Student sign-in: phone OTP or Google. Staff sign in at /access. */
+export function LoginForm({ next, demo }: { next: string; demo: boolean }) {
+  return <StudentLogin next={next} demo={demo} />;
 }
 
 function StudentLogin({
   next,
   demo,
-  onStaff,
 }: {
   next: string;
   demo: boolean;
-  onStaff: () => void;
 }) {
   const [sendState, sendAction, sending] = useActionState(sendPhoneOtp, initial);
   const [verifyState, verifyAction, verifying] = useActionState(verifyPhoneOtp, initial);
@@ -154,74 +137,6 @@ function StudentLogin({
           </p>
         </>
       )}
-
-      <p className="mt-8 border-t border-border pt-5 text-center text-[13px] text-muted">
-        Teacher or admin?{" "}
-        <button type="button" onClick={onStaff} className="font-semibold text-primary">
-          Staff sign in
-        </button>
-      </p>
-    </>
-  );
-}
-
-function StaffLogin({
-  next,
-  demo,
-  onStudent,
-}: {
-  next: string;
-  demo: boolean;
-  onStudent: () => void;
-}) {
-  const [state, action, pending] = useActionState(signInWithPassword, initial);
-
-  return (
-    <>
-      <button type="button" onClick={onStudent} className="text-sm text-muted hover:text-navy">
-        ← Student login
-      </button>
-      <h2 className="mt-5 text-[28px] font-bold tracking-[-0.02em] text-navy">Staff sign in</h2>
-      <p className="mt-2 text-[15px] text-muted">
-        Teachers and admins reach the admin console here.
-      </p>
-      <form action={action} className="mt-7 flex flex-col gap-3.5">
-        <input type="hidden" name="next" value={next} />
-        <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
-          Email
-          <input
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            placeholder="you@akhandbharatacademy.in"
-            className={input}
-          />
-        </label>
-        <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
-          Password
-          <input
-            name="password"
-            type="password"
-            required
-            autoComplete="current-password"
-            className={input}
-          />
-        </label>
-        <ErrorNote message={state.error} />
-        {demo ? (
-          <>
-            <Link href="/admin" className={`mt-1.5 ${primaryButton}`}>
-              Open demo console
-            </Link>
-            <DemoNote />
-          </>
-        ) : (
-          <button type="submit" disabled={pending} className={`mt-1.5 ${primaryButton}`}>
-            {pending ? "Signing in…" : "Sign in"}
-          </button>
-        )}
-      </form>
     </>
   );
 }
@@ -273,7 +188,7 @@ function OtpBoxes() {
   );
 }
 
-function ErrorNote({ message }: { message?: string }) {
+export function ErrorNote({ message }: { message?: string }) {
   if (!message) return null;
   return (
     <p role="alert" className="mt-3 rounded-lg bg-danger-soft px-3 py-2.5 text-sm text-danger">
@@ -282,7 +197,7 @@ function ErrorNote({ message }: { message?: string }) {
   );
 }
 
-function DemoNote() {
+export function DemoNote() {
   return (
     <p className="mt-4 rounded-lg bg-amber-soft px-3 py-2.5 text-xs leading-[1.5] text-navy">
       <strong className="font-semibold">Demo mode.</strong> No Supabase project
