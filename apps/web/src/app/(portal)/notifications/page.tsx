@@ -1,14 +1,6 @@
-import { PortalTopbar } from "@/components/portal/PortalTopbar";
-import { notifications } from "@/lib/portal/data";
-import { NotificationList } from "./NotificationList";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Notifications" };
-
-export default function NotificationsPage() {
-  return (
-    <>
-      <PortalTopbar title="Notifications" />
-      <NotificationList items={notifications} />
-    </>
-  );
+// Merged into the dashboard and Live classes.
+export default function Page() {
+  redirect("/dashboard");
 }

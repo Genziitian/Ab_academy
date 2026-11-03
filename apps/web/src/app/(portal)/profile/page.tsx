@@ -1,103 +1,74 @@
 import Link from "next/link";
 import { PortalTopbar } from "@/components/portal/PortalTopbar";
-import { Card } from "@/components/portal/ui";
-import { getStudent, isPortalDemo } from "@/lib/portal/student";
-import { LearningSettings } from "./LearningSettings";
+import { getStudent } from "@/lib/portal/student";
+import { saveProfileAction } from "./actions";
 
-export const metadata = { title: "Profile & Settings" };
+export const metadata = { title: "Profile" };
+
+const field =
+  "mt-1.5 h-11 w-full rounded-xl border border-sand bg-white px-3.5 text-[15px] text-coal outline-none focus:border-clay focus:ring-2 focus:ring-clay/15";
 
 export default async function ProfilePage() {
   const student = await getStudent();
-  const demo = isPortalDemo();
-  const contact = [
-    student.phone ?? student.email,
-    student.summary,
-    student.medium ? `${student.medium} medium` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  const academic = [
-    ["Class", student.classLevel ? `Class ${student.classLevel}` : "Not set"],
-    ["Board", student.board],
-    ["Medium", student.medium ?? "Not set"],
-    ["Stream", student.stream ?? "Not set"],
-  ];
-
-  const row =
-    "flex justify-between border-b border-line px-6 py-4 text-[15px] text-navy hover:bg-surface-grey";
-
   return (
     <>
-      <PortalTopbar title="Profile & Settings" />
-      <div className="flex max-w-[960px] flex-col gap-5 px-4 pb-12 pt-7 sm:px-8">
-        <Card className="flex flex-wrap items-center gap-5 p-6">
-          <span className="flex size-[72px] items-center justify-center rounded-full bg-primary-soft text-2xl font-semibold text-primary">
-            {student.initials}
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-[22px] font-semibold text-navy">{student.name}</h2>
-            <p className="mt-1 text-sm text-muted">{contact}</p>
+      <PortalTopbar crumb={student.email ?? student.phone ?? "Your account"} title="Profile" />
+      <div className="grid max-w-[1000px] gap-6 px-4 pb-16 pt-6 sm:px-8 lg:grid-cols-[1fr_320px]">
+        <form action={saveProfileAction} className="space-y-4 rounded-[22px] border border-sand bg-cream p-6">
+          <div className="flex items-center gap-4">
+            <span className="flex size-16 items-center justify-center rounded-full bg-clay text-xl font-bold text-white">{student.initials}</span>
+            <div>
+              <p className="text-lg font-semibold text-coal">{student.name}</p>
+              <p className="text-sm text-taupe">{student.summary}</p>
+            </div>
           </div>
-          <Link
-            href="/support"
-            className="flex h-10 items-center rounded-lg border border-primary-line bg-white px-4 text-sm font-semibold text-primary hover:bg-primary-soft"
-          >
-            Edit profile
-          </Link>
-        </Card>
-
-        <Card className="overflow-hidden">
-          <h3 className="border-b border-border px-6 py-[18px] text-[15px] font-semibold text-navy">
-            Academic details
-          </h3>
-          <div className="grid sm:grid-cols-2">
-            {academic.map(([label, value], index) => (
-              <div
-                key={label}
-                className={`border-line px-6 py-4 ${index < 2 ? "border-b" : "max-sm:border-b"} ${
-                  index % 2 === 0 ? "sm:border-r" : ""
-                }`}
-              >
-                <p className="text-xs text-muted">{label}</p>
-                <p className="mt-[3px] text-[15px] font-semibold text-navy">{value}</p>
-              </div>
-            ))}
+          <label className="block text-[13px] font-semibold text-coal">
+            Full name
+            <input name="name" defaultValue={student.name} className={field} />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block text-[13px] font-semibold text-coal">
+              Class
+              <select name="classLevel" defaultValue={String(student.classLevel ?? 12)} className={field}>
+                {[12, 11, 10, 9].map((c) => (
+                  <option key={c} value={c}>
+                    Class {c}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-[13px] font-semibold text-coal">
+              Study language
+              <select name="medium" defaultValue={student.medium ?? "Hindi"} className={field}>
+                <option value="Hindi">Hindi</option>
+                <option value="Hinglish">Hinglish</option>
+              </select>
+            </label>
           </div>
-        </Card>
+          <button type="submit" className="h-12 rounded-full bg-clay px-7 text-[15px] font-semibold text-white hover:bg-coal">
+            Save changes
+          </button>
+        </form>
 
-        <Card className="overflow-hidden">
-          <h3 className="border-b border-border px-6 py-[18px] text-[15px] font-semibold text-navy">
-            Learning
-          </h3>
-          <LearningSettings />
-        </Card>
-
-        <Card className="overflow-hidden">
-          <h3 className="border-b border-border px-6 py-[18px] text-[15px] font-semibold text-navy">
-            Account
-          </h3>
-          <Link href="/my-courses" className={row}>
-            Purchases &amp; enrolments<span className="text-subtle">›</span>
-          </Link>
-          <Link href="/support" className={row}>
-            Help &amp; support tickets<span className="text-subtle">›</span>
-          </Link>
-          <Link href="/privacy" className={row}>
-            Privacy &amp; terms<span className="text-subtle">›</span>
-          </Link>
-          {demo ? (
-            <Link href="/" className="flex px-6 py-4 text-[15px] font-semibold text-danger">
-              Exit demo
+        <div className="flex h-fit flex-col gap-1 rounded-[22px] border border-sand bg-cream p-3">
+          {[
+            ["/support", "Help & support"],
+            ["/privacy", "Privacy policy"],
+            ["/terms", "Terms & conditions"],
+            ["/refund", "Refund policy"],
+            ["/data-deletion", "Delete my account or data"],
+          ].map(([href, label]) => (
+            <Link key={href} href={href} className="flex justify-between rounded-xl px-3 py-3 font-medium text-coal hover:bg-paper">
+              {label}
+              <span className="text-taupe">→</span>
             </Link>
-          ) : (
-            <form action="/auth/signout" method="post">
-              <button type="submit" className="flex w-full px-6 py-4 text-[15px] font-semibold text-danger">
-                Sign out
-              </button>
-            </form>
-          )}
-        </Card>
+          ))}
+          <form action="/auth/signout" method="post">
+            <button type="submit" className="w-full rounded-xl px-3 py-3 text-left font-semibold text-[#b23a26] hover:bg-[#fdf1f1]">
+              Sign out
+            </button>
+          </form>
+        </div>
       </div>
     </>
   );

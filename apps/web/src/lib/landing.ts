@@ -146,3 +146,8 @@ export const QUOTES: { text: string; name: string; meta: string; rating?: number
 
 /** Screenshot of the app's home screen, shown in "The app" section. */
 export const APP_SCREENSHOT = "/images/app-home.png";
+
+/** Whether the batch has begun (server time). */
+export function batchStarted() {
+  return Date.now() >= BATCH_START.getTime();
+}

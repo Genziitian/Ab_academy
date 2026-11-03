@@ -4,111 +4,75 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  BellIcon,
   BookIcon,
   BrandMark,
-  Wordmark,
-  CalendarIcon,
   CloseIcon,
   DashboardIcon,
-  DownloadIcon,
   HelpIcon,
   LiveIcon,
   MenuIcon,
   NotesIcon,
   SignOutIcon,
   UserIcon,
+  Wordmark,
 } from "@/components/icons";
 
-const learn = [
-  { href: "/dashboard", label: "Dashboard", Icon: DashboardIcon },
-  { href: "/my-courses", label: "My Courses", Icon: BookIcon, also: ["/lecture"] },
-  { href: "/live", label: "Live Classes", Icon: LiveIcon, live: true },
-  { href: "/calendar", label: "Calendar", Icon: CalendarIcon },
-  { href: "/materials", label: "Study Materials", Icon: NotesIcon },
-  { href: "/downloads", label: "Downloads", Icon: DownloadIcon },
+const LINKS = [
+  { href: "/dashboard", label: "Home", Icon: DashboardIcon },
+  { href: "/my-courses", label: "My courses", Icon: BookIcon, also: ["/lecture"] },
+  { href: "/live", label: "Live classes", Icon: LiveIcon },
+  { href: "/materials", label: "Notes", Icon: NotesIcon },
+  { href: "/support", label: "Help & support", Icon: HelpIcon },
+  { href: "/profile", label: "Profile", Icon: UserIcon },
 ];
 
-const account = [
-  { href: "/notifications", label: "Notifications", Icon: BellIcon, badge: true },
-  { href: "/support", label: "Help & Support", Icon: HelpIcon },
-  { href: "/profile", label: "Profile & Settings", Icon: UserIcon },
-];
-
-type NavProps = { unread: number; demo: boolean };
-
-function NavLinks({ unread, onNavigate }: { unread: number; onNavigate?: () => void }) {
+function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const isActive = (href: string, also: string[] = []) =>
+  const active = (href: string, also: string[] = []) =>
     [href, ...also].some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
-  const item = (link: (typeof learn)[number] | (typeof account)[number]) => {
-    const active = isActive(link.href, "also" in link ? link.also : []);
-    return (
-      <Link
-        key={link.href}
-        href={link.href}
-        onClick={onNavigate}
-        className={`flex h-10 items-center gap-3 rounded-lg px-2.5 text-sm ${
-          active
-            ? "bg-primary-soft font-semibold text-primary"
-            : "font-medium text-ink hover:bg-surface-grey hover:text-navy"
-        }`}
-      >
-        <link.Icon />
-        {link.label}
-        {"live" in link && link.live ? (
-          <span className="ml-auto whitespace-nowrap rounded bg-danger-soft px-1.5 py-px text-[10px] font-bold tracking-[0.04em] text-danger">
-            LIVE
-          </span>
-        ) : null}
-        {"badge" in link && link.badge && unread ? (
-          <span className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold text-white">
-            {unread}
-          </span>
-        ) : null}
-      </Link>
-    );
-  };
-
   return (
-    <nav className="flex flex-1 flex-col gap-0.5 overflow-auto px-3 py-4">
-      <p className="mb-1.5 px-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-subtle">
-        Learn
-      </p>
-      {learn.map(item)}
-      <p className="mb-1.5 mt-[18px] px-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-subtle">
-        Account
-      </p>
-      {account.map(item)}
+    <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-5">
+      {LINKS.map((link) => {
+        const on = active(link.href, link.also);
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={onNavigate}
+            aria-current={on ? "page" : undefined}
+            className={`flex h-11 items-center gap-3 rounded-xl px-3 text-[15px] transition-colors ${
+              on ? "bg-coal font-semibold text-cream" : "font-medium text-coal hover:bg-paper"
+            }`}
+          >
+            <link.Icon />
+            {link.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 }
 
 function Footer({ demo }: { demo: boolean }) {
+  const cls = "flex h-11 w-full items-center gap-3 rounded-xl px-3 text-[15px] font-medium text-taupe hover:bg-paper hover:text-coal";
   return (
-    <div className="flex flex-col gap-2.5 border-t border-border p-4">
+    <div className="flex flex-col gap-2 border-t border-sand p-3">
       <Link
-        href="/courses"
-        className="flex h-[38px] items-center justify-center rounded-lg bg-primary-soft text-[13px] font-semibold text-primary hover:bg-[#f6dcc6]"
+        href="/#courses"
+        className="flex h-11 items-center justify-center rounded-full bg-saffron text-sm font-bold text-coal hover:bg-coal hover:text-cream"
       >
-        Browse more courses
+        Explore courses
       </Link>
       {demo ? (
-        <Link
-          href="/"
-          className="flex items-center gap-2.5 px-2.5 py-1.5 text-[13px] font-medium text-muted hover:text-navy"
-        >
-          <SignOutIcon size={16} />
-          Exit demo
+        <Link href="/" className={cls}>
+          <SignOutIcon size={18} />
+          Exit preview
         </Link>
       ) : (
         <form action="/auth/signout" method="post">
-          <button
-            type="submit"
-            className="flex w-full items-center gap-2.5 px-2.5 py-1.5 text-[13px] font-medium text-muted hover:text-navy"
-          >
-            <SignOutIcon size={16} />
+          <button type="submit" className={cls}>
+            <SignOutIcon size={18} />
             Sign out
           </button>
         </form>
@@ -126,62 +90,63 @@ function Brand() {
   );
 }
 
-/** Fixed left rail on large screens. */
-export function PortalSidebar({ unread, demo }: NavProps) {
+/** Left rail on large screens. */
+export function PortalSidebar({ demo }: { demo: boolean }) {
   return (
-    <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col border-r border-border bg-white lg:flex">
-      <div className="flex h-[68px] items-center border-b border-border px-5">
+    <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col border-r border-sand bg-cream lg:flex">
+      <div className="flex h-[72px] items-center border-b border-sand px-5">
         <Brand />
       </div>
-      <NavLinks unread={unread} />
+      <NavLinks />
       <Footer demo={demo} />
     </aside>
   );
 }
 
-/** Brand bar with a slide-in drawer, shown below the `lg` breakpoint. */
-export function PortalMobileNav({ unread, demo }: NavProps) {
-  // Links close the drawer themselves via onNavigate.
+/** Brand bar with a slide-in drawer below the `lg` breakpoint. */
+export function PortalMobileNav({ demo }: { demo: boolean }) {
   const [open, setOpen] = useState(false);
-
   return (
     <div className="lg:hidden">
-      <div className="flex h-14 items-center justify-between border-b border-border bg-white px-4">
+      <div className="flex h-16 items-center justify-between border-b border-sand bg-cream px-4">
         <Brand />
         <button
           type="button"
           aria-label="Open menu"
           onClick={() => setOpen(true)}
-          className="flex size-10 items-center justify-center rounded-lg border border-border text-navy"
+          className="flex size-10 items-center justify-center rounded-full border border-sand text-coal"
         >
           <MenuIcon size={20} />
         </button>
       </div>
-      {open ? (
-        <div className="fixed inset-0 z-50 flex">
-          <button
-            type="button"
-            aria-label="Close menu"
-            className="absolute inset-0 bg-navy/40"
-            onClick={() => setOpen(false)}
-          />
-          <aside className="relative flex h-full w-[280px] max-w-[85%] flex-col bg-white shadow-[var(--shadow-float)]">
-            <div className="flex h-14 items-center justify-between border-b border-border px-4">
-              <Brand />
-              <button
-                type="button"
-                aria-label="Close menu"
-                onClick={() => setOpen(false)}
-                className="flex size-9 items-center justify-center rounded-lg text-muted"
-              >
-                <CloseIcon size={18} />
-              </button>
-            </div>
-            <NavLinks unread={unread} onNavigate={() => setOpen(false)} />
-            <Footer demo={demo} />
-          </aside>
-        </div>
-      ) : null}
+      <div className={`fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`} aria-hidden={!open}>
+        <button
+          type="button"
+          aria-label="Close menu"
+          tabIndex={open ? 0 : -1}
+          className={`absolute inset-0 bg-coal/40 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`}
+          onClick={() => setOpen(false)}
+        />
+        <aside
+          className={`absolute inset-y-0 left-0 flex w-[280px] max-w-[85%] flex-col bg-cream transition-transform duration-300 ${
+            open ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <div className="flex h-16 items-center justify-between border-b border-sand px-4">
+            <Brand />
+            <button
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+              className="flex size-9 items-center justify-center rounded-full text-taupe"
+            >
+              <CloseIcon size={18} />
+            </button>
+          </div>
+          <NavLinks onNavigate={() => setOpen(false)} />
+          <Footer demo={demo} />
+        </aside>
+      </div>
     </div>
   );
 }

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { PortalMobileNav, PortalSidebar } from "@/components/portal/PortalNav";
-import { unreadCount } from "@/lib/portal/data";
 import { getStudent, isPortalDemo } from "@/lib/portal/student";
 
 export const metadata: Metadata = {
-  title: { default: "Student portal", template: "%s · Student portal" },
+  title: { default: "My learning", template: "%s · AB Academy" },
   robots: { index: false, follow: false },
 };
 
@@ -15,14 +14,9 @@ export default async function PortalLayout({ children }: { children: React.React
 
   return (
     <div className="theme-saffron flex min-h-screen flex-1 bg-paper">
-      <PortalSidebar unread={unreadCount} demo={demo} />
+      <PortalSidebar demo={demo} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <PortalMobileNav unread={unreadCount} demo={demo} />
-        <p className="border-b border-[#f6e3c4] bg-[#fff8ec] px-4 py-2 text-xs text-[#8a6a3e] sm:px-8">
-          <strong className="font-semibold text-navy">Sample data.</strong> The
-          portal layout is live; courses, schedule and notes shown here are
-          placeholders until they are connected to your enrolments.
-        </p>
+        <PortalMobileNav demo={demo} />
         {children}
       </div>
     </div>

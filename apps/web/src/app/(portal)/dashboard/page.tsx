@@ -1,224 +1,84 @@
 import Link from "next/link";
-import { PlayIcon, TestIcon } from "@/components/icons";
+import { Countdown } from "@/components/landing/Countdown";
+import { CourseCards, NoCourses } from "@/components/portal/CourseCards";
 import { PortalTopbar } from "@/components/portal/PortalTopbar";
-import { Card, LiveNowBadge, ProgressBar, SectionTitle } from "@/components/portal/ui";
-import {
-  currentChapter,
-  dashboardSchedule,
-  enrolledCourses,
-  liveNow,
-} from "@/lib/portal/data";
+import { BATCH_START, BATCH_START_LABEL, CONTACT, TEACHER, batchStarted } from "@/lib/landing";
+import { getMyCourses, getUpcomingClasses } from "@/lib/portal/live";
 import { getStudent } from "@/lib/portal/student";
 
-export const metadata = { title: "Dashboard" };
+export const metadata = { title: "Home" };
 
 function greeting() {
-  const hour = Number(
-    new Intl.DateTimeFormat("en-IN", { hour: "numeric", hour12: false, timeZone: "Asia/Kolkata" }).format(
-      new Date(),
-    ),
-  );
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+  const h = Number(new Date().toLocaleString("en-IN", { hour: "numeric", hour12: false, timeZone: "Asia/Kolkata" }));
+  return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 }
 
 export default async function DashboardPage() {
-  const student = await getStudent();
-  const resume = currentChapter.lessons?.find((l) => l.kind === "current");
-  const crumb = [student.summary, student.medium ? `${student.medium} medium` : null]
-    .filter(Boolean)
-    .join(" · ");
+  const [student, courses, classes] = await Promise.all([getStudent(), getMyCourses(), getUpcomingClasses(3)]);
+  const started = batchStarted();
+  const next = classes[0];
 
   return (
     <>
-      <PortalTopbar title={`${greeting()}, ${student.firstName}`} crumb={crumb} />
-      <div className="flex max-w-[1280px] flex-wrap items-start gap-6 px-4 pb-12 pt-7 sm:px-8">
-        <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-6">
-          <section className="flex flex-wrap items-end justify-between gap-5 rounded-xl bg-navy p-7 text-white">
-            <div className="min-w-0 flex-[1_1_280px]">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <LiveNowBadge />
-                <span className="whitespace-nowrap text-[13px] text-[#bdb4a7]">
-                  {liveNow.time} · {liveNow.students} students
-                </span>
-              </div>
-              <p className="mt-5 whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.04em] text-[#f2a86b]">
-                {liveNow.subject} · Chapter 0{currentChapter.number}
+      <PortalTopbar crumb={greeting()} title={student.firstName} />
+      <div className="flex flex-col gap-8 px-4 pb-16 pt-6 sm:px-8">
+        {/* Batch start / next class */}
+        <section className="grid gap-6 overflow-hidden rounded-[26px] bg-coal p-6 text-cream sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
+          {started ? (
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-saffron">
+                {next ? "Next live class" : "Classes are on"}
               </p>
-              <h2 className="mt-1.5 text-[26px] font-bold tracking-[-0.02em] sm:text-[30px]">
-                {currentChapter.title}
+              <h2 className="mt-3 font-serif text-[36px] leading-none sm:text-[48px]">
+                {next ? next.title : "Pick up where you left off."}
               </h2>
-              <div className="mt-4 flex items-center gap-2.5">
-                <span className="flex size-8 items-center justify-center rounded-full bg-[#3a342d] text-xs font-semibold text-[#f6dcc6]">
-                  {liveNow.initials}
-                </span>
-                <span className="text-sm text-[#d9d1c4]">{liveNow.teacher}</span>
-              </div>
+              <p className="mt-3 text-mist">
+                {next
+                  ? new Date(next.startsAt).toLocaleString("en-IN", { weekday: "long", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" })
+                  : `New lectures are added as ${TEACHER.name} uploads them.`}
+              </p>
             </div>
-            <Link
-              href="/live/classroom"
-              className="flex h-[46px] shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-white px-5 text-[15px] font-semibold text-navy hover:bg-primary-soft"
-            >
-              Join Live Class →
-            </Link>
-          </section>
+          ) : (
+            <>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-saffron">Board 2027 batch</p>
+                <h2 className="mt-3 font-serif text-[36px] leading-none sm:text-[52px]">Classes start {BATCH_START_LABEL}.</h2>
+                <p className="mt-3 max-w-[460px] text-mist">
+                  Recorded lectures, practice sessions and live doubt classes with {TEACHER.name} begin then.
+                </p>
+              </div>
+              <Countdown target={BATCH_START.toISOString()} />
+            </>
+          )}
+        </section>
 
-          {resume ? (
-            <section>
-              <SectionTitle>Continue learning</SectionTitle>
-              <Link
-                href={`/lecture/${resume.id}`}
-                className="flex gap-4 rounded-xl border border-border bg-white p-4 hover:border-primary-line"
-              >
-                <div className="relative flex h-[90px] w-[clamp(96px,30%,140px)] shrink-0 items-center justify-center rounded-lg bg-primary-soft">
-                  <span className="flex size-9 items-center justify-center rounded-full bg-white text-primary shadow-[0_2px_8px_rgba(20,22,28,0.12)]">
-                    <PlayIcon />
-                  </span>
-                  <span className="absolute bottom-2 right-2 rounded bg-navy/75 px-1.5 py-0.5 text-[11px] font-semibold text-white">
-                    38:14
-                  </span>
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.06em] text-primary">
-                      {currentChapter.subject}
-                    </p>
-                    <p className="mt-1 text-base font-semibold text-navy">
-                      Chapter {currentChapter.number} · {currentChapter.title}
-                    </p>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-[13px]">
-                      <span className="text-muted">68% complete</span>
-                      <span className="font-semibold text-primary">Continue →</span>
-                    </div>
-                    <ProgressBar value={68} className="mt-2 h-1.5" />
-                  </div>
-                </div>
-              </Link>
-            </section>
-          ) : null}
-
-          <section>
-            <div className="mb-3 flex items-center justify-between">
-              <SectionTitle className="mb-0">My courses</SectionTitle>
-              <Link href="/my-courses" className="text-sm font-semibold text-primary">
+        {/* Courses */}
+        <section>
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <h2 className="font-serif text-[32px] leading-none text-coal">My courses</h2>
+            {courses.length ? (
+              <Link href="/my-courses" className="text-sm font-bold text-clay hover:underline">
                 See all
               </Link>
-            </div>
-            <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
-              {enrolledCourses.map((course) => (
-                <Link
-                  key={course.id}
-                  href={`/my-courses?course=${course.id}`}
-                  className="block rounded-xl border border-border bg-white p-5 hover:border-primary-line"
-                >
-                  <div className="flex justify-between gap-3">
-                    <div>
-                      <p className="text-[11px] font-semibold tracking-[0.06em] text-muted">
-                        {course.batch}
-                      </p>
-                      <p className="mt-1.5 text-base font-semibold text-navy">{course.title}</p>
-                      <p className="mt-1 text-[13px] text-muted">{course.next}</p>
-                    </div>
-                    <span className="text-xl font-bold text-primary">{course.pct}%</span>
-                  </div>
-                  <ProgressBar value={course.pct} className="mt-4 h-1.5" />
-                  <p className="mt-2.5 text-xs text-muted">
-                    {course.chaptersDone} of {course.chaptersTotal} chapters
-                  </p>
-                </Link>
-              ))}
-            </div>
-          </section>
+            ) : null}
+          </div>
+          {courses.length ? <CourseCards courses={courses} /> : <NoCourses />}
+        </section>
 
-          <section className="flex flex-wrap gap-4 rounded-xl border border-[#f6e3c4] bg-[#fff8ec] px-5 py-[18px]">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-[#ffecd6] text-amber">
-              <TestIcon size={20} />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold text-navy">Physics test on Sunday</p>
-              <p className="mt-[3px] text-sm text-[#8a6a3e]">20 questions · Chapters 1–3</p>
-            </div>
-            <Link href="/calendar" className="self-center text-sm font-semibold text-amber">
-              View Details →
-            </Link>
-          </section>
-        </div>
-
-        <div className="flex max-w-full flex-[1_1_280px] flex-col gap-6">
-          <Card className="p-5">
-            <div className="flex items-center justify-between">
-              <SectionTitle className="mb-0">Today&apos;s schedule</SectionTitle>
-              <Link href="/calendar" className="text-[13px] font-semibold text-primary">
-                Calendar →
-              </Link>
-            </div>
-            <div className="mt-[18px] flex flex-col">
-              {dashboardSchedule.map((slot) => (
-                <div key={slot.time} className="flex gap-3.5">
-                  <div
-                    className={`w-[58px] shrink-0 text-[13px] font-semibold ${slot.live ? "text-navy" : "text-muted"}`}
-                  >
-                    {slot.time}
-                  </div>
-                  <div className="flex-1 border-l-2 border-track pb-[18px] pl-3.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-navy">{slot.title}</span>
-                      {slot.live ? (
-                        <span className="rounded bg-danger-soft px-1.5 py-px text-[10px] font-bold text-danger">
-                          LIVE
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className="mt-[3px] text-[13px] text-muted">{slot.sub}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="p-5">
-            <SectionTitle className="mb-0">This week</SectionTitle>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {[
-                ["12/28", "Chapters done"],
-                ["17/20", "Last test score"],
-              ].map(([value, label]) => (
-                <div key={label} className="rounded-lg bg-surface-soft p-3.5">
-                  <p className="text-[22px] font-bold text-navy">{value}</p>
-                  <p className="mt-0.5 text-xs text-muted">{label}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="p-5">
-            <div className="flex items-center justify-between">
-              <SectionTitle className="mb-0">Latest updates</SectionTitle>
-              <Link href="/notifications" className="text-[13px] font-semibold text-primary">
-                All
-              </Link>
-            </div>
-            <div className="mt-3 flex flex-col">
-              <Link href="/materials" className="border-b border-line py-3">
-                <p className="text-sm font-semibold text-navy">New notes uploaded</p>
-                <p className="mt-0.5 text-[13px] text-muted">
-                  Chapter 02 notes — Electrochemistry.
-                </p>
-              </Link>
-              <Link href="/live" className="py-3">
-                <p className="text-sm font-semibold text-navy">New recording available</p>
-                <p className="mt-0.5 text-[13px] text-muted">
-                  Yesterday&apos;s Chemistry class recording is now available.
-                </p>
-              </Link>
-            </div>
-          </Card>
-        </div>
+        {/* Help */}
+        <section className="grid gap-4 sm:grid-cols-2">
+          <Link href="/live" className="rounded-[22px] border border-sand bg-cream p-6 hover:border-coal">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Live classes</p>
+            <p className="mt-2 text-lg font-semibold text-coal">
+              {next ? `${classes.length} coming up` : `Live doubt classes start ${BATCH_START_LABEL}`}
+            </p>
+          </Link>
+          <Link href="/support" className="rounded-[22px] border border-sand bg-cream p-6 hover:border-coal">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Need help?</p>
+            <p className="mt-2 text-lg font-semibold text-coal">Raise a ticket or write to {CONTACT.email}</p>
+          </Link>
+        </section>
       </div>
     </>
   );
 }
-

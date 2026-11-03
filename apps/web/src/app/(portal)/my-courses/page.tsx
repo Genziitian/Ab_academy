@@ -1,24 +1,15 @@
+import { CourseCards, NoCourses } from "@/components/portal/CourseCards";
 import { PortalTopbar } from "@/components/portal/PortalTopbar";
-import { enrolledCourses } from "@/lib/portal/data";
-import { MyCourses } from "./MyCourses";
+import { getMyCourses } from "@/lib/portal/live";
 
-export const metadata = { title: "My Courses" };
+export const metadata = { title: "My courses" };
 
-export default async function MyCoursesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ course?: string }>;
-}) {
-  const { course } = await searchParams;
-  const index = Math.max(
-    0,
-    enrolledCourses.findIndex((c) => c.id === course),
-  );
-
+export default async function MyCoursesPage() {
+  const courses = await getMyCourses();
   return (
     <>
-      <PortalTopbar title="My Courses" />
-      <MyCourses courses={enrolledCourses} initialCourse={index} />
+      <PortalTopbar crumb="Your enrolled courses" title="My courses" />
+      <div className="px-4 pb-16 pt-6 sm:px-8">{courses.length ? <CourseCards courses={courses} /> : <NoCourses />}</div>
     </>
   );
 }
