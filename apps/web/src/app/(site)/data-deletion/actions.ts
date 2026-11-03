@@ -1,0 +1,31 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createServerClient } from "@/lib/supabase/server";
+
+export type DeletionResult = { error?: string; ok?: boolean };
+
+/** File a data or account deletion request as the signed-in student. */
+export async function requestDeletion(_: DeletionResult, formData: FormData): Promise<DeletionResult> {
+  const kind = String(formData.get("kind") ?? "");
+  const reason = String(formData.get("reason") ?? "").slice(0, 1000);
+  if (kind !== "data" && kind !== "account") return { error: "Choose what you want deleted." };
+  if (formData.get("confirm") !== "on") return { error: "Tick the box to confirm you understand." };
+
+  const supabase = await createServerClient();
+  if (!supabase) return { error: "Requests are not available right now. Email us instead." };
+  const { error } = await supabase.rpc("request_deletion", { p_kind: kind, p_reason: reason });
+  if (error) return { error: "Your request could not be sent. Try again, or email us." };
+
+  revalidatePath("/data-deletion");
+  return { ok: true };
+}
+
+/** Withdraw a request that is still pending. */
+export async function cancelDeletion(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const supabase = await createServerClient();
+  if (!supabase || !id) return;
+  await supabase.rpc("cancel_deletion_request", { p_id: id });
+  revalidatePath("/data-deletion");
+}

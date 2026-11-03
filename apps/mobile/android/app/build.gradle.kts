@@ -21,7 +21,9 @@ if (hasKeystore) {
 
 android {
     namespace = "com.akhandbharat.akhand_bharat_academy"
-    compileSdk = flutter.compileSdkVersion
+    // Google Play requires new apps and updates to target Android 16 (API 36)
+    // from 31 August 2026.
+    compileSdk = 36
     // path_provider_android, pdfrx and url_launcher_android all require 27;
     // NDK versions are backward compatible, so take the highest.
     ndkVersion = "27.0.12077973"
@@ -43,7 +45,7 @@ android {
         // Supabase Auth's PKCE flow and firebase_messaging both need 21+;
         // 23 is the floor for the Play Integrity defaults.
         minSdk = 23
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 

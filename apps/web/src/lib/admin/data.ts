@@ -1462,7 +1462,9 @@ export async function listTransactions(): Promise<AdminTransaction[]> {
     razorpayOrderId: row.razorpay_order_id,
     razorpayPaymentId: row.razorpay_payment_id,
     studentId: row.student_id,
-    studentName: row.profiles?.full_name || row.profiles?.email || "Student",
+    studentName: row.student_id
+      ? row.profiles?.full_name || row.profiles?.email || "Student"
+      : "Deleted account",
     studentEmail: row.profiles?.email ?? null,
     studentCode: row.profiles?.student_code ?? null,
     courseId: row.course_id,

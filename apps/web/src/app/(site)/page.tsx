@@ -12,8 +12,6 @@ import {
   FAQS,
   FEATURES,
   FOUNDERS,
-  FREE_NOTES,
-  NOTES_LIVE,
   QUOTES,
   RESULTS,
   SYLLABUS,
@@ -293,45 +291,11 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      {/* 06 Free notes */}
-      <section id="notes" className="border-y border-sand bg-paper">
-        <div className="mx-auto grid max-w-[1280px] items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-16 lg:py-28">
-          <div>
-            <p className="kicker text-clay">{RESULTS.length ? "06" : "04"}. Free notes</p>
-            <h2 className="mt-3 font-serif text-[48px] leading-none tracking-[-0.02em] sm:text-[72px]">
-              {NOTES_LIVE ? "Read before you pay." : "Notes are coming soon."}
-            </h2>
-            <p className="mt-4 text-lg leading-[1.6] text-taupe">
-              Chapter notes and important questions, free with a sign-in. They open in a secure viewer on the
-              website and in the app.
-            </p>
-            <div className="mt-8 flex flex-col">
-              {FREE_NOTES.map((n) => (
-                <Link
-                  key={n.subject + n.title}
-                  href="/notes"
-                  className="flex items-center justify-between gap-4 border-t border-sand py-[18px] text-coal hover:text-clay"
-                >
-                  <span>
-                    <span className="block text-[13px] font-bold uppercase tracking-[0.12em] text-clay">{n.subject}</span>
-                    <span className="text-lg font-semibold sm:text-[19px]">{n.title}</span>
-                  </span>
-                  <span className="shrink-0 text-[15px] font-semibold">{NOTES_LIVE ? "Read free →" : "Coming soon"}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div className="relative aspect-square overflow-hidden rounded-3xl bg-sand">
-            <Image src="/images/feature-notes.png" alt="Chapter notes" fill sizes="(min-width: 1024px) 560px, 100vw" className="object-cover" />
-          </div>
-        </div>
-      </section>
-
-      {/* 07 The app */}
-      <section className="mx-auto max-w-[1280px] px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
+      {/* The app */}
+      <section id="app" className="mx-auto max-w-[1280px] scroll-mt-24 px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
         <div className="grid items-center gap-12 rounded-[28px] bg-coal p-8 text-cream sm:p-12 lg:grid-cols-[1.2fr_1fr] lg:p-16">
           <div>
-            <p className="kicker text-saffron">{RESULTS.length ? "07" : "05"}. The app</p>
+            <p className="kicker text-saffron">{RESULTS.length ? "06" : "04"}. The app</p>
             <h2 className="mt-3 font-serif text-[44px] leading-none tracking-[-0.02em] sm:text-[72px]">
               Your classroom fits in your pocket.
             </h2>
@@ -356,7 +320,7 @@ export default async function HomePage() {
       <section id="about" className="mx-auto max-w-[1280px] scroll-mt-24 px-4 pb-20 sm:px-6 lg:px-16 lg:pb-28">
         <div className="grid gap-10 border-t-2 border-coal pt-8 lg:grid-cols-[1fr_1.3fr] lg:gap-16">
           <div>
-            <p className="kicker text-clay">{RESULTS.length ? "08" : "06"}. About us</p>
+            <p className="kicker text-clay">{RESULTS.length ? "07" : "05"}. About us</p>
             <h2 className="mt-3 font-serif text-[48px] leading-none tracking-[-0.02em] sm:text-[72px]">Built in Bihar, for Bihar Board.</h2>
             <p className="mt-4 max-w-[460px] text-lg leading-[1.6] text-taupe">
               A teacher with {TEACHER.years} years in the classroom and a developer, building the crash course they wish
@@ -378,7 +342,7 @@ export default async function HomePage() {
       {/* 09 FAQ */}
       <section id="faq" className="mx-auto grid max-w-[1280px] scroll-mt-24 gap-10 px-4 pb-20 sm:px-6 lg:grid-cols-[1fr_1.4fr] lg:gap-16 lg:px-16 lg:pb-28">
         <div>
-          <p className="kicker text-clay">{RESULTS.length ? "09" : "07"}. Questions</p>
+          <p className="kicker text-clay">{RESULTS.length ? "08" : "06"}. Questions</p>
           <h2 className="mt-3 font-serif text-[48px] leading-none tracking-[-0.02em] sm:text-[72px]">Asked often.</h2>
         </div>
         <div className="border-t-2 border-coal">

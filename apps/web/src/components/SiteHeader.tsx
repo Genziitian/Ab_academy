@@ -1,8 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
-import { BrandMark, CloseIcon, MenuIcon } from "@/components/icons";
+import { BrandMark } from "@/components/icons";
 import { BATCH_START_LABEL, PLAY_STORE_URL } from "@/lib/landing";
 
 const nav = [
@@ -14,8 +11,6 @@ const nav = [
 ];
 
 export function SiteHeader() {
-  const [open, setOpen] = useState(false);
-
   return (
     <>
       <div className="bg-coal text-cream">
@@ -69,49 +64,13 @@ export function SiteHeader() {
             </Link>
           </div>
 
-          <button
-            type="button"
-            className="ml-auto flex size-11 items-center justify-center rounded-full border border-sand text-coal lg:hidden"
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            onClick={() => setOpen((value) => !value)}
+          <Link
+            href="/login"
+            className="ml-auto flex h-11 items-center rounded-full bg-coal px-5 text-[15px] font-semibold text-cream lg:hidden"
           >
-            {open ? <CloseIcon size={20} /> : <MenuIcon size={20} />}
-          </button>
+            Log in
+          </Link>
         </div>
-
-        {open ? (
-          <div className="border-t border-sand bg-cream px-4 pb-5 pt-2 lg:hidden">
-            <nav className="flex flex-col">
-              {nav.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="border-b border-sand py-3.5 text-base font-medium text-coal"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-            <div className="mt-4 grid gap-2.5">
-              <Link
-                href="/#courses"
-                onClick={() => setOpen(false)}
-                className="flex h-12 items-center justify-center rounded-full bg-saffron text-[15px] font-bold text-coal"
-              >
-                Join Class 12 Crash Course
-              </Link>
-              <Link
-                href="/login"
-                onClick={() => setOpen(false)}
-                className="flex h-12 items-center justify-center rounded-full border border-coal text-[15px] font-semibold text-coal"
-              >
-                Log in
-              </Link>
-            </div>
-          </div>
-        ) : null}
       </header>
     </>
   );

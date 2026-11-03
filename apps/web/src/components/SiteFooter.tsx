@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PlayBadge } from "@/components/landing/PlayBadge";
+import { LEGAL_DOCS } from "@/components/LegalPage";
 import { CONTACT, TEACHER } from "@/lib/landing";
 
 const columns = [
@@ -67,16 +68,12 @@ export function SiteFooter() {
         <span>
           © {new Date().getFullYear()} AB Academy · {CONTACT.site}
         </span>
-        <div className="flex gap-5">
-          <Link href="/privacy" className="hover:text-cream">
-            Privacy
-          </Link>
-          <Link href="/terms" className="hover:text-cream">
-            Terms
-          </Link>
-          <Link href="/contact" className="hover:text-cream">
-            Refund &amp; grievance
-          </Link>
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          {LEGAL_DOCS.map((doc) => (
+            <Link key={doc.href} href={doc.href} className="hover:text-cream">
+              {doc.label}
+            </Link>
+          ))}
         </div>
       </div>
     </footer>

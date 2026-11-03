@@ -17,7 +17,10 @@ const NAV = [
 ];
 
 /** Money is the super admin's alone; the page and RLS both enforce it. */
-const SUPER_ADMIN_NAV = [{ href: "/admin/transactions", label: "Transactions" }];
+const SUPER_ADMIN_NAV = [
+  { href: "/admin/transactions", label: "Transactions" },
+  { href: "/admin/deletions", label: "Deletion requests" },
+];
 
 export function AdminSidebar({ role }: { role: string }) {
   const pathname = usePathname();

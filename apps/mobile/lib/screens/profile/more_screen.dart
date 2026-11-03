@@ -14,6 +14,7 @@ import '../../theme/app_text_styles.dart';
 import '../../widgets/common.dart';
 import '../../widgets/ui_kit.dart';
 import '../../widgets/web_page_screen.dart';
+import 'delete_account_screen.dart';
 
 final _versionProvider = FutureProvider<String>((ref) async {
   try {
@@ -184,10 +185,38 @@ class MoreScreen extends ConsumerWidget {
                   onTap: () => web('Privacy Policy', '/privacy'),
                 ),
                 MenuRow(
+                  icon: LucideIcons.receipt,
+                  color: AppColors.accent,
+                  label: 'Refund Policy',
+                  onTap: () => web('Refund Policy', '/refund'),
+                ),
+                MenuRow(
+                  icon: LucideIcons.fileX,
+                  color: AppColors.teal,
+                  label: 'Data Deletion Policy',
+                  onTap: () => web('Data & Account Deletion', '/data-deletion'),
+                ),
+                MenuRow(
                   icon: LucideIcons.mail,
                   color: const Color(0xFFF59E0B),
                   label: 'Contact Us',
                   onTap: () => web('Contact Us', '/contact'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 28),
+            const GroupHeading('Account'),
+            MenuList(
+              rows: [
+                MenuRow(
+                  icon: LucideIcons.userX,
+                  color: AppColors.liveInk,
+                  label: 'Delete account or data',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const DeleteAccountScreen(),
+                    ),
+                  ),
                 ),
               ],
             ),
