@@ -178,15 +178,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           animation: _intro,
                           from: 0,
                           to: 0.4,
-                          child: Row(
-                            children: [
-                              const AcademyMark(size: 44),
-                              const SizedBox(width: 12),
-                              Text('AB Academy', style: AppText.serif(28)),
-                            ],
-                          ),
+                          child: const Center(child: AcademyMark(size: 76)),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 20),
                         _Reveal(
                           animation: _intro,
                           from: 0.05,
@@ -201,7 +195,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Welcome to AB Academy', style: AppText.h2),
+                              Text(
+                                'Welcome back to AB Academy',
+                                style: AppText.h2,
+                              ),
                               const SizedBox(height: 6),
                               Text(
                                 'Sign in to watch lectures, ask doubts and read notes.',
