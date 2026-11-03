@@ -32,10 +32,10 @@ abstract final class Env {
         '778886774711-2b8s12ria26qk6nlaods66gpbbplqs00.apps.googleusercontent.com',
   );
 
-  /// The website, for About / Terms / Privacy opened inside the app.
+  /// The website, shared from More → Share App.
   static const siteUrl = String.fromEnvironment(
     'SITE_URL',
-    defaultValue: 'https://web-two-sand-99.vercel.app',
+    defaultValue: 'https://abacademy.in',
   );
 
   /// Whether the Notes library is open. Off shows "Notes are coming soon";

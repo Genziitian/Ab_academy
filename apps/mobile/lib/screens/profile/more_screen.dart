@@ -13,7 +13,8 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/common.dart';
 import '../../widgets/ui_kit.dart';
-import '../../widgets/web_page_screen.dart';
+import '../info/info_screens.dart';
+import '../info/policy_content.dart';
 import 'delete_account_screen.dart';
 
 final _versionProvider = FutureProvider<String>((ref) async {
@@ -34,12 +35,6 @@ class MoreScreen extends ConsumerWidget {
     final student = ref.watch(studentProvider);
     final openTickets = ref.watch(openTicketCountProvider);
     final version = ref.watch(_versionProvider).value ?? '';
-
-    void web(String title, String path) => Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => WebPageScreen(title: title, path: path),
-      ),
-    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -121,13 +116,13 @@ class MoreScreen extends ConsumerWidget {
               rows: [
                 MenuRow(
                   icon: LucideIcons.download,
-                  color: AppColors.success,
+                  color: AppColors.primary,
                   label: 'Downloads',
                   onTap: () => context.push(Routes.downloads),
                 ),
                 MenuRow(
                   icon: LucideIcons.headphones,
-                  color: const Color(0xFF0EA5E9),
+                  color: AppColors.primary,
                   label: 'Support',
                   value: openTickets > 0 ? '$openTickets open' : null,
                   onTap: () => context.push(Routes.tickets),
@@ -140,7 +135,7 @@ class MoreScreen extends ConsumerWidget {
                 ),
                 MenuRow(
                   icon: LucideIcons.share2,
-                  color: AppColors.english,
+                  color: AppColors.primary,
                   label: 'Share App',
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: Env.siteUrl));
@@ -152,7 +147,7 @@ class MoreScreen extends ConsumerWidget {
                 ),
                 MenuRow(
                   icon: LucideIcons.downloadCloud,
-                  color: AppColors.teal,
+                  color: AppColors.primary,
                   label: 'Check for Updates',
                   value: version,
                   onTap: () => showDemoSnack(
@@ -168,39 +163,39 @@ class MoreScreen extends ConsumerWidget {
               rows: [
                 MenuRow(
                   icon: LucideIcons.info,
-                  color: AppColors.violet,
+                  color: AppColors.primary,
                   label: 'About Us',
-                  onTap: () => web('About Us', '/about'),
+                  onTap: () => openAbout(context),
                 ),
                 MenuRow(
                   icon: LucideIcons.gavel,
                   color: AppColors.primary,
                   label: 'Terms & Conditions',
-                  onTap: () => web('Terms & Conditions', '/terms'),
+                  onTap: () => openPolicy(context, Policies.terms),
                 ),
                 MenuRow(
                   icon: LucideIcons.shieldCheck,
-                  color: AppColors.success,
+                  color: AppColors.primary,
                   label: 'Privacy Policy',
-                  onTap: () => web('Privacy Policy', '/privacy'),
+                  onTap: () => openPolicy(context, Policies.privacy),
                 ),
                 MenuRow(
                   icon: LucideIcons.receipt,
-                  color: AppColors.accent,
+                  color: AppColors.primary,
                   label: 'Refund Policy',
-                  onTap: () => web('Refund Policy', '/refund'),
+                  onTap: () => openPolicy(context, Policies.refund),
                 ),
                 MenuRow(
                   icon: LucideIcons.fileX,
-                  color: AppColors.teal,
-                  label: 'Data Deletion Policy',
-                  onTap: () => web('Data & Account Deletion', '/data-deletion'),
+                  color: AppColors.primary,
+                  label: 'Data & Account Deletion',
+                  onTap: () => openDataDeletion(context),
                 ),
                 MenuRow(
                   icon: LucideIcons.mail,
-                  color: const Color(0xFFF59E0B),
+                  color: AppColors.primary,
                   label: 'Contact Us',
-                  onTap: () => web('Contact Us', '/contact'),
+                  onTap: () => openContact(context),
                 ),
               ],
             ),
@@ -222,10 +217,10 @@ class MoreScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 28),
             Material(
-              color: const Color(0xFFFDECEE),
+              color: AppColors.liveTint,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(22),
-                side: const BorderSide(color: Color(0xFFF5B5BE)),
+                side: const BorderSide(color: AppColors.dangerBorder),
               ),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
@@ -239,7 +234,7 @@ class MoreScreen extends ConsumerWidget {
                     children: [
                       const TintIcon(
                         icon: LucideIcons.logOut,
-                        color: Color(0xFFE11D48),
+                        color: AppColors.liveInk,
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -248,13 +243,13 @@ class MoreScreen extends ConsumerWidget {
                           style: AppText.tabular(
                             17,
                             FontWeight.w600,
-                            color: const Color(0xFFE11D48),
+                            color: AppColors.liveInk,
                           ),
                         ),
                       ),
                       const Icon(
                         LucideIcons.chevronRight,
-                        color: Color(0xFFE11D48),
+                        color: AppColors.liveInk,
                       ),
                     ],
                   ),
@@ -264,7 +259,7 @@ class MoreScreen extends ConsumerWidget {
             const SizedBox(height: 22),
             Center(
               child: Text(
-                'Akhand Bharat Academy${version.isEmpty ? '' : ' · $version'}',
+                'AB Academy${version.isEmpty ? '' : ' · $version'}',
                 style: AppText.meta,
               ),
             ),
@@ -281,7 +276,7 @@ class MoreScreen extends ConsumerWidget {
         backgroundColor: AppColors.surface,
         title: Text('Sign out?', style: AppText.cardTitle),
         content: Text(
-          'You will need your mobile number or Google account to sign back in.',
+          'You will need your Google account to sign back in.',
           style: AppText.meta.copyWith(height: 1.5),
         ),
         actions: [
@@ -293,7 +288,7 @@ class MoreScreen extends ConsumerWidget {
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text(
               'Sign out',
-              style: TextStyle(color: Color(0xFFE11D48)),
+              style: TextStyle(color: AppColors.liveInk),
             ),
           ),
         ],
