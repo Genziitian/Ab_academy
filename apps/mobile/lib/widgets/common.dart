@@ -543,14 +543,25 @@ class SegmentedTabs extends StatelessWidget {
 }
 
 /// Diagonal gradient used for course thumbnails, from the course's hue.
-LinearGradient courseGradient(int hue) => LinearGradient(
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-  colors: [
-    HSLColor.fromAHSL(1, hue % 360, 0.70, 0.48).toColor(),
-    HSLColor.fromAHSL(1, (hue + 22) % 360, 0.65, 0.34).toColor(),
-  ],
-);
+/// Warm "Saffron & Ink" thumbnail colours. A course's stored hue picks one,
+/// so each course keeps a stable colour of its own (same mapping as the web).
+const _thumbnailPairs = <List<Color>>[
+  [Color(0xFFE8742A), Color(0xFFB4521A)], // saffron
+  [Color(0xFF6B7B3A), Color(0xFF4A5628)], // olive
+  [Color(0xFF1C7C70), Color(0xFF0F5A50)], // teal
+  [Color(0xFF3A342D), Color(0xFF1C1814)], // coal
+  [Color(0xFF7A3E8E), Color(0xFF55286A)], // plum
+  [Color(0xFFC8573A), Color(0xFF8F3A22)], // terracotta
+];
+
+LinearGradient courseGradient(int hue) {
+  final pair = _thumbnailPairs[(hue % 360) ~/ 60];
+  return LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: pair,
+  );
+}
 
 /// Red "PDF" tile in front of every note.
 class PdfBadge extends StatelessWidget {
@@ -728,8 +739,9 @@ void showDemoSnack(BuildContext context, String message) {
     );
 }
 
-/// Course artwork: the uploaded thumbnail over the course's gradient, which
-/// also shows while the image loads or if it fails. [shade] darkens the lower
+/// Course artwork (an uploaded URL or a bundled asset path) over the course's
+/// gradient, which
+/// shows while the image loads or if it fails. [shade] darkens the lower
 /// half so white text on top stays readable.
 class CourseThumbnail extends StatelessWidget {
   const CourseThumbnail({
@@ -760,11 +772,13 @@ class CourseThumbnail extends StatelessWidget {
         children: [
           DecoratedBox(decoration: BoxDecoration(gradient: courseGradient(hue))),
           if (hasImage)
-            Image.network(
-              url!,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const SizedBox.shrink(),
-            ),
+            url!.startsWith('assets/')
+                ? Image.asset(url!, fit: BoxFit.cover)
+                : Image.network(
+                    url!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  ),
           if (hasImage && shade)
             DecoratedBox(
               decoration: BoxDecoration(

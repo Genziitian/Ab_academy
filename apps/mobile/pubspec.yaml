@@ -1,5 +1,5 @@
 name: akhand_bharat_academy
-description: "Akhand Bharat Academy — Class 11 & 12 crash courses for Bihar Board: live classes, recordings and notes."
+description: "AB Academy — Class 12 crash courses for Bihar Board: recorded classes, live doubt sessions and notes."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -80,21 +80,26 @@ flutter:
   assets:
     - assets/sample-notes.pdf
     - assets/images/
+    - assets/images/art/
+    - assets/images/promo/
 
   # Bundled so text renders in the brand fonts from the first launch,
   # offline included. All SIL Open Font License (see assets/fonts/OFL-*).
   fonts:
-    - family: Jakarta
+    - family: Hanken
       fonts:
-        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
-        - asset: assets/fonts/PlusJakartaSans-Medium.ttf
+        - asset: assets/fonts/HankenGrotesk-400.ttf
+        - asset: assets/fonts/HankenGrotesk-500.ttf
           weight: 500
-        - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
+        - asset: assets/fonts/HankenGrotesk-600.ttf
           weight: 600
-        - asset: assets/fonts/PlusJakartaSans-Bold.ttf
+        - asset: assets/fonts/HankenGrotesk-700.ttf
           weight: 700
-        - asset: assets/fonts/PlusJakartaSans-ExtraBold.ttf
-          weight: 800
+    - family: InstrumentSerif
+      fonts:
+        - asset: assets/fonts/InstrumentSerif-Regular.ttf
+        - asset: assets/fonts/InstrumentSerif-Italic.ttf
+          style: italic
     - family: PlexDevanagari
       fonts:
         - asset: assets/fonts/IBMPlexSansDevanagari-Regular.ttf

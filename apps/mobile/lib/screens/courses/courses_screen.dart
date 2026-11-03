@@ -14,6 +14,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/format.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/chips.dart';
+import '../../widgets/brand_art.dart';
 import '../../widgets/common.dart';
 import '../../widgets/course_slider.dart';
 import '../../widgets/ui_kit.dart';
@@ -270,9 +271,9 @@ class _StoreCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           CourseThumbnail(
-            url: course.thumbnailUrl,
+            url: courseArtwork(course),
             hue: course.thumbnailHue,
-            height: course.thumbnailUrl == null ? 112 : 168,
+            height: courseArtwork(course) == null ? 112 : 168,
             padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

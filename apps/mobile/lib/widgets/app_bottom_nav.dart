@@ -39,10 +39,10 @@ class AppBottomNav extends StatelessWidget {
     return DecoratedBox(
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(top: BorderSide(color: Color(0xFFEDF0F6))),
+        border: Border(top: BorderSide(color: Color(0xFFE4DCCF))),
         boxShadow: [
           BoxShadow(
-            color: Color(0x0F0B1B3F),
+            color: Color(0x0F1C1814),
             blurRadius: 16,
             offset: Offset(0, -4),
           ),
@@ -94,7 +94,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.primary : const Color(0xFF8A94A6);
+    final color = selected ? AppColors.primary : const Color(0xFF9A8F82);
     return Semantics(
       button: true,
       selected: selected,

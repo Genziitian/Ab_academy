@@ -1,269 +1,459 @@
 import Image from "next/image";
 import Link from "next/link";
-import { FeaturedCarousel } from "@/components/FeaturedCarousel";
-import {
-  CheckBadge,
-  LiveIcon,
-  NotesIcon,
-  TestIcon,
-  VideoIcon,
-} from "@/components/icons";
+import { Countdown, DaysLeft } from "@/components/landing/Countdown";
+import { PlayBadge } from "@/components/landing/PlayBadge";
+import { SyllabusExplorer } from "@/components/landing/SyllabusExplorer";
 import { listCourses } from "@/lib/catalog";
-import { Course, formatInr } from "@/lib/courses";
+import { type Course, formatInr } from "@/lib/courses";
+import {
+  APP_SCREENSHOT,
+  BATCH_START_LABEL,
+  EXAM_DATE,
+  FAQS,
+  FEATURES,
+  FOUNDERS,
+  FREE_NOTES,
+  NOTES_LIVE,
+  QUOTES,
+  RESULTS,
+  SYLLABUS,
+  TEACHER,
+  TOTAL_CHAPTERS,
+  subjectKey,
+} from "@/lib/landing";
 
-const features = [
-  {
-    title: "Live Classes",
-    body: "Join scheduled sessions with expert teachers in real time.",
-    tint: "bg-primary-soft text-primary",
-    Icon: LiveIcon,
-  },
-  {
-    title: "Recorded Lectures",
-    body: "Rewatch every lecture anytime if you miss a class.",
-    tint: "bg-amber-soft text-orange",
-    Icon: VideoIcon,
-  },
-  {
-    title: "Study Notes",
-    body: "Chapter PDFs and important questions ready to revise.",
-    tint: "bg-violet-soft text-violet",
-    Icon: NotesIcon,
-  },
-  {
-    title: "Tests & Practice",
-    body: "Board-pattern tests every week to stay exam-ready.",
-    tint: "bg-teal-soft text-teal",
-    Icon: TestIcon,
-  },
-];
+const pad = (n: number) => String(n).padStart(2, "0");
+const ORDER = ["Physics", "Chemistry", "Maths"];
 
-const streams = [
-  {
-    name: "Science (PCM + PCB)",
-    subjects: "Physics · Chemistry · Maths · Biology",
-    match: (c: Course) => c.subjects.some((s) => ["Physics", "Chemistry", "Biology"].includes(s)),
-  },
-  {
-    name: "Commerce",
-    subjects: "Accountancy · Business Studies · Economics",
-    match: (c: Course) => c.subjects.includes("Accountancy"),
-  },
-  {
-    name: "Arts",
-    subjects: "History · Political Science · Geography",
-    match: (c: Course) => c.subjects.includes("History"),
-  },
-];
+/** The Class 12 single-subject PCM courses; any Class 12 course until those exist. */
+function crashCourses(all: Course[]) {
+  const paid = all.filter((c) => c.price > 0 && c.classLevel === 12);
+  const pcm = paid
+    .filter((c) => c.subjects.length === 1 && subjectKey(c.subjects[0]))
+    .sort((a, b) => ORDER.indexOf(subjectKey(a.subjects[0])!) - ORDER.indexOf(subjectKey(b.subjects[0])!));
+  return (pcm.length ? pcm : paid).map((c) => {
+    const key = c.subjects.length === 1 ? subjectKey(c.subjects[0]) : null;
+    return {
+      slug: c.slug,
+      name: key ?? c.stream ?? c.title,
+      chapters: key ? SYLLABUS[key].length : c.chapters,
+      price: c.price,
+    };
+  });
+}
 
-const classCards = [
-  { level: 12, title: "Class 12", tagline: "Board 2027 crash courses", color: "text-primary" },
-  { level: 11, title: "Class 11", tagline: "Build a strong base for Class 12", color: "text-violet" },
-];
-
-/** "From ₹999" when a stream has several courses, the price when it has one. */
-function streamPrice(courses: Course[]) {
-  if (!courses.length) return "Coming soon";
-  const min = Math.min(...courses.map((c) => c.price));
-  return courses.length > 1 ? `From ${formatInr(min)}` : formatInr(min);
+function Initials({ name, className = "" }: { name: string; className?: string }) {
+  const letters = name
+    .replace(/\b(Sir|Ma'am)\b/g, "")
+    .trim()
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2);
+  return (
+    <div
+      className={`flex items-center justify-center bg-[repeating-linear-gradient(135deg,#ece4d6_0_10px,#f3ede3_10px_20px)] font-serif text-coal ${className}`}
+      aria-hidden
+    >
+      {letters}
+    </div>
+  );
 }
 
 export default async function HomePage() {
   const all = await listCourses();
-  const featured = [...all].sort(
-    (a, b) => b.classLevel - a.classLevel || Number(!!b.bestseller) - Number(!!a.bestseller),
-  );
+  const courses = crashCourses(all);
+  const demo = all.find((c) => c.price === 0);
+  const from = courses.length ? formatInr(Math.min(...courses.map((c) => c.price))) : null;
+  const exam = EXAM_DATE.toISOString();
+
+  const joinBtn =
+    "flex h-[58px] items-center justify-center whitespace-nowrap rounded-full bg-saffron px-8 text-[17px] font-bold text-coal hover:bg-coal hover:text-cream";
 
   return (
-    <>
-      <section className="border-b border-border bg-white">
-        <div className="mx-auto grid max-w-[1200px] items-center gap-14 px-4 pb-[72px] pt-12 sm:px-6 sm:pt-16 lg:grid-cols-2">
-          <div>
-            <p className="inline-flex items-center gap-2 whitespace-nowrap rounded-md bg-primary-soft px-3 py-1.5 text-[13px] font-semibold text-primary">
-              <span className="size-1.5 rounded-full bg-primary" />
-              Board 2027 crash courses now enrolling
-            </p>
-            <h1 className="mt-5 text-[38px] font-bold leading-[1.08] tracking-[-0.025em] text-balance text-navy sm:text-[52px]">
-              Class 11 &amp; 12 <span className="text-primary">Crash Courses</span>{" "}
-              for Bihar Board
-            </h1>
-            <p className="mt-5 max-w-[520px] text-lg leading-[1.6] text-pretty text-ink">
-              Finish the full syllabus in 90 days with live classes, recorded
-              lectures, chapter notes and board-pattern tests — Science,
-              Commerce and Arts.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/courses"
-                className="flex h-12 items-center whitespace-nowrap rounded-lg bg-primary px-6 text-[15px] font-semibold text-white hover:bg-primary-dark"
-              >
-                Explore Crash Courses
+    <div className="overflow-x-clip">
+      {/* Hero */}
+      <section className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 pb-14 pt-10 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-14 lg:px-16 lg:py-[72px]">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay sm:text-[13px]">
+            Bihar Board · Class 12 Crash Course
+          </p>
+          <h1 className="mt-5 font-serif text-[56px] leading-[0.94] tracking-[-0.02em] text-balance sm:text-[84px] xl:text-[112px]">
+            The <em className="text-saffron">last 90 days</em> before your boards.
+          </h1>
+          <p className="mt-6 max-w-[540px] text-lg leading-[1.55] text-pretty text-taupe sm:text-xl">
+            Classes start {BATCH_START_LABEL}. Recorded classes you can watch anytime, live doubt sessions with{" "}
+            {TEACHER.name}, chapter notes and board-pattern tests. Physics, Chemistry and Maths
+            {from ? `, from ${from} per subject` : ""}. Hindi and English medium.
+          </p>
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
+            <Link href="#courses" className={joinBtn}>
+              Join Class 12 Crash Course
+            </Link>
+            <PlayBadge />
+            {demo ? (
+              <Link href={`/course/${demo.slug}`} className="text-center text-[15px] font-semibold text-coal underline decoration-saffron decoration-2 underline-offset-4 hover:text-clay">
+                Watch the free demo
               </Link>
-              <Link
-                href="/login"
-                className="flex h-12 items-center whitespace-nowrap rounded-lg border border-primary-line px-6 text-[15px] font-semibold text-primary hover:bg-primary-soft"
-              >
-                Get Started Free
-              </Link>
-            </div>
-            <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-border pt-7">
-              {["90-day board plan", "Expert teachers", "Hindi & English medium"].map(
-                (item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-2 whitespace-nowrap text-sm font-medium text-navy"
-                  >
-                    <CheckBadge />
-                    {item}
-                  </div>
-                ),
-              )}
-            </div>
+            ) : null}
           </div>
-
-          <div className="relative">
-            <div className="aspect-[9/7] overflow-hidden rounded-2xl bg-[#dbe7ff]">
-              <Image
-                src="/images/hero-students.png"
-                alt="Students learning with Akhand Bharat Academy"
-                width={900}
-                height={700}
-                priority
-                className="size-full object-cover"
-              />
-            </div>
-            <div className="absolute bottom-8 left-3 flex items-center gap-3 rounded-xl border border-border bg-white px-4 py-3.5 shadow-[var(--shadow-float)] sm:-left-4">
-              <span className="shrink-0 whitespace-nowrap rounded bg-danger-soft px-2 py-[3px] text-[11px] font-bold tracking-[0.04em] text-danger">
-                ● LIVE
-              </span>
-              <div>
-                <p className="whitespace-nowrap text-sm font-semibold text-navy">
-                  Class 12 Physics · Electrostatics
-                </p>
-                <p className="mt-0.5 text-xs text-muted">Amit Sir · Today 6:00 PM</p>
-              </div>
+        </div>
+        <div className="relative h-[380px] overflow-hidden rounded-3xl bg-sand sm:h-[480px] lg:h-[580px]">
+          <Image
+            src="/images/hero-students.png"
+            alt="Students learning with AB Academy"
+            fill
+            priority
+            sizes="(min-width: 1024px) 560px, 100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-x-4 bottom-4 flex flex-wrap items-center gap-3 rounded-2xl bg-cream px-5 py-4 sm:inset-x-6 sm:bottom-6 sm:gap-3.5">
+            <span className="whitespace-nowrap rounded-full bg-[#c8321e] px-2.5 py-1 text-xs font-bold tracking-[0.06em] text-white">
+              ● LIVE DOUBT SESSION
+            </span>
+            <div>
+              <p className="text-base font-bold">Stuck on a chapter? Ask it live.</p>
+              <p className="mt-0.5 text-sm text-taupe">
+                {TEACHER.name} · from {BATCH_START_LABEL.replace("November", "Nov")}
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-surface-soft">
-        <div className="mx-auto max-w-[1200px] px-4 py-[72px] sm:px-6">
-          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
-            <div className="max-w-[560px]">
-              <p className="eyebrow">Inside every crash course</p>
-              <h2 className="mt-2.5 text-[28px] font-bold tracking-[-0.02em] text-navy sm:text-[34px]">
-                Everything you need to succeed
-              </h2>
-            </div>
-            <p className="max-w-[380px] text-base text-muted">
-              One simple path — join class, revise, and track your progress.
+      {/* Countdown */}
+      <section className="bg-coal text-cream">
+        <div className="mx-auto grid max-w-[1280px] items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:gap-12 lg:px-16">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-saffron sm:text-[13px]">Board exams begin in</p>
+            <p className="mt-2 text-base leading-[1.5] text-mist">
+              Bihar Board Class 12, expected in the first week of February 2027.
             </p>
           </div>
-          <div className="mt-9 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
-            {features.map(({ title, body, tint, Icon }) => (
-              <article key={title} className="bg-white p-7">
-                <span
-                  className={`flex size-11 items-center justify-center rounded-[10px] ${tint}`}
-                >
-                  <Icon size={22} />
-                </span>
-                <h3 className="mt-5 text-[17px] font-semibold text-navy">{title}</h3>
-                <p className="mt-2 text-sm leading-[1.6] text-muted">{body}</p>
+          <Countdown target={exam} />
+          <div className="lg:flex lg:justify-end">
+            <Link
+              href="#courses"
+              className="flex h-[52px] w-full items-center justify-center rounded-full bg-saffron px-7 text-base font-bold text-coal hover:bg-cream sm:w-fit"
+            >
+              Join before {BATCH_START_LABEL.replace("November", "Nov")}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 01 How it works */}
+      <section id="how" className="mx-auto max-w-[1280px] scroll-mt-24 px-4 py-20 sm:px-6 lg:px-16 lg:pb-28 lg:pt-32">
+        <div className="grid items-end gap-6 lg:grid-cols-2 lg:gap-14">
+          <div>
+            <p className="kicker text-clay">01. How it works</p>
+            <h2 className="mt-3 font-serif text-[48px] leading-[0.98] tracking-[-0.02em] text-balance sm:text-[64px] lg:text-[84px]">
+              Watch anytime. Ask live.
+            </h2>
+          </div>
+          <p className="max-w-[520px] text-lg leading-[1.6] text-pretty text-taupe sm:text-[19px]">
+            Every chapter is a recorded class you can pause, rewind and rewatch. When you’re stuck, bring the
+            question to a live doubt session and get it solved on the spot.
+          </p>
+        </div>
+        <div className="mt-12 grid border-t-2 border-coal sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
+          {FEATURES.map(([title, text], i) => (
+            <div key={title} className="border-b border-sand py-7 pr-7 lg:border-b-0">
+              <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-clay">{pad(i + 1)}</p>
+              <h3 className="mt-2.5 font-serif text-[34px] leading-[1.05] sm:text-[40px]">{title}</h3>
+              <p className="mt-2.5 text-base leading-[1.6] text-taupe">{text}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-14 lg:mt-[72px]">
+          <SyllabusExplorer />
+        </div>
+      </section>
+
+      {/* 02 Courses */}
+      <section id="courses" className="scroll-mt-20 bg-coal text-cream">
+        <div className="mx-auto max-w-[1280px] px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
+          <div className="grid items-end gap-6 lg:grid-cols-[1.3fr_1fr] lg:gap-14">
+            <div>
+              <p className="kicker text-saffron">02. Courses</p>
+              <h2 className="mt-3 font-serif text-[48px] leading-[0.98] tracking-[-0.02em] text-balance sm:text-[64px] lg:text-[84px]">
+                One subject. One crash course.
+              </h2>
+            </div>
+            <p className="text-lg leading-[1.6] text-mist">
+              Take only what you need. Every subject is its own Class 12 crash course
+              {from ? `, starting at ${from}` : ""}.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:mt-14 lg:grid-cols-3">
+            {courses.map((c) => (
+              <article
+                key={c.slug}
+                className="flex min-h-[380px] flex-col rounded-[22px] border border-coal-line p-7 transition-colors hover:border-saffron hover:bg-coal-soft sm:p-8"
+              >
+                <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-dust">
+                  Class 12{c.chapters ? ` · ${c.chapters} chapters` : ""}
+                </p>
+                <h3 className="mt-3.5 font-serif text-[52px] leading-none sm:text-[64px]">{c.name}</h3>
+                <ul className="mt-6 flex flex-col gap-2.5 text-base text-mist">
+                  <li>+ Recorded class for every chapter</li>
+                  <li>+ Live doubt sessions with {TEACHER.name}</li>
+                  <li>+ Chapter notes PDF</li>
+                  <li>+ Board-pattern questions</li>
+                </ul>
+                <div className="mt-auto flex items-end justify-between gap-4 border-t border-coal-line pt-7">
+                  <div>
+                    <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-dust">Starting at</p>
+                    <p className="mt-1 font-serif text-[48px] leading-none text-saffron sm:text-[56px]">
+                      {formatInr(c.price)}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/course/${c.slug}`}
+                    className="flex h-12 shrink-0 items-center rounded-full bg-saffron px-6 text-[15px] font-bold text-coal hover:bg-cream"
+                  >
+                    Enroll now
+                  </Link>
+                </div>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-white">
-        <div className="mx-auto max-w-[1200px] px-4 py-[72px] sm:px-6">
-          <FeaturedCarousel courses={featured} />
-        </div>
-      </section>
-
-      <section className="bg-surface-soft">
-        <div className="mx-auto max-w-[1200px] px-4 py-[72px] sm:px-6">
-          <h2 className="text-[28px] font-bold tracking-[-0.02em] text-navy sm:text-[34px]">
-            Choose your class &amp; stream
+      {/* 03 Teacher */}
+      <section className="mx-auto grid max-w-[1280px] gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[440px_1fr] lg:gap-16 lg:px-16 lg:py-28">
+        {TEACHER.photo ? (
+          <div className="relative h-[420px] overflow-hidden rounded-3xl lg:h-[560px]">
+            <Image src={TEACHER.photo} alt={TEACHER.name} fill sizes="440px" className="object-cover" />
+          </div>
+        ) : (
+          <Initials name={TEACHER.name} className="h-[360px] rounded-3xl text-[140px] lg:h-[560px]" />
+        )}
+        <div className="flex flex-col">
+          <p className="kicker text-clay">03. Your teacher</p>
+          <h2 className="mt-3 font-serif text-[80px] leading-[0.9] tracking-[-0.02em] sm:text-[104px] lg:text-[128px]">
+            {TEACHER.name}
           </h2>
-          <p className="mt-2.5 text-base text-muted">
-            Bihar Board Class 11 and 12 crash courses available now.
-          </p>
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
-            {classCards.map((card) => {
-              const ofClass = all.filter((c) => c.classLevel === card.level);
-              return (
-                <div
-                  key={card.level}
-                  className="rounded-xl border border-border bg-white p-7"
-                >
-                  <div className="flex items-baseline gap-3.5">
-                    <span
-                      className={`text-5xl font-bold leading-none tracking-[-0.03em] ${card.color}`}
-                    >
-                      {card.level}
-                    </span>
-                    <div>
-                      <h3 className="text-xl font-semibold text-navy">{card.title}</h3>
-                      <p className="mt-0.5 text-sm text-muted">{card.tagline}</p>
-                    </div>
-                  </div>
-                  <div className="mt-[22px] flex flex-col border-t border-border">
-                    {streams.map((stream) => {
-                      const price = streamPrice(ofClass.filter(stream.match));
-                      return (
-                        <Link
-                          key={stream.name}
-                          href={`/courses?class=${card.level}`}
-                          className="group flex items-center justify-between gap-3 border-b border-line py-3.5"
-                        >
-                          <span>
-                            <span className="block text-[15px] font-semibold text-navy group-hover:text-primary">
-                              {stream.name}
-                            </span>
-                            <span className="text-[13px] text-muted">
-                              {stream.subjects}
-                            </span>
-                          </span>
-                          <span className="whitespace-nowrap text-sm font-semibold text-primary">
-                            {price} →
-                          </span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+          <p className="mt-4 text-[15px] font-bold uppercase tracking-[0.14em] text-clay">{TEACHER.subjects}</p>
+          <p className="mt-6 max-w-[560px] text-lg leading-[1.6] text-pretty text-taupe sm:text-[19px]">{TEACHER.bio}</p>
+          <div className="mt-10 grid grid-cols-3 border-t-2 border-coal lg:mt-auto">
+            {[
+              [String(TEACHER.years), "years of teaching experience", true],
+              ["3", "subjects, one teacher", false],
+              [String(TOTAL_CHAPTERS), "Class 12 chapters covered", false],
+            ].map(([n, label, accent], i) => (
+              <div key={label as string} className={`pt-6 ${i ? "border-l border-sand pl-4 sm:pl-6" : "pr-4 sm:pr-6"}`}>
+                <p className={`font-serif text-[48px] leading-none sm:text-[72px] ${accent ? "text-saffron" : ""}`}>{n}</p>
+                <p className="mt-1.5 text-sm text-taupe sm:text-[15px]">{label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="bg-white">
-        <div className="mx-auto max-w-[1200px] px-4 py-[72px] sm:px-6">
-          <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl bg-primary p-8 sm:p-12">
-            <div className="flex-[1_1_360px]">
-              <p className="font-hindi text-[15px] text-[#dbe6ff]">
-                आज शुरू करें — कल का आत्मविश्वास बनाएँ।
-              </p>
-              <h2 className="mt-2.5 text-[26px] font-bold tracking-[-0.02em] text-white sm:text-[32px]">
-                Boards are closer than they look.
-              </h2>
-              <p className="mt-2.5 max-w-[520px] text-base text-[#dbe6ff]">
-                Start your 90-day crash course today and finish the syllabus
-                with time left to revise.
-              </p>
+      {/* 04 Results — shown only with real entries */}
+      {RESULTS.length ? (
+        <section id="results" className="bg-saffron text-coal">
+          <div className="mx-auto max-w-[1280px] px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
+            <p className="kicker">04. Results</p>
+            <h2 className="mt-3 font-serif text-[56px] leading-[0.95] tracking-[-0.02em] sm:text-[96px]">The result wall.</h2>
+            <div className="mt-12 grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {RESULTS.map((r) => (
+                <div key={r.name + r.score} className="rounded-[18px] bg-cream p-6">
+                  <p className="font-serif text-[48px] leading-none sm:text-[64px]">{r.score}</p>
+                  <p className="mt-3.5 text-base font-bold">{r.name}</p>
+                  <p className="mt-0.5 text-sm opacity-75">{r.meta}</p>
+                </div>
+              ))}
             </div>
-            <Link
-              href="/login"
-              className="flex h-12 shrink-0 items-center whitespace-nowrap rounded-lg bg-white px-6 text-[15px] font-semibold text-primary hover:bg-primary-soft"
-            >
-              Create free account
-            </Link>
+          </div>
+        </section>
+      ) : null}
+
+      {/* 05 Students — shown only with real quotes */}
+      {QUOTES.length ? (
+        <section className="mx-auto max-w-[1280px] px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
+          <p className="kicker text-clay">05. Students</p>
+          <h2 className="mt-3 font-serif text-[48px] leading-[0.98] tracking-[-0.02em] sm:text-[84px]">In their words.</h2>
+          <div className="no-scrollbar mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2">
+            {QUOTES.map((q) => (
+              <figure
+                key={q.name + q.text}
+                className="m-0 flex min-h-[300px] w-[85%] shrink-0 snap-start flex-col rounded-3xl border border-sand bg-paper p-8 sm:w-[42%]"
+              >
+                <blockquote className="font-serif text-[28px] leading-[1.18] sm:text-[34px]">“{q.text}”</blockquote>
+                <figcaption className="mt-auto pt-7 text-[15px]">
+                  <strong className="block">{q.name}</strong>
+                  <span className="opacity-70">{q.meta}</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* 06 Free notes */}
+      <section id="notes" className="border-y border-sand bg-paper">
+        <div className="mx-auto grid max-w-[1280px] items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-16 lg:py-28">
+          <div>
+            <p className="kicker text-clay">{RESULTS.length ? "06" : "04"}. Free notes</p>
+            <h2 className="mt-3 font-serif text-[48px] leading-none tracking-[-0.02em] sm:text-[72px]">
+              {NOTES_LIVE ? "Read before you pay." : "Notes are coming soon."}
+            </h2>
+            <p className="mt-4 text-lg leading-[1.6] text-taupe">
+              Chapter notes and important questions, free with a sign-in. They open in a secure viewer on the
+              website and in the app.
+            </p>
+            <div className="mt-8 flex flex-col">
+              {FREE_NOTES.map((n) => (
+                <Link
+                  key={n.subject + n.title}
+                  href="/notes"
+                  className="flex items-center justify-between gap-4 border-t border-sand py-[18px] text-coal hover:text-clay"
+                >
+                  <span>
+                    <span className="block text-[13px] font-bold uppercase tracking-[0.12em] text-clay">{n.subject}</span>
+                    <span className="text-lg font-semibold sm:text-[19px]">{n.title}</span>
+                  </span>
+                  <span className="shrink-0 text-[15px] font-semibold">{NOTES_LIVE ? "Read free →" : "Coming soon"}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="relative aspect-square overflow-hidden rounded-3xl bg-sand">
+            <Image src="/images/feature-notes.png" alt="Chapter notes" fill sizes="(min-width: 1024px) 560px, 100vw" className="object-cover" />
           </div>
         </div>
       </section>
-    </>
+
+      {/* 07 The app */}
+      <section className="mx-auto max-w-[1280px] px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
+        <div className="grid items-center gap-12 rounded-[28px] bg-coal p-8 text-cream sm:p-12 lg:grid-cols-[1.2fr_1fr] lg:p-16">
+          <div>
+            <p className="kicker text-saffron">{RESULTS.length ? "07" : "05"}. The app</p>
+            <h2 className="mt-3 font-serif text-[44px] leading-none tracking-[-0.02em] sm:text-[72px]">
+              Your classroom fits in your pocket.
+            </h2>
+            <p className="mt-4 max-w-[480px] text-lg leading-[1.6] text-mist">
+              Sign in with Google, watch recorded classes, join live doubt sessions and read notes, all on the same
+              account as the website.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <PlayBadge tone="light" />
+              <Link href="#courses" className="flex h-[58px] items-center justify-center rounded-full bg-saffron px-7 text-base font-bold text-coal hover:bg-cream">
+                Join Class 12 Crash Course
+              </Link>
+            </div>
+          </div>
+          <div className="relative mx-auto aspect-[9/19] w-[250px] overflow-hidden rounded-[40px] border-[6px] border-coal-line bg-coal-soft sm:w-[280px]">
+            <Image src={APP_SCREENSHOT} alt="The AB Academy app home screen" fill sizes="280px" className="object-cover object-top" />
+          </div>
+        </div>
+      </section>
+
+      {/* 08 About */}
+      <section id="about" className="mx-auto max-w-[1280px] scroll-mt-24 px-4 pb-20 sm:px-6 lg:px-16 lg:pb-28">
+        <div className="grid gap-10 border-t-2 border-coal pt-8 lg:grid-cols-[1fr_1.3fr] lg:gap-16">
+          <div>
+            <p className="kicker text-clay">{RESULTS.length ? "08" : "06"}. About us</p>
+            <h2 className="mt-3 font-serif text-[48px] leading-none tracking-[-0.02em] sm:text-[72px]">Built in Bihar, for Bihar Board.</h2>
+            <p className="mt-4 max-w-[460px] text-lg leading-[1.6] text-taupe">
+              A teacher with {TEACHER.years} years in the classroom and a developer, building the crash course they wish
+              students had: affordable, focused and in your language.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:gap-5">
+            {FOUNDERS.map((f) => (
+              <div key={f.name}>
+                <Initials name={f.name} className="aspect-square rounded-[18px] text-[72px] sm:text-[96px]" />
+                <p className="mt-4 font-serif text-[28px] leading-none sm:text-4xl">{f.name}</p>
+                <p className="mt-1.5 text-xs font-bold uppercase tracking-[0.12em] text-clay sm:text-[13px]">{f.role}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 09 FAQ */}
+      <section id="faq" className="mx-auto grid max-w-[1280px] scroll-mt-24 gap-10 px-4 pb-20 sm:px-6 lg:grid-cols-[1fr_1.4fr] lg:gap-16 lg:px-16 lg:pb-28">
+        <div>
+          <p className="kicker text-clay">{RESULTS.length ? "09" : "07"}. Questions</p>
+          <h2 className="mt-3 font-serif text-[48px] leading-none tracking-[-0.02em] sm:text-[72px]">Asked often.</h2>
+        </div>
+        <div className="border-t-2 border-coal">
+          {FAQS.map(([q, a], i) => (
+            <details key={q} open={i === 0} className="group border-b border-sand">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-6 text-lg font-semibold sm:text-xl [&::-webkit-details-marker]:hidden">
+                {q}
+                <span className="font-serif text-[34px] leading-none text-clay group-open:hidden">+</span>
+                <span className="hidden font-serif text-[34px] leading-none text-clay group-open:inline">−</span>
+              </summary>
+              <p className="pb-6 pr-6 text-[17px] leading-[1.6] text-taupe sm:pr-16">{a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="overflow-hidden bg-saffron text-coal">
+        <div className="mx-auto max-w-[1280px] px-4 pt-20 sm:px-6 lg:px-16 lg:pt-28">
+          <div className="grid items-end gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] sm:text-[13px]">
+                Classes start Monday, {BATCH_START_LABEL}
+              </p>
+              <h2 className="mt-4 font-serif text-[60px] leading-[0.92] tracking-[-0.02em] text-balance sm:text-[96px] xl:text-[120px]">
+                Make the last <em>90 days</em> count.
+              </h2>
+              <div className="mt-9 flex items-end gap-7">
+                <div>
+                  <p className="font-serif text-[52px] leading-[0.9] tabular-nums sm:text-[64px]">
+                    <DaysLeft target={exam} />
+                  </p>
+                  <p className="mt-3.5 text-xs font-bold uppercase tracking-[0.14em]">Days to boards</p>
+                </div>
+                {from ? (
+                  <>
+                    <div className="h-14 w-px bg-coal/30" />
+                    <div>
+                      <p className="font-serif text-[52px] leading-[0.9] sm:text-[64px]">{from}</p>
+                      <p className="mt-3.5 text-xs font-bold uppercase tracking-[0.14em]">Per subject, from</p>
+                    </div>
+                  </>
+                ) : null}
+              </div>
+            </div>
+            <div className="rounded-[28px] bg-coal p-6 text-cream sm:p-8">
+              <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-dust">Choose your crash course</p>
+              <div className="mt-3 flex flex-col">
+                {courses.map((c) => (
+                  <Link
+                    key={c.slug}
+                    href={`/course/${c.slug}`}
+                    className="flex items-center justify-between gap-4 border-b border-coal-line py-[18px] text-cream hover:text-saffron"
+                  >
+                    <span className="font-serif text-[30px] leading-none sm:text-4xl">{c.name}</span>
+                    <span className="shrink-0 text-base font-bold">from {formatInr(c.price)} →</span>
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
+                <Link href="#courses" className="flex h-[58px] flex-1 items-center justify-center rounded-full bg-saffron px-6 text-base font-bold text-coal hover:bg-cream">
+                  Join Class 12 Crash Course
+                </Link>
+                <PlayBadge tone="light" />
+              </div>
+            </div>
+          </div>
+          <p
+            aria-hidden
+            className="mt-16 whitespace-nowrap font-serif text-[22vw] leading-[0.72] tracking-[-0.04em] lg:mt-[88px] xl:text-[300px]"
+          >
+            AB Academy
+          </p>
+        </div>
+      </section>
+    </div>
   );
 }

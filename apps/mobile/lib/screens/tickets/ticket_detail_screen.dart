@@ -197,7 +197,7 @@ class _Bubble extends StatelessWidget {
                 style: AppText.tabular(
                   11,
                   FontWeight.w400,
-                  color: mine ? const Color(0xFFC7D6FF) : AppColors.textSubtle,
+                  color: mine ? const Color(0xFFEFC9AD) : AppColors.textSubtle,
                 ),
               ),
             ],

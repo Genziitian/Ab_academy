@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "About",
-  description: "About Akhand Bharat Academy — an online learning platform built for clarity.",
+  description: "About AB Academy (Akhand Bharat Academy) — an online learning platform built for clarity.",
 };
 
 export default function AboutPage() {
@@ -12,7 +12,7 @@ export default function AboutPage() {
       <div>
         <p className="eyebrow">About us</p>
         <h1 className="mt-3 text-[36px] font-bold leading-[1.1] tracking-[-0.025em] text-navy sm:text-[46px]">
-          Akhand Bharat Academy
+          AB Academy
         </h1>
         <div className="mt-8 aspect-[4/3] overflow-hidden rounded-2xl bg-[#eef3ff]">
           <Image
@@ -26,9 +26,9 @@ export default function AboutPage() {
       </div>
       <div className="flex flex-col gap-[22px] text-lg leading-[1.7] text-ink lg:pt-11">
         <p className="text-[22px] font-medium leading-[1.55] text-navy">
-          Akhand Bharat Academy is an online learning platform built for clarity
-          — live classes, recordings and notes so every student knows what to
-          study next.
+          AB Academy (Akhand Bharat Academy) is an online learning platform built for clarity
+          — recorded lectures, notes and practice so every student knows what
+          to study next.
         </p>
         <p>
           Our current focus is Class 11 &amp; 12 crash courses for Bihar Board.
@@ -41,18 +41,18 @@ export default function AboutPage() {
         </p>
         <p>
           Hindi and English medium learners both get a simple path: pick your
-          class, join live, revise with recordings, and track progress.
+          class, watch the lectures, revise with notes, and track progress.
         </p>
         <div className="mt-2 flex flex-wrap gap-3">
           <Link
             href="/courses"
-            className="flex h-[46px] items-center rounded-lg bg-primary px-[22px] text-[15px] font-semibold text-white hover:bg-primary-dark"
+            className="flex h-[46px] items-center rounded-full bg-primary px-[22px] text-[15px] font-semibold text-white hover:bg-primary-dark"
           >
             Explore Courses
           </Link>
           <Link
             href="/contact"
-            className="flex h-[46px] items-center rounded-lg border border-primary-line px-[22px] text-[15px] font-semibold text-primary hover:bg-primary-soft"
+            className="flex h-[46px] items-center rounded-full border border-primary-line px-[22px] text-[15px] font-semibold text-primary hover:bg-primary-soft"
           >
             Talk to us
           </Link>

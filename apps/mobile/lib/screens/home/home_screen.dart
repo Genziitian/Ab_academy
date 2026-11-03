@@ -12,11 +12,13 @@ import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../utils/format.dart';
+import '../../widgets/brand_art.dart';
 import '../../widgets/common.dart';
 import '../../widgets/course_slider.dart';
 import '../../widgets/ui_kit.dart';
 
-/// 06 · Home — greeting, promotional slider, then every course top to bottom.
+/// 06 · Home — greeting, continue learning, feature banners, quick actions,
+/// then every course top to bottom.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -27,6 +29,8 @@ class HomeScreen extends ConsumerWidget {
     // Supabase realtime on `notifications` (a timer on sample data).
     ref.watch(realtimeNotificationProvider);
     final firstName = student.fullName.split(' ').first;
+    final hasAdminSlides =
+        (ref.watch(bannersProvider).value ?? const []).isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -62,16 +66,11 @@ class HomeScreen extends ConsumerWidget {
                             color: AppColors.textMuted,
                           ),
                         ),
-                        const SizedBox(height: 2),
                         Text(
                           firstName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppText.tabular(
-                            22,
-                            FontWeight.w700,
-                            letterSpacing: -0.5,
-                          ),
+                          style: AppText.serif(30, height: 1.1),
                         ),
                       ],
                     ),
@@ -84,21 +83,23 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              // Admin-managed promotional slider (App slider in the console).
-              const CourseSlider(padding: EdgeInsets.only(bottom: 28)),
+              const SizedBox(height: 22),
+              const _ContinueCard(),
+              // Admin-managed slider (App slider in the console) when it has
+              // slides; the app's own feature banners otherwise.
+              if (hasAdminSlides)
+                const CourseSlider(padding: EdgeInsets.only(bottom: 26))
+              else ...[
+                const PromoCarousel(),
+                const SizedBox(height: 26),
+              ],
+              const _QuickActions(),
+              const SizedBox(height: 30),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
-                    child: Text(
-                      'Courses for you',
-                      style: AppText.tabular(
-                        20,
-                        FontWeight.w700,
-                        letterSpacing: -0.4,
-                      ),
-                    ),
+                    child: Text('Courses for you', style: AppText.serif(28)),
                   ),
                   GestureDetector(
                     onTap: () => context.go(Routes.store),
@@ -106,7 +107,7 @@ class HomeScreen extends ConsumerWidget {
                       'See all',
                       style: AppText.tabular(
                         14,
-                        FontWeight.w600,
+                        FontWeight.w700,
                         color: AppColors.primary,
                       ),
                     ),
@@ -130,6 +131,143 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
+/// The student's most recent course, one tap from where they left off.
+class _ContinueCard extends ConsumerWidget {
+  const _ContinueCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mine = ref.watch(remoteMyCoursesProvider).value ?? const <Course>[];
+    if (mine.isEmpty) return const SizedBox.shrink();
+    final course = mine.first;
+    final progress = course.progressPercent.clamp(0, 100);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 22),
+      child: Material(
+        color: AppColors.primaryDeep,
+        borderRadius: BorderRadius.circular(24),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push(Routes.courseDetails(course.id)),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'CONTINUE LEARNING',
+                  style: AppText.eyebrow(color: AppColors.accent, size: 11.5),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  course.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.serif(28, color: AppColors.surface),
+                ),
+                if (course.nextUpLabel != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    course.nextUpLabel!,
+                    style: AppText.tabular(
+                      13.5,
+                      FontWeight.w500,
+                      color: AppColors.textOnDark,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(99),
+                        child: LinearProgressIndicator(
+                          value: progress / 100,
+                          minHeight: 6,
+                          color: AppColors.accent,
+                          backgroundColor: AppColors.primaryDeepRaised,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '$progress%',
+                      style: AppText.tabular(
+                        13,
+                        FontWeight.w700,
+                        color: AppColors.textOnDark,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Container(
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.accent,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      child: Text(
+                        'Continue',
+                        style: AppText.tabular(
+                          14,
+                          FontWeight.w700,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Four shortcuts to what students open most.
+class _QuickActions extends StatelessWidget {
+  const _QuickActions();
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      (LucideIcons.messageCircle, 'Live doubts', AppColors.accent, Routes.live),
+      (LucideIcons.fileText, 'Free notes', AppColors.teal, Routes.notes),
+      (LucideIcons.calendarDays, 'Calendar', AppColors.violet, Routes.calendar),
+      (LucideIcons.download, 'Downloads', AppColors.primary, Routes.downloads),
+    ];
+    return Row(
+      children: [
+        for (final (icon, label, color, route) in items)
+          Expanded(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => context.push(route),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Column(
+                  children: [
+                    TintIcon(icon: icon, color: color, size: 56),
+                    const SizedBox(height: 8),
+                    Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: AppText.tabular(12.5, FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class _RoundIconButton extends StatelessWidget {
   const _RoundIconButton({
     required this.icon,
@@ -150,7 +288,7 @@ class _RoundIconButton extends StatelessWidget {
           color: AppColors.surface,
           shape: const CircleBorder(),
           elevation: 3,
-          shadowColor: const Color(0x22122046),
+          shadowColor: const Color(0x221C1814),
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onTap,
@@ -199,7 +337,7 @@ class AnnouncementCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final n = notification;
     final (icon, color) = switch (n.kind) {
-      NotificationKind.live => (LucideIcons.video, const Color(0xFFFF5A1F)),
+      NotificationKind.live => (LucideIcons.video, const Color(0xFFE8742A)),
       NotificationKind.test => (LucideIcons.clipboardCheck, AppColors.warning),
       NotificationKind.recording => (LucideIcons.playCircle, AppColors.teal),
       NotificationKind.notes => (LucideIcons.fileText, AppColors.success),
@@ -325,8 +463,8 @@ class HomeCourseCard extends StatelessWidget {
     return Material(
       color: AppColors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: Color(0xFFE7EBF3)),
+        borderRadius: BorderRadius.circular(24),
+        side: const BorderSide(color: Color(0xFFE4DCCF)),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -335,9 +473,9 @@ class HomeCourseCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AspectRatio(
-              aspectRatio: 16 / 8,
+              aspectRatio: 16 / 9,
               child: CourseThumbnail(
-                url: course.thumbnailUrl,
+                url: courseArtwork(course),
                 hue: course.thumbnailHue,
                 shade: false,
               ),
@@ -361,11 +499,7 @@ class HomeCourseCard extends StatelessWidget {
                     course.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: AppText.tabular(
-                      17,
-                      FontWeight.w700,
-                      letterSpacing: -0.3,
-                    ).copyWith(height: 1.25),
+                    style: AppText.serif(24, height: 1.1),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -381,7 +515,7 @@ class HomeCourseCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const Divider(height: 1, color: Color(0xFFEFF2F7)),
+                  const Divider(height: 1, color: Color(0xFFECE4D6)),
                   const SizedBox(height: 12),
                   Row(
                     children: [

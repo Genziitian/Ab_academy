@@ -278,7 +278,7 @@ class _ChapterCard extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: expanded ? const Color(0xFFC9D6F5) : const Color(0xFFE7EBF3),
+          color: expanded ? const Color(0xFFEFC9AD) : const Color(0xFFE4DCCF),
         ),
       ),
       clipBehavior: Clip.antiAlias,
@@ -339,10 +339,10 @@ class _ChapterCard extends StatelessWidget {
             ),
           ),
           if (expanded && chapter.lessons.isNotEmpty) ...[
-            const Divider(height: 1, color: Color(0xFFEFF2F7)),
+            const Divider(height: 1, color: Color(0xFFECE4D6)),
             for (final (i, l) in chapter.lessons.indexed) ...[
               if (i > 0)
-                const Divider(height: 1, indent: 70, color: Color(0xFFF1F3F8)),
+                const Divider(height: 1, indent: 70, color: Color(0xFFF3EDE3)),
               LessonRow(lesson: l),
             ],
           ],
@@ -453,7 +453,7 @@ class LessonRow extends StatelessWidget {
               const Icon(
                 LucideIcons.chevronRight,
                 size: 18,
-                color: Color(0xFFB4BCCB),
+                color: Color(0xFFB5AB9E),
               ),
           ],
         ),

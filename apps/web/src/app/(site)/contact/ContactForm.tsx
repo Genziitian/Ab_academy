@@ -6,7 +6,7 @@ const SUPPORT_EMAIL = "support@akhandbharatacademy.in";
 const topics = [
   "Course & batch selection",
   "Payment",
-  "Live classes",
+  "Lectures & notes",
   "Refund / Grievance",
 ];
 
@@ -70,7 +70,7 @@ export function ContactForm() {
       </label>
       <button
         type="submit"
-        className="h-12 rounded-lg bg-primary text-[15px] font-semibold text-white hover:bg-primary-dark"
+        className="h-12 rounded-full bg-primary text-[15px] font-semibold text-white hover:bg-primary-dark"
       >
         Send message
       </button>

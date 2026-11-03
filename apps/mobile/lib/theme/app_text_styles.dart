@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// Plus Jakarta Sans for the interface, with IBM Plex Sans Devanagari as the
-/// fallback so Hindi mixed into English copy renders in a matching weight.
-/// Both are bundled (pubspec `fonts:`), so text never waits on a download.
+/// Hanken Grotesk for the interface and Instrument Serif for headings, as on
+/// the website. IBM Plex Sans Devanagari is the fallback so Hindi (and ₹)
+/// render in a matching weight. All bundled, so text never waits on a download.
 abstract final class AppText {
-  static const _family = 'Jakarta';
+  static const _family = 'Hanken';
+  static const _serif = 'InstrumentSerif';
   static const _devanagari = 'PlexDevanagari';
   static const List<String> _fallback = [_devanagari];
 
@@ -24,9 +25,26 @@ abstract final class AppText {
       fontWeight: weight,
       height: height,
       color: color ?? AppColors.ink,
-      // Jakarta is set slightly wide; a touch of negative tracking on larger
-      // sizes keeps headings tight and crisp.
       letterSpacing: letterSpacing ?? (size >= 18 ? -0.2 : 0),
+    );
+  }
+
+  /// Serif headline. Instrument Serif has one weight, so it is never bolded.
+  static TextStyle serif(
+    double size, {
+    double height = 1.05,
+    Color? color,
+    bool italic = false,
+  }) {
+    return TextStyle(
+      fontFamily: _serif,
+      fontFamilyFallback: _fallback,
+      fontSize: size,
+      fontWeight: FontWeight.w400,
+      fontStyle: italic ? FontStyle.italic : FontStyle.normal,
+      height: height,
+      color: color ?? AppColors.ink,
+      letterSpacing: -0.3,
     );
   }
 
@@ -59,21 +77,15 @@ abstract final class AppText {
   );
 
   // Display / headings
-  static TextStyle get display =>
-      _base(30, FontWeight.w700, height: 1.1, letterSpacing: -0.6);
-  static TextStyle get h1 =>
-      _base(28, FontWeight.w700, height: 1.2, letterSpacing: -0.5);
-  static TextStyle get h2 =>
-      _base(26, FontWeight.w700, height: 1.2, letterSpacing: -0.5);
-  static TextStyle get h3 =>
-      _base(24, FontWeight.w700, height: 1.2, letterSpacing: -0.3);
-  static TextStyle get h4 =>
-      _base(22, FontWeight.w700, height: 1.25, letterSpacing: -0.2);
-  static TextStyle get h5 =>
-      _base(20, FontWeight.w700, height: 1.25, letterSpacing: -0.2);
+  static TextStyle get display => serif(38, height: 1.0);
+  static TextStyle get h1 => serif(34);
+  static TextStyle get h2 => serif(32);
+  static TextStyle get h3 => serif(30);
+  static TextStyle get h4 => serif(27, height: 1.1);
+  static TextStyle get h5 => serif(24, height: 1.1);
 
   // Section + card titles
-  static TextStyle get sectionTitle => _base(16, FontWeight.w600, height: 1.2);
+  static TextStyle get sectionTitle => serif(22, height: 1.1);
   static TextStyle get cardTitleLg => _base(17, FontWeight.w600, height: 1.3);
   static TextStyle get cardTitle => _base(15, FontWeight.w600, height: 1.3);
   static TextStyle get cardTitleSm => _base(14, FontWeight.w600, height: 1.3);
@@ -101,10 +113,10 @@ abstract final class AppText {
   static TextStyle eyebrow({
     Color color = AppColors.textMuted,
     double size = 11,
-    double letterSpacing = 0.7,
+    double letterSpacing = 1.4,
   }) => _base(
     size,
-    FontWeight.w600,
+    FontWeight.w700,
     height: 1.2,
     color: color,
     letterSpacing: letterSpacing,

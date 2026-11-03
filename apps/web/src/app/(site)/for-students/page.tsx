@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "For Students",
-  description: "How learning works at Akhand Bharat Academy.",
+  description: "How learning works at AB Academy.",
 };
 
 const steps = [
@@ -17,12 +17,12 @@ const steps = [
   },
   {
     title: "Learn every day",
-    body: "Join live classes, watch recordings, download notes and follow your calendar.",
+    body: "Watch lectures at your own pace, revise with notes and ask doubts under any lecture.",
   },
 ];
 
 const included = [
-  "Live class schedule with reminders",
+  "Ask doubts under every lecture",
   "Recordings attached to each chapter",
   "PDF notes with secure downloads",
   "Continue-learning from last position",
@@ -44,13 +44,13 @@ export default function ForStudentsPage() {
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               href="/login"
-              className="flex h-12 items-center rounded-lg bg-primary px-6 text-[15px] font-semibold text-white hover:bg-primary-dark"
+              className="flex h-12 items-center rounded-full bg-primary px-6 text-[15px] font-semibold text-white hover:bg-primary-dark"
             >
               Create your profile
             </Link>
             <Link
               href="/courses"
-              className="flex h-12 items-center rounded-lg border border-primary-line px-6 text-[15px] font-semibold text-primary hover:bg-primary-soft"
+              className="flex h-12 items-center rounded-full border border-primary-line px-6 text-[15px] font-semibold text-primary hover:bg-primary-soft"
             >
               Browse courses
             </Link>
@@ -59,7 +59,7 @@ export default function ForStudentsPage() {
         <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-[#eef3ff]">
           <Image
             src="/images/feature-live-class.png"
-            alt="Live class"
+            alt="A recorded lecture"
             width={800}
             height={600}
             className="size-full object-cover"
@@ -91,7 +91,7 @@ export default function ForStudentsPage() {
           </h2>
           <Link
             href="/courses"
-            className="mt-5 inline-flex h-11 items-center rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-dark"
+            className="mt-5 inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-dark"
           >
             Browse courses
           </Link>

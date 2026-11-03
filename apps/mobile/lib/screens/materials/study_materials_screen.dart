@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
+import '../../config/env.dart';
 import '../../data/mock/mock_data.dart';
 import '../../data/models/content.dart';
 import '../../data/providers/app_providers.dart';
@@ -28,6 +29,7 @@ class _NotesViewState extends ConsumerState<NotesView> {
 
   @override
   Widget build(BuildContext context) {
+    if (!Env.notesLive) return const _NotesComingSoon();
     final filter = ref.watch(materialsFilterProvider);
     final q = _query.trim().toLowerCase();
     final materials = ref
@@ -159,6 +161,97 @@ class _NoteRow extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Shown until the notes library opens (see [Env.notesLive]).
+class _NotesComingSoon extends StatelessWidget {
+  const _NotesComingSoon();
+
+  static const _subjects = [
+    ('Physics', 14, SubjectPalette.physics),
+    ('Chemistry', 10, SubjectPalette.chemistry),
+    ('Maths', 13, SubjectPalette.mathematics),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
+      children: [
+        ClipRRect(
+          borderRadius: AppRadius.lg,
+          child: Image.asset(
+            'assets/images/promo/notes.png',
+            fit: BoxFit.cover,
+            semanticLabel: 'Free notes and solved PYQs',
+          ),
+        ),
+        const SizedBox(height: 22),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.primaryTint,
+            borderRadius: AppRadius.pill,
+          ),
+          child: Text(
+            'COMING SOON',
+            style: AppText.eyebrow(color: AppColors.primary, size: 11),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text('Chapter notes are on the way.', style: AppText.h2),
+        const SizedBox(height: 8),
+        Text(
+          'A notes PDF and solved PYQs for every Class 12 chapter, in Hindi '
+          'and English. They will open right here in the secure viewer.',
+          style: AppText.bodyLg,
+        ),
+        const SizedBox(height: 22),
+        for (final (name, chapters, palette) in _subjects) ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: AppRadius.md,
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: palette.tint,
+                    borderRadius: AppRadius.sm,
+                  ),
+                  child: Icon(LucideIcons.fileText, color: palette.ink),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(name, style: AppText.serif(24)),
+                      Text('$chapters chapters', style: AppText.meta),
+                    ],
+                  ),
+                ),
+                Text(
+                  'Coming soon',
+                  style: AppText.tabular(
+                    12.5,
+                    FontWeight.w700,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
+      ],
     );
   }
 }

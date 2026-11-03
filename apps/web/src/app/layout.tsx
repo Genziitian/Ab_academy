@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import {
+  Hanken_Grotesk,
   IBM_Plex_Mono,
   IBM_Plex_Sans,
   IBM_Plex_Sans_Devanagari,
+  Instrument_Serif,
 } from "next/font/google";
 import "./globals.css";
 
@@ -24,13 +26,28 @@ const plexMono = IBM_Plex_Mono({
   weight: ["500"],
 });
 
+// The public site's "Saffron & Ink" look: a serif for headlines, a grotesk for
+// everything else. The portal and admin keep IBM Plex.
+const instrument = Instrument_Serif({
+  variable: "--font-instrument",
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+});
+
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: {
-    default: "Akhand Bharat Academy | Class 11 & 12 Crash Courses",
-    template: "%s | Akhand Bharat Academy",
+    default: "AB Academy | Class 12 Crash Course for Bihar Board",
+    template: "%s | AB Academy",
   },
   description:
-    "Class 11 & 12 crash courses for Bihar Board — live classes, recorded lectures, chapter notes and board-pattern tests.",
+    "Class 12 crash courses for Bihar Board — recorded classes, live doubt sessions with Ajit Sir, chapter notes and board-pattern tests in Hindi & English.",
 };
 
 // The single root layout. Each route group — (site), (portal), (focus) and
@@ -42,7 +59,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plex.variable} ${plexDevanagari.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${plex.variable} ${plexDevanagari.variable} ${plexMono.variable} ${instrument.variable} ${hanken.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>

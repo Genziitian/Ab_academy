@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { PdfBadge } from "@/components/NotesBrowser";
+import { PdfBadge } from "@/components/PdfBadge";
 import { PlayIcon } from "@/components/icons";
 import { Avatar, TabButton, TeacherBadge } from "@/components/portal/ui";
 import type { Lecture, LessonKind, PortalLesson } from "@/lib/portal/data";

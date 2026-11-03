@@ -15,6 +15,7 @@ import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format.dart';
 import '../../widgets/buttons.dart';
+import '../../widgets/brand_art.dart';
 import '../../widgets/common.dart';
 
 /// 24 · Course page — what the crash course includes, with price and enrol.
@@ -90,11 +91,11 @@ class _Body extends StatelessWidget {
                         AspectRatio(
                           aspectRatio: 16 / 9,
                           child: CourseThumbnail(
-                            url: course.thumbnailUrl,
+                            url: courseArtwork(course),
                             hue: course.thumbnailHue,
                             shade: false,
                             padding: const EdgeInsets.all(20),
-                            child: course.thumbnailUrl == null
+                            child: courseArtwork(course) == null
                                 ? Align(
                                     alignment: Alignment.bottomLeft,
                                     child: Text(

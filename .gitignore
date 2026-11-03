@@ -18,3 +18,6 @@ supabase/.temp/
 
 # Personal copy of the env template with real project values — never commit.
 .envv2
+
+# Demo account passwords — local only.
+supabase/demo_accounts.sql

@@ -22,12 +22,12 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
   if (!course) notFound();
 
   return (
-    <div className="min-h-screen flex-1 bg-[#fafbfd]">
+    <div className="theme-saffron min-h-screen flex-1">
       <header className="h-16 border-b border-border bg-white">
         <div className="mx-auto flex h-full max-w-[1040px] items-center justify-between gap-4 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
             <BrandMark size={32} />
-            <span className="hidden text-[15px] font-bold text-navy sm:inline">Akhand Bharat Academy</span>
+            <span className="hidden text-[15px] font-bold text-navy sm:inline">AB Academy</span>
           </Link>
           <span className="text-[13px] text-muted">🔒 Secure checkout · Razorpay</span>
         </div>

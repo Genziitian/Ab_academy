@@ -8,7 +8,7 @@ type CoursesPageProps = {
 export const metadata = {
   title: "Courses",
   description:
-    "Class 11 & 12 crash courses for Bihar Board — Science, Commerce and Arts with live classes, recordings and notes.",
+    "Class 11 & 12 crash courses for Bihar Board — Science, Commerce and Arts with recorded lectures, notes and practice.",
 };
 
 export default async function CoursesPage({ searchParams }: CoursesPageProps) {

@@ -104,8 +104,14 @@ class _SecureYouTubePlayerState extends State<SecureYouTubePlayer>
     _hideTimer?.cancel();
     _watermarkTimer?.cancel();
     SecureScreen.disable();
-    // Drop the page so nothing about the video lingers in the WebView.
-    _web?.loadHtmlString('<html></html>');
+    // Drop the page and the WebView's cache, so the embed URL (which holds
+    // the video id) does not linger in app storage after the lecture.
+    final web = _web;
+    if (web != null) {
+      web.loadHtmlString('<html></html>');
+      web.clearCache();
+      web.clearLocalStorage();
+    }
     super.dispose();
   }
 
@@ -157,6 +163,9 @@ class _SecureYouTubePlayerState extends State<SecureYouTubePlayer>
       final android = controller.platform as AndroidWebViewController;
       // Our play button is a Flutter tap, not a tap inside the page.
       android.setMediaPlaybackRequiresUserGesture(false);
+      // Swallow the page's console output: by default Android copies it to
+      // the device log, where YouTube's messages can carry the embed URL.
+      android.setOnConsoleMessage((_) {});
     }
     return controller;
   }

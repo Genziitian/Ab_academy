@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PdfBadge } from "@/components/NotesBrowser";
+import { PdfBadge } from "@/components/PdfBadge";
 import { FilterPill } from "@/components/portal/ui";
 import { type Material, toneFor } from "@/lib/portal/data";
 

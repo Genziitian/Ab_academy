@@ -88,11 +88,15 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
               </p>
             ) : null}
             <div className="mt-[18px] flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[#c8d1e4]">
-              <span className="font-bold text-[#ffc56b]">★ {course.rating}</span>
-              {course.reviewCount ? (
-                <span>({course.reviewCount.toLocaleString("en-IN")} reviews)</span>
+              {course.rating ? (
+                <>
+                  <span className="font-bold text-[#ffc56b]">★ {course.rating}</span>
+                  {course.reviewCount ? (
+                    <span>({course.reviewCount.toLocaleString("en-IN")} reviews)</span>
+                  ) : null}
+                  <span>·</span>
+                </>
               ) : null}
-              <span>·</span>
               <span className="font-semibold text-white">{course.teacher}</span>
               {course.teacherTitle ? <span>{course.teacherTitle}</span> : null}
             </div>
@@ -225,18 +229,18 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
           </div>
           <Link
             href={`/checkout/${course.slug}`}
-            className="mt-5 flex h-12 items-center justify-center rounded-lg bg-primary text-[15px] font-semibold text-white hover:bg-primary-dark"
+            className="mt-5 flex h-12 items-center justify-center rounded-full bg-primary text-[15px] font-semibold text-white hover:bg-primary-dark"
           >
             Enroll in Batch Now
           </Link>
           <Link
             href="/notes"
-            className="mt-2.5 flex h-11 items-center justify-center rounded-lg border border-primary-line text-sm font-semibold text-primary hover:bg-primary-soft"
+            className="mt-2.5 flex h-11 items-center justify-center rounded-full border border-primary-line text-sm font-semibold text-primary hover:bg-primary-soft"
           >
             Download Syllabus PDF
           </Link>
           <div className="mt-[22px] flex flex-col gap-2.5 text-sm text-ink">
-            <Row label="Live classes" value="As per batch schedule" />
+            <Row label="Lectures" value="Recorded — watch anytime" />
             <Row label="Validity" value={course.validity ?? course.batch} />
             <Row label="Medium" value={course.language} />
           </div>

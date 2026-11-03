@@ -190,7 +190,7 @@ class _Slide extends StatelessWidget {
                         style: AppText.tabular(
                           13,
                           FontWeight.w400,
-                          color: const Color(0xFFDBE6FF),
+                          color: const Color(0xFFE4DCCF),
                         ),
                       ),
                     ],

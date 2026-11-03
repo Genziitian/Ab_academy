@@ -136,19 +136,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ClipRRect(
-                      borderRadius: AppRadius.lg,
-                      child: AspectRatio(
-                        aspectRatio: 16 / 11,
-                        child: Image.asset(
-                          'assets/images/hero-students.png',
-                          fit: BoxFit.cover,
-                          semanticLabel:
-                              'Students learning with Akhand Bharat Academy',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
+                    const _LoginHero(),
+                    const SizedBox(height: 26),
                     Text('Log in or sign up', style: AppText.h2),
                     const SizedBox(height: 6),
                     Text(
@@ -184,7 +173,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 14),
                             alignment: Alignment.center,
                             decoration: const BoxDecoration(
-                              color: Color(0xFFF7F8FC),
+                              color: Color(0xFFF7F3EC),
                               border: Border(
                                 right: BorderSide(color: AppColors.borderInput),
                               ),
@@ -408,6 +397,106 @@ class _PhoneFormatter extends TextInputFormatter {
     return TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
+/// Saffron welcome card: the course promise above two students.
+class _LoginHero extends StatelessWidget {
+  const _LoginHero();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFBDCC2), Color(0xFFF2A86B), AppColors.accent],
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'CLASS 12 CRASH COURSE',
+                  style: AppText.eyebrow(color: AppColors.primary, size: 11.5),
+                ),
+                const SizedBox(height: 8),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      const TextSpan(text: 'The '),
+                      TextSpan(
+                        text: 'last 90 days',
+                        style: AppText.serif(
+                          34,
+                          italic: true,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const TextSpan(text: ' before your boards.'),
+                    ],
+                  ),
+                  style: AppText.serif(34, height: 1.0),
+                ),
+              ],
+            ),
+          ),
+          Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.asset(
+                  'assets/images/hero-students.png',
+                  fit: BoxFit.cover,
+                  alignment: const Alignment(0, -0.4),
+                  semanticLabel: 'Two students learning with AB Academy',
+                ),
+              ),
+              Positioned(
+                left: 12,
+                bottom: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppColors.liveDot,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 7),
+                      Text(
+                        'Recorded classes + live doubts',
+                        style: AppText.tabular(12, FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

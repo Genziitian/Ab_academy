@@ -105,8 +105,8 @@ export function CoursesCatalog({ initialCourses, initialClass }: Props) {
                 Class 11 &amp; 12 Crash Courses
               </h1>
               <p className="mt-3 text-base leading-[1.6] text-pretty text-muted">
-                Fast-track, board-focused crash courses with live classes,
-                recordings and notes. Bihar Board Class 11 &amp; 12 — Science,
+                Board-focused crash courses with recorded lectures, chapter
+                notes and practice. Bihar Board Class 11 &amp; 12 — Science,
                 Commerce and Arts.
               </p>
             </div>
@@ -326,7 +326,7 @@ export function CoursesCatalog({ initialCourses, initialClass }: Props) {
             </div>
             <Link
               href="/for-students"
-              className="flex h-10 shrink-0 items-center rounded-lg bg-navy px-4 text-sm font-semibold text-white hover:bg-primary"
+              className="flex h-10 shrink-0 items-center rounded-full bg-navy px-4 text-sm font-semibold text-white hover:bg-primary"
             >
               How learning works
             </Link>

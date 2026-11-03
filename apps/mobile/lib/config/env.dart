@@ -38,6 +38,11 @@ abstract final class Env {
     defaultValue: 'https://web-two-sand-99.vercel.app',
   );
 
+  /// Whether the Notes library is open. Off shows "Notes are coming soon";
+  /// build with --dart-define=NOTES_LIVE=true once the PDFs are uploaded.
+  /// Notes attached to a lecture open either way.
+  static const notesLive = bool.fromEnvironment('NOTES_LIVE');
+
   static bool get hasDemoLogin =>
       demoEmail.isNotEmpty && demoPassword.isNotEmpty;
 }

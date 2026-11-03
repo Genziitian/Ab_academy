@@ -14,11 +14,11 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/ui_kit.dart';
 
-const _bg = Color(0xFFE6F2FD);
-const _navy = Color(0xFF14285C);
-const _saffron = Color(0xFFE07A1F);
+const _bg = Color(0xFFF7F3EC);
+const _navy = Color(0xFF1C1814);
+const _saffron = Color(0xFFE8742A);
 const _gold = Color(0xFFC9A15A);
-const _muted = Color(0xFF5E6B80);
+const _muted = Color(0xFF5E554B);
 
 /// Each slide stays this long before the next one slides in.
 const _slideTime = Duration(milliseconds: 2500);
@@ -133,7 +133,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 width: 260,
                 height: 260,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFCDE6F7).withValues(alpha: 0.8),
+                  color: const Color(0xFFECE4D6).withValues(alpha: 0.8),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -197,7 +197,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                                   decoration: BoxDecoration(
                                     color: i == _page
                                         ? AppColors.primary
-                                        : const Color(0xFFB9C7D9),
+                                        : const Color(0xFFD9CFBF),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
@@ -396,7 +396,7 @@ class _LoadingDotsState extends State<_LoadingDots>
                 decoration: BoxDecoration(
                   color: i == active
                       ? AppColors.primary
-                      : const Color(0xFFB9C7D9),
+                      : const Color(0xFFD9CFBF),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),

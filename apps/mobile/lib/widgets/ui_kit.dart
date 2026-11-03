@@ -6,14 +6,14 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 
-/// Building blocks of the 2026 app layout: gradient header cards, coloured
+/// Building blocks of the app layout: gradient header cards, coloured
 /// icon tiles, large page titles and grouped menu lists.
 abstract final class AppGradients {
-  /// Brand blue into violet — headers, the centre tab button, avatars.
+  /// Coal into warm brown — headers, the centre tab button, avatars.
   static const brand = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF2962FF), Color(0xFF6B4FD8)],
+    colors: [Color(0xFF1C1814), Color(0xFF3A342D)],
   );
 
   static LinearGradient pair(Color a, Color b) => LinearGradient(
@@ -22,12 +22,12 @@ abstract final class AppGradients {
     colors: [a, b],
   );
 
-  static final violet = pair(const Color(0xFF8B5CF6), const Color(0xFF6366F1));
-  static final orange = pair(const Color(0xFFFF7A45), const Color(0xFFFF5A1F));
-  static final green = pair(const Color(0xFF10B981), const Color(0xFF059669));
-  static final sky = pair(const Color(0xFF0EA5E9), const Color(0xFF0284C7));
-  static final blue = pair(const Color(0xFF3B82F6), const Color(0xFF2563EB));
-  static final pink = pair(const Color(0xFFF43F8E), const Color(0xFFE11D48));
+  static final violet = pair(const Color(0xFF8E4FA3), const Color(0xFF7A3E8E));
+  static final orange = pair(const Color(0xFFE8742A), const Color(0xFFB4521A));
+  static final green = pair(const Color(0xFF1C9C88), const Color(0xFF0F7A6E));
+  static final sky = pair(const Color(0xFF3E8FB0), const Color(0xFF2B6F8C));
+  static final blue = pair(const Color(0xFF6B5D50), const Color(0xFF3A342D));
+  static final pink = pair(const Color(0xFFD0533B), const Color(0xFFB23A26));
 }
 
 /// Big page title with an optional one-line subtitle, as on Academics.
@@ -198,7 +198,7 @@ class SoftCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(radius),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0D122046),
+            color: Color(0x0D1C1814),
             blurRadius: 18,
             offset: Offset(0, 6),
           ),
@@ -328,12 +328,12 @@ class GradientAvatar extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF7C3AED), Color(0xFF6B21A8)],
+          colors: [Color(0xFFE8742A), Color(0xFFB4521A)],
         ),
         shape: BoxShape.circle,
         border: ring
             ? Border.all(color: Colors.white, width: 3)
-            : Border.all(color: const Color(0xFFC4B5FD), width: 2),
+            : Border.all(color: const Color(0xFFEFC9AD), width: 2),
       ),
       child: Text(
         initials.isEmpty ? '?' : initials.characters.first.toUpperCase(),

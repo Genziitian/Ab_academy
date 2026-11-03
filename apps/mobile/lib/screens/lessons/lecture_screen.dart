@@ -314,25 +314,10 @@ class _AboutTab extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
       children: [
-        Text(
-          eyebrow,
-          style: AppText.tabular(
-            11,
-            FontWeight.w700,
-            color: AppColors.primary,
-            letterSpacing: 0.9,
-          ),
-        ),
+        Text(eyebrow, style: AppText.eyebrow(color: AppColors.primary)),
         const SizedBox(height: 8),
-        Text(
-          title,
-          style: AppText.tabular(
-            20,
-            FontWeight.w700,
-            letterSpacing: -0.4,
-          ).copyWith(height: 1.3),
-        ),
-        const SizedBox(height: 12),
+        Text(title, style: AppText.serif(32, height: 1.05)),
+        const SizedBox(height: 14),
         Row(
           children: [
             InitialsAvatar(
@@ -364,7 +349,7 @@ class _AboutTab extends ConsumerWidget {
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE7EBF3)),
+              border: Border.all(color: const Color(0xFFE4DCCF)),
             ),
             child: Row(
               children: [
@@ -386,16 +371,13 @@ class _AboutTab extends ConsumerWidget {
         ],
         if (info != null && info.chapterLessons.length > 1) ...[
           const SizedBox(height: 26),
-          Text(
-            'In this chapter',
-            style: AppText.tabular(16, FontWeight.w700, letterSpacing: -0.2),
-          ),
+          Text('In this chapter', style: AppText.sectionTitle),
           const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE7EBF3)),
+              border: Border.all(color: const Color(0xFFE4DCCF)),
             ),
             clipBehavior: Clip.antiAlias,
             child: Column(
@@ -405,7 +387,7 @@ class _AboutTab extends ConsumerWidget {
                     const Divider(
                       height: 1,
                       indent: 62,
-                      color: Color(0xFFF1F3F8),
+                      color: Color(0xFFF3EDE3),
                     ),
                   _ChapterLessonRow(lesson: l, playing: l.id == lessonId),
                 ],
@@ -415,7 +397,7 @@ class _AboutTab extends ConsumerWidget {
         ],
         if (info == null) ...[
           const SizedBox(height: 20),
-          Text('About this lesson', style: AppText.cardTitle),
+          Text('About this lesson', style: AppText.sectionTitle),
           const SizedBox(height: 6),
           Text(MockData.lectureAbout, style: AppText.body),
         ],
@@ -651,7 +633,7 @@ class _NotesTab extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text('Attached notes', style: AppText.cardTitle),
+        Text('Attached notes', style: AppText.sectionTitle),
         const SizedBox(height: 4),
         Text('Open them here — no download needed.', style: AppText.meta),
         const SizedBox(height: 14),

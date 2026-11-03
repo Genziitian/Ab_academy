@@ -16,7 +16,7 @@ const initial: LoginState = {};
 const input =
   "h-[46px] rounded-lg border border-field px-3 text-[15px] font-normal outline-none focus:border-primary";
 const primaryButton =
-  "flex h-12 w-full items-center justify-center rounded-lg bg-primary text-[15px] font-semibold text-white hover:bg-primary-dark disabled:opacity-60";
+  "flex h-12 w-full items-center justify-center rounded-full bg-primary text-[15px] font-semibold text-white hover:bg-primary-dark disabled:opacity-60";
 
 type Props = {
   /** Where students land after sign-in. */
@@ -95,7 +95,7 @@ function StudentLogin({
           >
             <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
               Mobile number
-              <div className="flex h-12 overflow-hidden rounded-lg border border-field focus-within:border-primary">
+              <div className="flex h-12 overflow-hidden rounded-full border border-field focus-within:border-primary">
                 <span className="flex items-center border-r border-field bg-surface-grey px-3.5 text-[15px] text-ink">
                   +91
                 </span>
@@ -132,7 +132,7 @@ function StudentLogin({
             <button
               type="submit"
               disabled={googlePending || demo}
-              className="flex h-12 w-full items-center justify-center gap-2.5 rounded-lg border border-field bg-white text-[15px] font-semibold text-navy hover:bg-surface-grey disabled:opacity-60"
+              className="flex h-12 w-full items-center justify-center gap-2.5 rounded-full border border-field bg-white text-[15px] font-semibold text-navy hover:bg-surface-grey disabled:opacity-60"
             >
               <GoogleMark />
               {googlePending ? "Redirecting…" : "Continue with Google"}

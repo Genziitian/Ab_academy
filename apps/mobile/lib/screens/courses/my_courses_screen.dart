@@ -8,6 +8,7 @@ import '../../data/providers/remote_providers.dart';
 import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
+import '../../widgets/brand_art.dart';
 import '../../widgets/common.dart';
 import '../../widgets/ui_kit.dart';
 
@@ -120,7 +121,7 @@ class MyCourseCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x14122046),
+            color: Color(0x141C1814),
             blurRadius: 24,
             offset: Offset(0, 10),
           ),
@@ -143,13 +144,13 @@ class MyCourseCard extends ConsumerWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (course.thumbnailUrl == null)
+                    if (courseArtwork(course) == null)
                       const DecoratedBox(
                         decoration: BoxDecoration(gradient: AppGradients.brand),
                       )
                     else
                       CourseThumbnail(
-                        url: course.thumbnailUrl,
+                        url: courseArtwork(course),
                         hue: course.thumbnailHue,
                       ),
                     // Decorative circle, as on the gradient headers.

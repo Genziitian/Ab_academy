@@ -155,7 +155,11 @@ Course courseFromRow(Json row, {required bool isEnrolled}) {
     isEnrolled: isEnrolled,
     lessonsCount: (row['lessons_count'] as int?) ?? 0,
     highlights: ((row['highlights'] as List?) ?? const []).cast<String>(),
-    rating: (row['rating'] as num?)?.toDouble(),
+    // 0 means "no ratings yet"; null hides the star everywhere.
+    rating: switch ((row['rating'] as num?)?.toDouble()) {
+      final r? when r > 0 => r,
+      _ => null,
+    },
     thumbnailHue: (row['thumbnail_hue'] as int?) ?? 214,
     thumbnailUrl: row['thumbnail_url'] as String?,
     language: (row['language'] as String?) ?? 'Hindi + English',

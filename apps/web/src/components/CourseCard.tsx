@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Course,
+  courseArt,
   CRASH_COURSE_DAYS,
   discountPercent,
   formatInr,
@@ -25,12 +26,16 @@ export function CourseCard({ course, variant = "catalog", className = "" }: Prop
 
   return (
     <article
-      className={`flex flex-col overflow-hidden rounded-xl border border-border bg-white transition-shadow hover:shadow-[var(--shadow-soft)] ${className}`}
+      className={`flex flex-col overflow-hidden rounded-2xl border border-border bg-white transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] ${className}`}
     >
       <Link
         href={href}
         className={`flex flex-col justify-between ${featured ? "min-h-[170px] p-4" : "min-h-[140px] p-3.5"}`}
-        style={{ background: thumbnailGradient(course.thumbnailHue) }}
+        style={{
+          background: courseArt(course)
+            ? `linear-gradient(180deg, rgba(28,24,20,.1), rgba(28,24,20,.55)), center / cover no-repeat url(${courseArt(course)})`
+            : thumbnailGradient(course.thumbnailHue),
+        }}
       >
         <div className="flex gap-1.5">
           {course.badge ? (
@@ -77,12 +82,12 @@ export function CourseCard({ course, variant = "catalog", className = "" }: Prop
           {course.title}
         </Link>
         <p
-          className={`mt-2 flex-1 leading-[1.55] text-muted ${featured ? "text-sm" : "text-[13px]"}`}
+          className={`mt-2 line-clamp-3 flex-1 leading-[1.6] text-muted ${featured ? "text-[15px]" : "text-sm"}`}
         >
           {course.description}
         </p>
         {featured ? null : (
-          <p className="mt-3 text-[13px] text-ink">
+          <p className="mt-3 text-sm text-ink">
             <span className="font-semibold text-navy">{course.teacher}</span> ·{" "}
             {course.language}
           </p>
@@ -124,9 +129,9 @@ export function CourseCard({ course, variant = "catalog", className = "" }: Prop
           )}
           <Link
             href={href}
-            className={`flex shrink-0 items-center whitespace-nowrap rounded-lg bg-navy text-sm font-semibold text-white hover:bg-primary ${featured ? "h-[38px] px-4" : "h-9 px-3.5"}`}
+            className="flex h-10 shrink-0 items-center whitespace-nowrap rounded-full bg-primary-soft px-4 text-sm font-semibold text-primary hover:bg-primary hover:text-white"
           >
-            Enroll
+            View course
           </Link>
         </div>
       </div>
@@ -134,7 +139,9 @@ export function CourseCard({ course, variant = "catalog", className = "" }: Prop
   );
 }
 
+/** Shown only once a course has real ratings. */
 function Rating({ value }: { value: number }) {
+  if (!value) return null;
   return (
     <span className="whitespace-nowrap rounded bg-white px-2 py-[3px] text-xs font-bold text-navy">
       ★ {value}

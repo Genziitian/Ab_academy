@@ -4,8 +4,8 @@
   --background: #ffffff;
   --foreground: #0f1b2d;
   --navy: #122046;
-  --ink: #4a5872;
-  --muted: #6b7a90;
+  --ink: #3f4c66;
+  --muted: #5a6780;
   --subtle: #98a3b6;
   --border: #e6ebf5;
   --line: #eff1f5;
@@ -32,6 +32,9 @@
   --teal: #14b8a6;
   --teal-dark: #0f8f81;
   --teal-soft: #e8fff6;
+  --chalk: #1f3b2f;
+  --chalk-ink: #eef3ea;
+  --chalk-yellow: #ffd166;
   --shadow-card: 0 14px 40px rgba(18, 32, 70, 0.06);
   --shadow-soft: 0 14px 40px rgba(41, 98, 255, 0.1);
   --shadow-float: 0 14px 40px rgba(18, 32, 70, 0.12);
@@ -69,10 +72,27 @@
   --color-teal: var(--teal);
   --color-teal-dark: var(--teal-dark);
   --color-teal-soft: var(--teal-soft);
+  --color-chalk: var(--chalk);
+  --color-chalk-ink: var(--chalk-ink);
+  --color-chalk-yellow: var(--chalk-yellow);
   --font-sans: var(--font-plex), var(--font-plex-devanagari), sans-serif;
   --font-display: var(--font-plex), var(--font-plex-devanagari), sans-serif;
   --font-hindi: var(--font-plex-devanagari), var(--font-plex), sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-serif: var(--font-instrument), Georgia, "Times New Roman", serif;
+
+  /* Saffron & Ink — fixed colours used directly by the landing page. */
+  --color-coal: #1c1814;
+  --color-coal-soft: #231e19;
+  --color-coal-line: #3a342d;
+  --color-cream: #f7f3ec;
+  --color-paper: #fffdf8;
+  --color-sand: #e4dccf;
+  --color-saffron: #e8742a;
+  --color-clay: #b4521a;
+  --color-taupe: #5e554b;
+  --color-mist: #d9d1c4;
+  --color-dust: #bdb4a7;
 }
 
 * {
@@ -118,4 +138,55 @@ body {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--primary);
+}
+
+/*
+ * Saffron & Ink theme for the public site and the sign-in / checkout pages.
+ * It re-points the shared tokens, so every page built on them (courses,
+ * notes, course page, login…) takes the new look without its own changes.
+ * Primary is the deeper clay so white button text keeps 4.5:1 contrast.
+ */
+.theme-saffron {
+  --background: #f7f3ec;
+  --foreground: #1c1814;
+  --navy: #1c1814;
+  --ink: #4a433b;
+  --muted: #5e554b;
+  --subtle: #9a8f82;
+  --border: #e4dccf;
+  --line: #ece4d6;
+  --field: #d9cfbf;
+  --primary-line: #efc9ad;
+  --surface: #fffdf8;
+  --surface-soft: #f3ede3;
+  --surface-grey: #f3ede3;
+  --track: #ece4d6;
+  --primary: #b4521a;
+  --primary-dark: #8a3c10;
+  --primary-soft: #fbeadc;
+  --shadow-card: 0 14px 40px rgba(28, 24, 20, 0.07);
+  --shadow-soft: 0 14px 40px rgba(180, 82, 26, 0.12);
+  --shadow-float: 0 14px 40px rgba(28, 24, 20, 0.14);
+  --font-plex: var(--font-hanken);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-hanken), var(--font-plex-devanagari), sans-serif;
+}
+
+.theme-saffron .eyebrow {
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+/* Section numbers in the landing page: "01. How it works". */
+.kicker {
+  font-family: var(--font-instrument), Georgia, serif;
+  font-style: italic;
+  font-size: 22px;
+}
+
+@media (min-width: 640px) {
+  .kicker {
+    font-size: 26px;
+  }
 }

@@ -3,7 +3,7 @@ import { ContactForm } from "./ContactForm";
 
 export const metadata = {
   title: "Contact",
-  description: "Contact Akhand Bharat Academy support.",
+  description: "Contact AB Academy support.",
 };
 
 const rows = [
@@ -21,7 +21,7 @@ export default function ContactPage() {
           We&apos;re here to help
         </h1>
         <p className="mt-4 max-w-[460px] text-[17px] leading-[1.6] text-ink">
-          Questions about courses, payments or live classes? Reach the support
+          Questions about courses, payments or lectures? Reach the support
           team.
         </p>
         <div className="mt-9 rounded-xl border border-border bg-white">

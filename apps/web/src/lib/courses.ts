@@ -88,12 +88,12 @@ export const courseFaqs = [
     a: "Recordings stay inside your enrolled classroom. Offline download for selected content will roll out based on licensing.",
   },
   {
-    q: "Are live classes mandatory?",
-    a: "No. You can join live or watch the recording later from the same chapter.",
+    q: "When can I watch the lectures?",
+    a: "Anytime. Every lecture is recorded, so you can watch, pause and rewatch at your own pace on the website or the app.",
   },
   {
     q: "Will this work for boards beyond Bihar Board?",
-    a: "We are launching with Bihar Board first. More boards and domain courses will be added under Akhand Bharat Academy soon.",
+    a: "We are launching with Bihar Board first. More boards and domain courses will be added under AB Academy soon.",
   },
   {
     q: "How do refunds work?",
@@ -107,8 +107,8 @@ export const courseFaqs = [
 
 const standardDeliverables = (lectures: number, subjects: string) => [
   {
-    title: `${lectures}+ live crash-course lectures`,
-    body: `Daily live classes across ${subjects} with recordings for every chapter.`,
+    title: `${lectures}+ recorded lectures`,
+    body: `Every chapter of ${subjects}, recorded so you can learn at your own pace.`,
   },
   {
     title: "90-day board plan",
@@ -128,7 +128,7 @@ const standardDeliverables = (lectures: number, subjects: string) => [
   },
   {
     title: "Doubt-clearing support",
-    body: "Ask doubts during live sessions and through classroom Q&A.",
+    body: "Ask a doubt under any lecture and a teacher replies."
   },
 ];
 
@@ -173,149 +173,17 @@ const physics12: CurriculumChapter[] = [
   },
 ];
 
-const accountancy12: CurriculumChapter[] = [
-  {
-    title: "Partnership Fundamentals",
-    lectures: 5,
-    notes: 2,
-    lessons: [
-      { title: "Partnership Deed", duration: "21:30", hasNotes: true },
-      { title: "Interest on Capital", duration: "25:10" },
-    ],
-  },
-  {
-    title: "Admission of a Partner",
-    lectures: 6,
-    notes: 2,
-    lessons: [
-      { title: "Goodwill Valuation", duration: "28:40", hasNotes: true },
-      { title: "Revaluation Account", duration: "24:00" },
-    ],
-  },
-  {
-    title: "Company Accounts — Shares",
-    lectures: 5,
-    notes: 2,
-    lessons: [
-      { title: "Issue of Shares", duration: "26:20", hasNotes: true },
-      { title: "Forfeiture and Reissue", duration: "29:05" },
-    ],
-  },
-];
-
-const history12: CurriculumChapter[] = [
-  {
-    title: "Bricks, Beads and Bones",
-    lectures: 4,
-    notes: 2,
-    lessons: [
-      { title: "The Harappan Civilisation", duration: "24:30", hasNotes: true },
-      { title: "Map Work — Harappan Sites", duration: "18:15", hasNotes: true },
-    ],
-  },
-  {
-    title: "Kings, Farmers and Towns",
-    lectures: 4,
-    notes: 1,
-    lessons: [
-      { title: "Mauryan Empire", duration: "22:40", hasNotes: true },
-      { title: "Answer-writing Practice", duration: "26:00" },
-    ],
-  },
-];
-
-const physics11: CurriculumChapter[] = [
-  {
-    title: "Units and Measurements",
-    lectures: 3,
-    notes: 1,
-    lessons: [
-      { title: "SI Units and Dimensions", duration: "20:10", hasNotes: true },
-      { title: "Errors in Measurement", duration: "18:30" },
-    ],
-  },
-  {
-    title: "Motion in a Straight Line",
-    lectures: 4,
-    notes: 2,
-    lessons: [
-      { title: "Equations of Motion", duration: "24:00", hasNotes: true },
-      { title: "Graphs and Numericals", duration: "27:20" },
-    ],
-  },
-  {
-    title: "Laws of Motion",
-    lectures: 5,
-    notes: 2,
-    lessons: [
-      { title: "Newton's Laws", duration: "23:50", hasNotes: true },
-      { title: "Friction", duration: "21:15" },
-    ],
-  },
-];
-
-const accountancy11: CurriculumChapter[] = [
-  {
-    title: "Journal and Ledger",
-    lectures: 4,
-    notes: 2,
-    lessons: [
-      { title: "Rules of Debit and Credit", duration: "22:00", hasNotes: true },
-      { title: "Posting to Ledger", duration: "25:30" },
-    ],
-  },
-  {
-    title: "Trial Balance",
-    lectures: 3,
-    notes: 1,
-    lessons: [
-      { title: "Preparing a Trial Balance", duration: "23:40", hasNotes: true },
-    ],
-  },
-];
+// The three launch courses, matched to the database by slug (see catalog.ts).
+// Price, title, description and publishing come from the database; this adds
+// the presentation it does not store.
+const ajit = {
+  teacher: "Ajit Sir",
+  teacherTitle: "Physics · Chemistry · Maths",
+  teacherBio:
+    "One teacher for all three subjects, so concepts connect across Physics, Chemistry and Maths. Ajit Sir records every class and takes every live doubt session himself.",
+};
 
 export const courses: Course[] = [
-  {
-    slug: "class-12-science-crash-course-2027",
-    title: "Class 12 Science Crash Course 2027",
-    classLevel: 12,
-    board: "Bihar Board",
-    subjects: ["Physics", "Chemistry", "Mathematics", "Biology"],
-    stream: "Science · PCM + PCB",
-    teacher: "Senior Faculty",
-    teacherTitle: "PCM / PCB Mentors",
-    teacherBio:
-      "Subject specialists for Physics, Chemistry, Mathematics and Biology, teaching to the Bihar Board Class 12 pattern.",
-    language: "Hindi + English",
-    price: 2499,
-    originalPrice: 4999,
-    rating: 4.8,
-    reviewCount: 1260,
-    lessons: 120,
-    questions: 3000,
-    batch: "2027 Board Batch",
-    validity: "Until 31 March 2027",
-    tagline: "PCM + PCB · 90-day plan",
-    badge: "Bestseller",
-    thumbnailHue: 214,
-    bestseller: true,
-    hindiBlurb:
-      "कक्षा 12 विज्ञान — 90 दिनों में पूरा सिलेबस, लाइव कक्षाएँ, रिकॉर्डिंग और नोट्स।",
-    description:
-      "Complete Class 12 Science revision in 90 days with live classes, chapter recordings, notes and board-pattern tests.",
-    highlights: [
-      "Live classes with expert teachers",
-      "Recorded lectures you can revise anytime",
-      "PDF notes for every chapter",
-      "Weekly board-pattern tests",
-    ],
-    deliverables: standardDeliverables(
-      120,
-      "Physics, Chemistry, Maths and Biology",
-    ),
-    curriculum: physics12,
-    curriculumSubject: "Physics",
-  },
   {
     slug: "class-12-physics-crash-course",
     title: "Class 12 Physics Crash Course",
@@ -323,195 +191,78 @@ export const courses: Course[] = [
     board: "Bihar Board",
     subjects: ["Physics"],
     stream: "Physics",
-    teacher: "Amit Sir",
-    teacherTitle: "M.Sc. Physics · Lead Mentor",
-    teacherBio:
-      "Amit Sir focuses on concept clarity, derivations and numericals in the Bihar Board Class 12 pattern.",
-    language: "Hindi",
-    price: 999,
-    originalPrice: 1799,
-    rating: 4.9,
-    reviewCount: 842,
-    lessons: 48,
-    questions: 1200,
-    batch: "2027 Board Batch",
+    ...ajit,
+    language: "Hindi + English",
+    price: 249,
+    rating: 0,
+    lessons: 14,
+    batch: "Board 2027 Batch",
     validity: "Until 31 March 2027",
-    tagline: "Full Physics syllabus",
-    badge: "Top rated",
-    thumbnailHue: 198,
-    hindiBlurb:
-      "इलेक्ट्रोस्टैटिक्स से सेमीकंडक्टर तक — बोर्ड पैटर्न पर आधारित भौतिकी क्रैश कोर्स।",
+    tagline: "14 chapters · Board pattern",
+    thumbnailHue: 20,
     description:
-      "Electrostatics to Semiconductors with numericals, derivations and important board questions.",
+      "Every Class 12 Physics chapter as a recorded class, with live doubt sessions, chapter notes and board-pattern questions.",
     highlights: [
-      "Chapter-wise live + recorded classes",
-      "Important questions for board exams",
-      "Formula sheets and PDF notes",
-      "Progress tracking per chapter",
+      "Recorded class for every chapter",
+      "Live doubt sessions with Ajit Sir",
+      "Chapter notes PDF",
+      "Board-pattern questions",
     ],
-    deliverables: standardDeliverables(48, "every Physics chapter"),
+    deliverables: standardDeliverables(14, "Physics"),
     curriculum: physics12,
     curriculumSubject: "Physics",
   },
   {
-    slug: "class-12-commerce-crash-course",
-    title: "Class 12 Commerce Crash Course",
+    slug: "class-12-chemistry-crash-course",
+    title: "Class 12 Chemistry Crash Course",
     classLevel: 12,
     board: "Bihar Board",
-    subjects: ["Accountancy", "Business Studies", "Economics"],
-    stream: "Commerce",
-    teacher: "Ravi Sir",
-    teacherTitle: "Commerce Faculty",
-    teacherBio:
-      "Ravi Sir teaches Accountancy, Business Studies and Economics with solved board papers and numerical drills.",
-    language: "Hindi",
-    price: 1999,
-    originalPrice: 3499,
-    rating: 4.7,
-    reviewCount: 540,
-    lessons: 90,
-    questions: 1800,
-    batch: "2027 Board Batch",
-    validity: "Until 31 March 2027",
-    tagline: "Accountancy · BST · Economics",
-    badge: "Popular",
-    thumbnailHue: 320,
-    hindiBlurb:
-      "कक्षा 12 वाणिज्य — लेखाशास्त्र, व्यवसाय अध्ययन और अर्थशास्त्र की तेज़ रिवीजन।",
-    description:
-      "Fast revision of Accountancy, Business Studies and Economics with solved board papers.",
-    highlights: [
-      "Numerical practice for Accountancy",
-      "Chapter-wise recordings",
-      "Study notes in Hindi",
-      "Solved board papers",
-    ],
-    deliverables: standardDeliverables(
-      90,
-      "Accountancy, Business Studies and Economics",
-    ),
-    curriculum: accountancy12,
-    curriculumSubject: "Accountancy",
-  },
-  {
-    slug: "class-12-arts-crash-course",
-    title: "Class 12 Arts Crash Course",
-    classLevel: 12,
-    board: "Bihar Board",
-    subjects: ["History", "Political Science", "Geography"],
-    stream: "Arts",
-    teacher: "Faculty Team",
-    teacherTitle: "Humanities Mentors",
-    teacherBio:
-      "A humanities team covering History, Political Science and Geography with map work and answer-writing practice.",
-    language: "Hindi",
-    price: 1799,
-    originalPrice: 2999,
-    rating: 4.6,
-    reviewCount: 310,
-    lessons: 80,
-    questions: 1400,
-    batch: "2027 Board Batch",
-    validity: "Until 31 March 2027",
-    tagline: "History · Pol. Science · Geography",
-    badge: "New",
-    thumbnailHue: 28,
-    hindiBlurb:
-      "कक्षा 12 कला — अध्याय सारांश, मानचित्र कार्य और उत्तर-लेखन अभ्यास।",
-    description:
-      "Chapter summaries, map work and answer-writing practice for Class 12 Arts boards.",
-    highlights: [
-      "Chapter summaries",
-      "Map work practice",
-      "Answer-writing sessions",
-      "Hindi notes",
-    ],
-    deliverables: standardDeliverables(
-      80,
-      "History, Political Science and Geography",
-    ),
-    curriculum: history12,
-    curriculumSubject: "History",
-  },
-  {
-    slug: "class-11-science-crash-course",
-    title: "Class 11 Science Crash Course",
-    classLevel: 11,
-    board: "Bihar Board",
-    subjects: ["Physics", "Chemistry", "Mathematics", "Biology"],
-    stream: "Science · PCM + PCB",
-    teacher: "Neha Ma'am",
-    teacherTitle: "Science Faculty",
-    teacherBio:
-      "Neha Ma'am builds Class 11 Science foundations so Class 12 and entrance prep feel manageable.",
+    subjects: ["Chemistry"],
+    stream: "Chemistry",
+    ...ajit,
     language: "Hindi + English",
-    price: 1999,
-    originalPrice: 3499,
-    rating: 4.7,
-    reviewCount: 420,
-    lessons: 100,
-    questions: 2200,
-    batch: "2026–27 Session",
+    price: 249,
+    rating: 0,
+    lessons: 10,
+    batch: "Board 2027 Batch",
     validity: "Until 31 March 2027",
-    tagline: "PCM + PCB · Strong base",
-    badge: "Foundation",
-    thumbnailHue: 162,
-    hindiBlurb:
-      "कक्षा 11 विज्ञान — कक्षा 12 और प्रवेश परीक्षा के लिए मज़बूत आधार।",
+    tagline: "10 chapters · Board pattern",
+    thumbnailHue: 150,
     description:
-      "Cover Class 11 Science quickly so Class 12 and entrance prep feel manageable.",
+      "Every Class 12 Chemistry chapter as a recorded class, with live doubt sessions, chapter notes and board-pattern questions.",
     highlights: [
-      "Concept-first teaching",
-      "Numerical practice",
-      "Chapter notes",
-      "Live doubt sessions",
+      "Recorded class for every chapter",
+      "Live doubt sessions with Ajit Sir",
+      "Chapter notes PDF",
+      "Board-pattern questions",
     ],
-    deliverables: standardDeliverables(
-      100,
-      "Physics, Chemistry, Maths and Biology",
-    ),
-    curriculum: physics11,
-    curriculumSubject: "Physics",
+    deliverables: standardDeliverables(10, "Chemistry"),
   },
   {
-    slug: "class-11-commerce-crash-course",
-    title: "Class 11 Commerce Crash Course",
-    classLevel: 11,
+    slug: "class-12-maths-crash-course",
+    title: "Class 12 Maths Crash Course",
+    classLevel: 12,
     board: "Bihar Board",
-    subjects: ["Accountancy", "Business Studies", "Economics"],
-    stream: "Commerce",
-    teacher: "Ravi Sir",
-    teacherTitle: "Commerce Faculty",
-    teacherBio:
-      "Ravi Sir makes Class 11 Commerce concepts clear with numerical practice and Hindi notes.",
-    language: "Hindi",
-    price: 1499,
-    originalPrice: 2499,
-    rating: 4.5,
-    reviewCount: 210,
-    lessons: 72,
-    questions: 900,
-    batch: "2026–27 Session",
+    subjects: ["Mathematics"],
+    stream: "Maths",
+    ...ajit,
+    language: "Hindi + English",
+    price: 249,
+    rating: 0,
+    lessons: 13,
+    batch: "Board 2027 Batch",
     validity: "Until 31 March 2027",
-    tagline: "Accountancy · BST · Economics",
-    badge: "New",
-    thumbnailHue: 250,
-    hindiBlurb:
-      "कक्षा 11 वाणिज्य — संख्यात्मक अभ्यास और हिंदी नोट्स के साथ।",
+    tagline: "13 chapters · Board pattern",
+    thumbnailHue: 270,
     description:
-      "Clear Class 11 Commerce concepts with numerical practice and Hindi notes.",
+      "Every Class 12 Maths chapter as a recorded class, with live doubt sessions, chapter notes and board-pattern questions.",
     highlights: [
-      "Concept + numerical practice",
-      "Chapter-wise recordings",
-      "Study notes in Hindi",
-      "Scheduled live classes",
+      "Recorded class for every chapter",
+      "Live doubt sessions with Ajit Sir",
+      "Chapter notes PDF",
+      "Board-pattern questions",
     ],
-    deliverables: standardDeliverables(
-      72,
-      "Accountancy, Business Studies and Economics",
-    ),
-    curriculum: accountancy11,
-    curriculumSubject: "Accountancy",
+    deliverables: standardDeliverables(13, "Maths"),
   },
 ];
 
@@ -538,8 +289,31 @@ export function discountPercent(price: number, original?: number) {
 }
 
 /** CSS gradient used for course thumbnails, derived from the course hue. */
+// Warm "Saffron & Ink" thumbnail colours. A course's stored hue picks one, so
+// each course keeps a stable colour of its own (same mapping as the app).
+const THUMBNAIL_PAIRS = [
+  ["#e8742a", "#b4521a"], // saffron
+  ["#6b7b3a", "#4a5628"], // olive
+  ["#1c7c70", "#0f5a50"], // teal
+  ["#3a342d", "#1c1814"], // coal
+  ["#7a3e8e", "#55286a"], // plum
+  ["#c8573a", "#8f3a22"], // terracotta
+];
+
+/** Bundled subject art for single-subject PCM courses and the free demo. */
+export function courseArt(course: Pick<Course, "subjects" | "price">): string | null {
+  if (course.price === 0) return "/images/courses/demo.png";
+  if (course.subjects.length !== 1) return null;
+  const s = course.subjects[0].toLowerCase();
+  if (s === "physics") return "/images/courses/physics.png";
+  if (s === "chemistry") return "/images/courses/chemistry.png";
+  if (s === "mathematics" || s === "maths") return "/images/courses/maths.png";
+  return null;
+}
+
 export function thumbnailGradient(hue: number) {
-  return `linear-gradient(145deg, hsl(${hue} 70% 48%), hsl(${hue + 22} 65% 34%))`;
+  const [a, b] = THUMBNAIL_PAIRS[Math.floor((((hue % 360) + 360) % 360) / 60)];
+  return `linear-gradient(145deg, ${a}, ${b})`;
 }
 
 export function initials(name: string) {
