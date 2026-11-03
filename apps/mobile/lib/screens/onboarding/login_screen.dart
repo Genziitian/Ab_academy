@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +13,7 @@ import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
+import '../../config/env.dart';
 import '../../widgets/buttons.dart';
 
 /// 02 · Login — phone number or Google.
@@ -21,9 +24,23 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen>
+    with TickerProviderStateMixin {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
+
+  /// Plays once: the staggered entrance of every block on the screen.
+  late final AnimationController _intro = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  );
+
+  /// Loops slowly: drifting background glows, the photo's breathing zoom and
+  /// the live dot's pulse.
+  late final AnimationController _ambient = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 14),
+  );
 
   @override
   void initState() {
@@ -33,11 +50,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Respect "Remove animations": show everything at rest.
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _intro.value = 1;
+      _ambient.stop();
+    } else {
+      if (!_intro.isAnimating && _intro.value == 0) _intro.forward();
+      if (!_ambient.isAnimating) _ambient.repeat();
+    }
+  }
+
+  @override
   void dispose() {
+    _intro.dispose();
+    _ambient.dispose();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
   }
+
+  void _phoneComingSoon() =>
+      _snack('Sign-in with mobile number is coming soon. Use Google for now.');
 
   String get _digits => _controller.text.replaceAll(RegExp(r'\D'), '');
 
@@ -123,173 +158,216 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final focused = _focusNode.hasFocus || _controller.text.isNotEmpty;
     return Scaffold(
-      backgroundColor: AppColors.surface,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _LoginHero(),
-                    const SizedBox(height: 26),
-                    Text('Log in or sign up', style: AppText.h2),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Use your mobile number or Google account.',
-                      style: AppText.bodyLg,
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Mobile number',
-                      style: AppText.tabular(
-                        13,
-                        FontWeight.w500,
-                        color: AppColors.ink,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      height: 52,
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        borderRadius: AppRadius.sm,
-                        border: Border.all(
-                          color: focused
-                              ? AppColors.primary
-                              : AppColors.borderInput,
-                          width: focused ? 1.5 : 1,
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          Positioned.fill(child: _AmbientGlow(animation: _ambient)),
+          SafeArea(
+            child: CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _Reveal(
+                          animation: _intro,
+                          from: 0,
+                          to: 0.45,
+                          child: _LoginHero(ambient: _ambient),
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            alignment: Alignment.center,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFF7F3EC),
-                              border: Border(
-                                right: BorderSide(color: AppColors.borderInput),
+                        const SizedBox(height: 26),
+                        _Reveal(
+                          animation: _intro,
+                          from: 0.15,
+                          to: 0.6,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Welcome to AB Academy', style: AppText.h2),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Sign in to watch lectures, ask doubts and read notes.',
+                                style: AppText.bodyLg,
                               ),
-                            ),
-                            child: Text(
-                              '+91',
-                              style: AppText.tabular(
-                                16,
-                                FontWeight.w400,
-                                color: AppColors.textBody,
-                              ),
-                            ),
+                            ],
                           ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              child: TextField(
-                                controller: _controller,
-                                focusNode: _focusNode,
-                                keyboardType: TextInputType.phone,
-                                maxLength: 11,
-                                inputFormatters: [_PhoneFormatter()],
-                                onSubmitted: (_) => _continue(),
-                                style: AppText.tabular(16, FontWeight.w400),
-                                cursorColor: AppColors.primary,
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  counterText: '',
-                                  isCollapsed: true,
-                                  hintText: '98765 43210',
-                                  hintStyle: AppText.tabular(
-                                    16,
-                                    FontWeight.w400,
-                                    color: AppColors.textFaint,
-                                  ),
-                                ),
-                              ),
-                            ),
+                        ),
+                        const SizedBox(height: 24),
+                        _Reveal(
+                          animation: _intro,
+                          from: 0.3,
+                          to: 0.75,
+                          child: _GoogleButton(
+                            onPressed: _googleLogin,
+                            busy: _busy,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _Reveal(
+                          animation: _intro,
+                          from: 0.4,
+                          to: 0.85,
+                          child: Env.phoneLogin
+                              ? _phoneForm()
+                              : _PhoneComingSoon(onTap: _phoneComingSoon),
+                        ),
+                        if (kDebugMode) ...[
+                          const SizedBox(height: 10),
+                          SecondaryButton(
+                            label: 'Quick login (skip OTP)',
+                            icon: LucideIcons.zap,
+                            onPressed: _quickLogin,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Debug builds only — signs you in as the demo student.',
+                            textAlign: TextAlign.center,
+                            style: AppText.metaSm,
                           ),
                         ],
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    PrimaryButton(
-                      label: _busy ? 'Please wait…' : 'Send OTP',
-                      enabled: _canContinue && !_busy,
-                      onPressed: _continue,
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        const Expanded(child: Divider(color: AppColors.border)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Text(
-                            'OR',
-                            style: AppText.eyebrow(size: 12, letterSpacing: 1),
+                        const Spacer(),
+                        _Reveal(
+                          animation: _intro,
+                          from: 0.55,
+                          to: 1,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 24, 8, 28),
+                            child: Text.rich(
+                              TextSpan(
+                                style: AppText.meta.copyWith(height: 1.5),
+                                children: [
+                                  const TextSpan(
+                                    text: 'By continuing you agree to our ',
+                                  ),
+                                  TextSpan(
+                                    text: 'Terms',
+                                    style: AppText.meta.copyWith(
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                  const TextSpan(text: ' and '),
+                                  TextSpan(
+                                    text: 'Privacy Policy',
+                                    style: AppText.meta.copyWith(
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                  const TextSpan(text: '.'),
+                                ],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
-                        const Expanded(child: Divider(color: AppColors.border)),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                    _GoogleButton(onPressed: _googleLogin),
-                    if (kDebugMode) ...[
-                      const SizedBox(height: 10),
-                      SecondaryButton(
-                        label: 'Quick login (skip OTP)',
-                        icon: LucideIcons.zap,
-                        onPressed: _quickLogin,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Debug builds only — signs you in as the demo student.',
-                        textAlign: TextAlign.center,
-                        style: AppText.metaSm,
-                      ),
-                    ],
-                    const Spacer(),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 24, 8, 28),
-                      child: Text.rich(
-                        TextSpan(
-                          style: AppText.meta.copyWith(height: 1.5),
-                          children: [
-                            const TextSpan(
-                              text: 'By continuing you agree to our ',
-                            ),
-                            TextSpan(
-                              text: 'Terms',
-                              style: AppText.meta.copyWith(
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            const TextSpan(text: ' and '),
-                            TextSpan(
-                              text: 'Privacy Policy',
-                              style: AppText.meta.copyWith(
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            const TextSpan(text: '.'),
-                          ],
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Mobile number + Send OTP, shown when [Env.phoneLogin] is on.
+  Widget _phoneForm() {
+    final focused = _focusNode.hasFocus || _controller.text.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Expanded(child: Divider(color: AppColors.border)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'OR',
+                style: AppText.eyebrow(size: 12, letterSpacing: 1),
               ),
             ),
+            const Expanded(child: Divider(color: AppColors.border)),
           ],
         ),
-      ),
+        const SizedBox(height: 16),
+        Text(
+          'Mobile number',
+          style: AppText.tabular(13, FontWeight.w500, color: AppColors.ink),
+        ),
+        const SizedBox(height: 6),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          height: 52,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.sm,
+            border: Border.all(
+              color: focused ? AppColors.primary : AppColors.borderInput,
+              width: focused ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF7F3EC),
+                  border: Border(
+                    right: BorderSide(color: AppColors.borderInput),
+                  ),
+                ),
+                child: Text(
+                  '+91',
+                  style: AppText.tabular(
+                    16,
+                    FontWeight.w400,
+                    color: AppColors.textBody,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    keyboardType: TextInputType.phone,
+                    maxLength: 11,
+                    inputFormatters: [_PhoneFormatter()],
+                    onSubmitted: (_) => _continue(),
+                    style: AppText.tabular(16, FontWeight.w400),
+                    cursorColor: AppColors.primary,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      counterText: '',
+                      isCollapsed: true,
+                      hintText: '98765 43210',
+                      hintStyle: AppText.tabular(
+                        16,
+                        FontWeight.w400,
+                        color: AppColors.textFaint,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        PrimaryButton(
+          label: _busy ? 'Please wait…' : 'Send OTP',
+          enabled: _canContinue && !_busy,
+          onPressed: _continue,
+        ),
+      ],
     );
   }
 }
@@ -297,39 +375,214 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 /// "Continue with Google", following Google's own button guidance: white
 /// surface, hairline border, the four-colour mark at 18pt.
 class _GoogleButton extends StatelessWidget {
-  const _GoogleButton({required this.onPressed});
+  const _GoogleButton({required this.onPressed, this.busy = false});
 
   final VoidCallback onPressed;
+  final bool busy;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: AppRadius.button,
-      child: InkWell(
-        onTap: onPressed,
+    return DecoratedBox(
+      decoration: BoxDecoration(
         borderRadius: AppRadius.button,
-        child: Ink(
-          height: 52,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x1F1C1814),
+            blurRadius: 18,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: AppColors.surface,
+        borderRadius: AppRadius.button,
+        child: InkWell(
+          onTap: busy ? null : onPressed,
+          borderRadius: AppRadius.button,
+          child: Ink(
+            height: 58,
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.button,
+              border: Border.all(color: AppColors.borderInput),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (busy)
+                  const SizedBox.square(
+                    dimension: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2.2),
+                  )
+                else
+                  const SizedBox.square(
+                    dimension: 20,
+                    child: CustomPaint(painter: _GoogleMark()),
+                  ),
+                const SizedBox(width: 12),
+                Text(
+                  busy ? 'Signing in…' : 'Continue with Google',
+                  style: AppText.tabular(16.5, FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Mobile-number sign-in, shown but not yet available.
+class _PhoneComingSoon extends StatelessWidget {
+  const _PhoneComingSoon({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Sign in with mobile number, coming soon',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.button,
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 18),
           decoration: BoxDecoration(
+            color: AppColors.surfaceMuted,
             borderRadius: AppRadius.button,
-            border: Border.all(color: AppColors.borderInput),
+            border: Border.all(color: AppColors.border),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox.square(
-                dimension: 18,
-                child: CustomPaint(painter: _GoogleMark()),
+              const Icon(
+                LucideIcons.smartphone,
+                size: 20,
+                color: AppColors.textSubtle,
               ),
-              const SizedBox(width: 10),
-              Text(
-                'Continue with Google',
-                style: AppText.tabular(16, FontWeight.w600),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Sign in with mobile number',
+                  style: AppText.tabular(
+                    15.5,
+                    FontWeight.w600,
+                    color: AppColors.textSubtle,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryTint,
+                  borderRadius: AppRadius.pill,
+                ),
+                child: Text(
+                  'COMING SOON',
+                  style: AppText.eyebrow(
+                    color: AppColors.primary,
+                    size: 10,
+                    letterSpacing: 1,
+                  ),
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Fades and lifts [child] in during the [from]–[to] slice of [animation].
+class _Reveal extends StatelessWidget {
+  const _Reveal({
+    required this.animation,
+    required this.from,
+    required this.to,
+    required this.child,
+  });
+
+  final Animation<double> animation;
+  final double from;
+  final double to;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Interval(from, to, curve: Curves.easeOutCubic),
+    );
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween(
+          begin: const Offset(0, 0.12),
+          end: Offset.zero,
+        ).animate(curved),
+        child: child,
+      ),
+    );
+  }
+}
+
+/// Three soft brand-colour glows drifting slowly behind the screen.
+class _AmbientGlow extends StatelessWidget {
+  const _AmbientGlow({required this.animation});
+
+  final Animation<double> animation;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (context, _) {
+          final t = animation.value * 2 * math.pi;
+          Widget glow(Color color, double size, double x, double y) => Align(
+            alignment: Alignment(x, y),
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    color.withValues(alpha: 0.28),
+                    color.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          );
+          return Stack(
+            children: [
+              glow(
+                AppColors.accent,
+                420,
+                -1.1 + 0.25 * math.sin(t),
+                -1.0 + 0.15 * math.cos(t),
+              ),
+              glow(
+                AppColors.teal,
+                360,
+                1.2 + 0.2 * math.cos(t),
+                0.2 + 0.25 * math.sin(t),
+              ),
+              glow(
+                AppColors.violet,
+                320,
+                -0.9 + 0.2 * math.sin(t + 1.5),
+                1.1 + 0.12 * math.cos(t),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -403,7 +656,10 @@ class _PhoneFormatter extends TextInputFormatter {
 
 /// Saffron welcome card: the course promise above two students.
 class _LoginHero extends StatelessWidget {
-  const _LoginHero();
+  const _LoginHero({required this.ambient});
+
+  /// Drives the photo's slow zoom and the live dot's pulse.
+  final Animation<double> ambient;
 
   @override
   Widget build(BuildContext context) {
@@ -454,11 +710,18 @@ class _LoginHero extends StatelessWidget {
             children: [
               AspectRatio(
                 aspectRatio: 16 / 9,
-                child: Image.asset(
-                  'assets/images/hero-students.png',
-                  fit: BoxFit.cover,
-                  alignment: const Alignment(0, -0.4),
-                  semanticLabel: 'Two students learning with AB Academy',
+                child: AnimatedBuilder(
+                  animation: ambient,
+                  builder: (context, child) => Transform.scale(
+                    scale: 1.04 + 0.04 * math.sin(ambient.value * 2 * math.pi),
+                    child: child,
+                  ),
+                  child: Image.asset(
+                    'assets/images/hero-students.png',
+                    fit: BoxFit.cover,
+                    alignment: const Alignment(0, -0.4),
+                    semanticLabel: 'Two students learning with AB Academy',
+                  ),
                 ),
               ),
               Positioned(
@@ -476,13 +739,29 @@ class _LoginHero extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.liveDot,
-                          shape: BoxShape.circle,
-                        ),
+                      AnimatedBuilder(
+                        animation: ambient,
+                        builder: (context, _) {
+                          // Seven pulses per ambient loop (~2 s each).
+                          final pulse =
+                              (math.sin(ambient.value * 14 * math.pi) + 1) / 2;
+                          return Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: AppColors.liveDot,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.liveDot.withValues(
+                                    alpha: 0.5 * (1 - pulse),
+                                  ),
+                                  spreadRadius: 6 * pulse,
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(width: 7),
                       Text(

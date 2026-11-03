@@ -43,6 +43,11 @@ abstract final class Env {
   /// Notes attached to a lecture open either way.
   static const notesLive = bool.fromEnvironment('NOTES_LIVE');
 
+  /// Mobile-number (OTP) sign-in. Off shows it as "coming soon" and Google is
+  /// the only way in; build with --dart-define=PHONE_LOGIN=true once SMS is set
+  /// up in Supabase.
+  static const phoneLogin = bool.fromEnvironment('PHONE_LOGIN');
+
   static bool get hasDemoLogin =>
       demoEmail.isNotEmpty && demoPassword.isNotEmpty;
 }
