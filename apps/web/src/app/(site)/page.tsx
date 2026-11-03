@@ -2,11 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { Countdown, DaysLeft } from "@/components/landing/Countdown";
 import { PlayBadge } from "@/components/landing/PlayBadge";
+import { ShareButton } from "@/components/landing/ShareButton";
 import { SyllabusExplorer } from "@/components/landing/SyllabusExplorer";
 import { listCourses } from "@/lib/catalog";
 import { type Course, formatInr } from "@/lib/courses";
 import {
   APP_SCREENSHOT,
+  BATCH_START,
   BATCH_START_LABEL,
   EXAM_DATE,
   FAQS,
@@ -36,6 +38,8 @@ function crashCourses(all: Course[]) {
       name: key ?? c.stream ?? c.title,
       chapters: key ? SYLLABUS[key].length : c.chapters,
       price: c.price,
+      originalPrice: c.originalPrice && c.originalPrice > c.price ? c.originalPrice : null,
+      title: c.title,
     };
   });
 }
@@ -192,32 +196,68 @@ export default async function HomePage() {
               {from ? `, starting at ${from}` : ""}.
             </p>
           </div>
-          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:mt-14 lg:grid-cols-3">
+          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:mt-14 lg:grid-cols-3">
             {courses.map((c) => (
               <article
                 key={c.slug}
-                className="flex min-h-[380px] flex-col rounded-[22px] border border-coal-line p-7 transition-colors hover:border-saffron hover:bg-coal-soft sm:p-8"
+                className="flex flex-col rounded-[24px] border-2 border-coal bg-cream p-6 text-coal shadow-[6px_6px_0_#e8742a] transition-transform hover:-translate-y-1 sm:p-7"
               >
-                <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-dust">
-                  Class 12{c.chapters ? ` · ${c.chapters} chapters` : ""}
-                </p>
-                <h3 className="mt-3.5 font-serif text-[52px] leading-none sm:text-[64px]">{c.name}</h3>
-                <ul className="mt-6 flex flex-col gap-2.5 text-base text-mist">
-                  <li>+ Recorded class for every chapter</li>
-                  <li>+ Live doubt sessions with {TEACHER.name}</li>
-                  <li>+ Chapter notes PDF</li>
-                  <li>+ Board-pattern questions</li>
-                </ul>
-                <div className="mt-auto flex items-end justify-between gap-4 border-t border-coal-line pt-7">
-                  <div>
-                    <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-dust">Starting at</p>
-                    <p className="mt-1 font-serif text-[48px] leading-none text-saffron sm:text-[56px]">
-                      {formatInr(c.price)}
-                    </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="rounded-lg border border-[#c9dcf7] bg-[#eef4fd] px-2.5 py-1 text-xs font-bold uppercase tracking-[0.06em] text-[#1f4f8f]">
+                      Class 12
+                    </span>
+                    <span className="rounded-lg border border-sand bg-paper px-2.5 py-1 text-xs font-bold uppercase tracking-[0.06em] text-coal">
+                      Bihar Board
+                    </span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <span className="hidden rounded-md bg-[#c8321e] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-white sm:inline">
+                      Batch 2027
+                    </span>
+                    <ShareButton path={`/course/${c.slug}`} title={c.title} />
+                  </div>
+                </div>
+                <h3 className="mt-5 text-[26px] font-bold leading-tight tracking-[-0.01em]">{c.name} Crash Course</h3>
+                <p className="mt-2 text-[15px] leading-[1.55] text-taupe">
+                  Every Class 12 {c.name} chapter: one recorded lecture and one practice session, with live doubt
+                  sessions.
+                </p>
+                <div className="mb-6 mt-4 flex flex-wrap gap-1.5">
+                  {[c.chapters ? `${c.chapters} chapters` : null, "Lecture + practice", `Live doubts with ${TEACHER.name}`]
+                    .filter(Boolean)
+                    .map((t) => (
+                      <span key={t} className="rounded-lg border border-sand px-2.5 py-1 text-[13px] font-semibold text-coal">
+                        {t}
+                      </span>
+                    ))}
+                </div>
+                <div className="mt-auto flex items-end justify-between gap-4 border-t border-sand pt-5">
+                  <div className="text-[12px] font-bold uppercase tracking-[0.1em]">
+                    <p className="text-taupe">
+                      Starts{" "}
+                      {BATCH_START.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                    <p className="mt-1.5 text-clay">Language: Hindi / Hinglish</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-taupe">Only</p>
+                    <p className="font-serif text-[44px] leading-none">{formatInr(c.price)}</p>
+                    {c.originalPrice ? (
+                      <p className="text-sm font-semibold text-taupe line-through">{formatInr(c.originalPrice)}</p>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="mt-5 grid grid-cols-[auto_1fr] gap-2.5">
                   <Link
                     href={`/course/${c.slug}`}
-                    className="flex h-12 shrink-0 items-center rounded-full bg-saffron px-6 text-[15px] font-bold text-coal hover:bg-cream"
+                    className="flex h-12 items-center justify-center rounded-xl border-2 border-sand px-5 text-[15px] font-bold hover:border-coal"
+                  >
+                    Details
+                  </Link>
+                  <Link
+                    href={`/checkout/${c.slug}`}
+                    className="flex h-12 items-center justify-center rounded-xl bg-coal text-[16px] font-bold text-cream hover:bg-clay"
                   >
                     Enroll now
                   </Link>
@@ -225,6 +265,60 @@ export default async function HomePage() {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Everything included */}
+      <section className="mx-auto grid max-w-[1280px] gap-6 px-4 pt-20 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-16 lg:pt-28">
+        <div className="relative overflow-hidden rounded-[30px] border-2 border-coal bg-saffron p-8 text-coal shadow-[8px_8px_0_#1c1814] sm:p-12">
+          <div aria-hidden className="absolute -right-16 -top-16 size-56 rounded-full border-[18px] border-white/25" />
+          <h2 className="relative font-serif text-[44px] leading-[0.98] tracking-[-0.02em] sm:text-[60px]">
+            Everything you need for the boards.
+          </h2>
+          <p className="relative mt-5 max-w-[460px] text-lg font-semibold leading-[1.5] text-coal/80">
+            One course per subject, built around the Bihar Board pattern — so the exam holds no surprises.
+          </p>
+          <div className="relative mt-8 flex flex-wrap gap-3">
+            {[
+              "Recorded classes",
+              "Live doubts",
+              "Practice every chapter",
+              "Chapter notes",
+              "Board-pattern tests",
+              "Hindi or Hinglish",
+              "App + website",
+              "Exam revision",
+            ].map((t) => (
+              <span key={t} className="rounded-full border-2 border-coal bg-cream px-4 py-2 text-[15px] font-bold shadow-[3px_3px_0_#1c1814]">
+                {t}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="relative flex flex-col justify-between overflow-hidden rounded-[30px] border-2 border-coal bg-coal p-8 text-cream shadow-[8px_8px_0_#e8742a] sm:p-12">
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(#f7f3ec_1px,transparent_1px),linear-gradient(90deg,#f7f3ec_1px,transparent_1px)] [background-size:44px_44px]"
+          />
+          <h2 className="relative max-w-[440px] font-serif text-[44px] leading-[0.98] tracking-[-0.02em] sm:text-[60px]">
+            Taught personally by {TEACHER.name}.
+          </h2>
+          <p className="relative mt-5 max-w-[440px] text-lg leading-[1.5] text-mist">
+            From basics to board-ready, in the language you think in. Every class recorded and every doubt answered by
+            him.
+          </p>
+          <dl className="relative mt-10 grid grid-cols-3 gap-3 border-t border-white/15 pt-6">
+            {[
+              [`${TEACHER.years}`, "years teaching"],
+              [`${TOTAL_CHAPTERS}`, "chapters covered"],
+              ["2", "languages to choose"],
+            ].map(([v, l]) => (
+              <div key={l}>
+                <dd className="font-serif text-[48px] leading-none text-saffron sm:text-[60px]">{v}</dd>
+                <dt className="mt-1 text-sm text-mist">{l}</dt>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
@@ -278,24 +372,41 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      {/* 05 Students — shown only with real quotes */}
+      {/* Student reviews — shown only with real quotes (lib/landing.ts) */}
       {QUOTES.length ? (
-        <section className="mx-auto max-w-[1280px] px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
-          <p className="kicker text-clay">05. Students</p>
-          <h2 className="mt-3 font-serif text-[48px] leading-[0.98] tracking-[-0.02em] sm:text-[84px]">In their words.</h2>
-          <div className="no-scrollbar mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2">
-            {QUOTES.map((q) => (
-              <figure
-                key={q.name + q.text}
-                className="m-0 flex min-h-[300px] w-[85%] shrink-0 snap-start flex-col rounded-3xl border border-sand bg-paper p-8 sm:w-[42%]"
-              >
-                <blockquote className="font-serif text-[28px] leading-[1.18] sm:text-[34px]">“{q.text}”</blockquote>
-                <figcaption className="mt-auto pt-7 text-[15px]">
-                  <strong className="block">{q.name}</strong>
-                  <span className="opacity-70">{q.meta}</span>
-                </figcaption>
-              </figure>
-            ))}
+        <section className="border-y-2 border-coal bg-paper py-20 lg:py-28">
+          <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-16">
+            <p className="kicker text-clay">Students</p>
+            <h2 className="mt-3 font-serif text-[44px] leading-[0.98] tracking-[-0.02em] sm:text-[72px]">
+              Reviews &amp; shared experiences.
+            </h2>
+          </div>
+          <div className="marquee no-scrollbar mt-12 overflow-hidden">
+            <div className="marquee-track flex w-max gap-6 px-3">
+              {[...QUOTES, ...QUOTES].map((q, i) => (
+                <figure
+                  key={`${q.name}-${i}`}
+                  aria-hidden={i >= QUOTES.length}
+                  className="m-0 flex w-[320px] shrink-0 flex-col rounded-[24px] border-2 border-coal bg-cream p-7 shadow-[6px_6px_0_#1c1814] sm:w-[420px]"
+                >
+                  <blockquote className="text-[18px] font-semibold leading-[1.5] text-coal">“{q.text}”</blockquote>
+                  <figcaption className="mt-auto flex items-center gap-3 border-t border-sand pt-5">
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-clay bg-primary-soft font-serif text-2xl text-clay">
+                      {q.name.charAt(0)}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <strong className="block truncate text-coal">{q.name}</strong>
+                      <span className="block truncate text-sm text-taupe">{q.meta}</span>
+                    </span>
+                    {q.rating ? (
+                      <span className="shrink-0 text-lg tracking-[0.05em] text-[#e8a61c]" aria-label={`${q.rating} out of 5`}>
+                        {"★".repeat(Math.round(q.rating))}
+                      </span>
+                    ) : null}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
           </div>
         </section>
       ) : null}

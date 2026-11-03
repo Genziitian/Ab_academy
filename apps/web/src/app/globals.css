@@ -190,3 +190,33 @@ body {
     font-size: 26px;
   }
 }
+
+/* Endless strip of review cards: the list is rendered twice and slides by
+   half its width. Hover pauses it; reduced-motion users get a scroll row. */
+@keyframes ab-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: ab-marquee 60s linear infinite;
+}
+
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+  .marquee {
+    overflow-x: auto;
+  }
+}
+
+/* Hard offset shadow used on chips and cards in the feature sections. */
+.hard-shadow {
+  box-shadow: 4px 4px 0 var(--color-coal, #1c1814);
+}

@@ -137,7 +137,12 @@ export const SOCIAL_LINKS = {
  * list is empty — add entries only with the student's permission.
  */
 export const RESULTS: { score: string; name: string; meta: string }[] = [];
-export const QUOTES: { text: string; name: string; meta: string }[] = [];
+/**
+ * Real student reviews only. The scrolling reviews strip on the home page
+ * stays hidden while this is empty. `rating` (1–5) shows stars when given.
+ * Example: { text: "…", name: "Priya K.", meta: "Class 12 · Physics", rating: 5 }
+ */
+export const QUOTES: { text: string; name: string; meta: string; rating?: number }[] = [];
 
 /** Screenshot of the app's home screen, shown in "The app" section. */
 export const APP_SCREENSHOT = "/images/app-home.png";
