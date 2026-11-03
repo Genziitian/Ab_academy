@@ -40,7 +40,9 @@ class AppPopup {
       body: (row['body'] as String?) ?? '',
       placement: placementFrom(row['placement'] as String?),
       maxViewsPerStudent: (row['max_views_per_student'] as int?) ?? 1,
-      imageUrl: (path != null && publicBase != null) ? '$publicBase$path' : null,
+      imageUrl: (path != null && publicBase != null)
+          ? '$publicBase$path'
+          : null,
       ctaLabel: row['cta_label'] as String?,
       ctaUrl: row['cta_url'] as String?,
     );

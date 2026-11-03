@@ -1,187 +1,390 @@
 "use client";
 
+import { createBrowserClient } from "@supabase/ssr";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CheckBadge } from "@/components/icons";
-import { formatInr, thumbnailGradient } from "@/lib/courses";
+import { CONTACT } from "@/lib/landing";
+import { formatInr } from "@/lib/courses";
 
 type Props = {
+  enrolled: boolean;
+  student: { name: string; contact: string };
   course: {
+    id: string | null;
     slug: string;
     title: string;
-    stream: string;
     teacher: string;
-    hue: number;
+    art: string | null;
+    language: string;
     price: number;
     originalPrice: number;
     validity: string;
   };
 };
 
-const METHODS = [
-  { name: "UPI", sub: "Pay by any UPI app", short: "UPI" },
-  { name: "Google Pay", sub: "Linked UPI ID", short: "GP" },
-  { name: "PhonePe", sub: "Linked account", short: "PP" },
-  { name: "Debit / Credit Card", sub: "Visa, Mastercard, RuPay", short: "CARD" },
-];
+type Receipt = { orderId: string; amount: number; testMode: boolean };
 
-/**
- * Payment UI. Razorpay is not connected yet, so "Pay" completes a test
- * enrolment locally and the page says so — no money moves.
- */
-export function CheckoutView({ course }: Props) {
-  const [method, setMethod] = useState(0);
-  const [coupon, setCoupon] = useState("");
-  const [couponNote, setCouponNote] = useState<string | null>(null);
-  const [orderId, setOrderId] = useState<string | null>(null);
+type RazorpayResponse = {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+};
 
-  const discount = course.originalPrice - course.price;
+type RazorpayInstance = {
+  open: () => void;
+  on: (event: "payment.failed", cb: (r: { error?: { description?: string } }) => void) => void;
+};
 
-  if (orderId) {
-    return (
-      <div className="mx-auto max-w-[520px] px-6 py-[72px] text-center">
-        <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-success-soft">
-          <CheckBadge size={32} />
-        </span>
-        <h1 className="mt-5 text-[28px] font-bold tracking-[-0.02em] text-navy">Payment successful</h1>
-        <p className="mt-2 text-[15px] text-muted">You&apos;re enrolled in {course.title}.</p>
-        <div className="mt-7 rounded-xl border border-border bg-white text-left">
-          {[
-            ["Order ID", <span key="id" className="font-mono text-navy">{orderId}</span>],
-            ["Amount paid", <span key="amt" className="font-semibold text-navy">{formatInr(course.price)}</span>],
-            ["Method", <span key="m" className="font-semibold text-navy">{METHODS[method].name}</span>],
-          ].map(([label, value], index) => (
-            <div
-              key={String(label)}
-              className={`flex justify-between px-5 py-3.5 text-sm ${index < 2 ? "border-b border-line" : ""}`}
-            >
-              <span className="text-muted">{label}</span>
-              {value}
-            </div>
-          ))}
-        </div>
-        <p className="mt-4 rounded-lg bg-amber-soft px-3 py-2 text-xs text-navy">
-          Test mode — payments are not connected yet, so nothing was charged.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2.5">
-          <Link
-            href="/my-courses"
-            className="flex h-[46px] items-center rounded-lg bg-primary px-[22px] text-[15px] font-semibold text-white hover:bg-primary-dark"
-          >
-            Start learning
-          </Link>
-          <Link
-            href="/dashboard"
-            className="flex h-[46px] items-center rounded-lg border border-primary-line px-[22px] text-[15px] font-semibold text-primary hover:bg-primary-soft"
-          >
-            Go to dashboard
-          </Link>
-        </div>
-      </div>
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => RazorpayInstance;
+  }
+}
+
+const RAZORPAY_JS = "https://checkout.razorpay.com/v1/checkout.js";
+
+function loadRazorpay() {
+  return new Promise<void>((resolve, reject) => {
+    if (window.Razorpay) return resolve();
+    const script = document.createElement("script");
+    script.src = RAZORPAY_JS;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Could not reach the payment page. Check your internet and try again."));
+    document.body.appendChild(script);
+  });
+}
+
+/** Calls the `checkout` Edge Function — the only place that touches money. */
+async function callCheckout(token: string, body: Record<string, unknown>) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/checkout`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(
+      res.status === 404 && data?.code === "NOT_FOUND"
+        ? "Payments are not set up yet. Please try again later."
+        : (data?.error ?? "Something went wrong. Nothing was charged — please try again."),
     );
   }
+  return data as Record<string, unknown>;
+}
+
+/**
+ * One-page checkout: what you are buying, what it costs, one Pay button.
+ * Razorpay's own window then offers UPI, cards, net banking and wallets, and
+ * the server verifies the payment before the course unlocks.
+ */
+export function CheckoutView({ enrolled, student, course }: Props) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [receipt, setReceipt] = useState<Receipt | null>(null);
+
+  const discount = Math.max(0, course.originalPrice - course.price);
+
+  async function pay() {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      if (!course.id) throw new Error("This course is not on sale right now.");
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      );
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) {
+        router.push(`/login?next=${encodeURIComponent(`/checkout/${course.slug}`)}`);
+        return;
+      }
+
+      const order = await callCheckout(token, { action: "create", course_id: course.id });
+      const orderId = String(order.order_id);
+      const amount = Number(order.amount_inr ?? course.price);
+
+      if (order.test_mode === true) {
+        await callCheckout(token, { action: "complete_test", order_id: orderId });
+        setReceipt({ orderId, amount, testMode: true });
+        return;
+      }
+
+      await loadRazorpay();
+      await new Promise<void>((resolve, reject) => {
+        const rzp = new window.Razorpay!({
+          key: order.key_id,
+          order_id: order.razorpay_order_id,
+          amount: amount * 100,
+          currency: order.currency ?? "INR",
+          name: "AB Academy",
+          description: course.title,
+          image: `${window.location.origin}/images/logo.png`,
+          prefill: order.prefill ?? {},
+          theme: { color: "#B4521A" },
+          retry: { enabled: true, max_count: 2 },
+          modal: {
+            ondismiss: () => reject(new Error("Payment cancelled. Nothing was charged.")),
+          },
+          handler: async (r: RazorpayResponse) => {
+            try {
+              await callCheckout(token, {
+                action: "verify",
+                order_id: orderId,
+                razorpay_order_id: r.razorpay_order_id,
+                razorpay_payment_id: r.razorpay_payment_id,
+                razorpay_signature: r.razorpay_signature,
+              });
+              setReceipt({ orderId, amount, testMode: false });
+              resolve();
+            } catch {
+              reject(
+                new Error(
+                  `Your payment went through and is being confirmed. The course unlocks within a few minutes — if it doesn't, write to ${CONTACT.email} with order ${orderId}.`,
+                ),
+              );
+            }
+          },
+        });
+        rzp.on("payment.failed", (r) =>
+          reject(new Error(r.error?.description ?? "Payment failed. Nothing was charged.")),
+        );
+        rzp.open();
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (receipt) return <Success course={course} receipt={receipt} />;
+
+  const payLabel = busy ? "Opening secure payment…" : `Pay ${formatInr(course.price)}`;
 
   return (
-    <div className="mx-auto grid max-w-[1040px] items-start gap-7 px-4 pb-16 pt-10 sm:px-6 md:grid-cols-[minmax(0,1fr)_360px]">
-      <div>
-        <Link href={`/course/${course.slug}`} className="text-sm font-medium text-primary">
-          ← Back to course
-        </Link>
-        <h1 className="mt-3 text-[28px] font-bold tracking-[-0.02em] text-navy">
-          Complete your enrolment
-        </h1>
-        <section className="mt-6 rounded-xl border border-border bg-white p-6">
-          <h2 className="text-base font-semibold text-navy">Payment method</h2>
-          <div className="mt-4 flex flex-col gap-2.5">
-            {METHODS.map((m, index) => {
-              const on = method === index;
-              return (
-                <button
-                  key={m.name}
-                  type="button"
-                  onClick={() => setMethod(index)}
-                  className={`flex items-center gap-3.5 rounded-[10px] p-3.5 text-left ${
-                    on ? "border-[1.5px] border-primary bg-surface-soft" : "border border-border bg-white"
-                  }`}
-                >
-                  <span className="flex size-10 items-center justify-center rounded-lg bg-[#f2f3f7] text-xs font-bold text-navy">
-                    {m.short}
+    <>
+      <div className="mx-auto grid w-full max-w-[1080px] flex-1 items-start gap-8 px-4 pb-32 pt-8 sm:px-6 md:grid-cols-[minmax(0,1fr)_380px] md:pb-20 md:pt-12">
+        {/* What you are buying */}
+        <div>
+          <Link href={`/course/${course.slug}`} className="text-sm font-semibold text-clay hover:underline">
+            ← Back to course
+          </Link>
+          <p className="kicker mt-6 text-clay">Checkout</p>
+          <h1 className="mt-2 font-serif text-[44px] leading-none tracking-[-0.02em] text-coal sm:text-[56px]">
+            Complete your enrolment.
+          </h1>
+
+          <section className="mt-8 overflow-hidden rounded-[22px] border border-sand bg-cream">
+            <div className="flex gap-4 p-5 sm:gap-5 sm:p-6">
+              <div className="relative size-[84px] shrink-0 overflow-hidden rounded-2xl bg-sand sm:size-[104px]">
+                {course.art ? (
+                  <Image src={course.art} alt="" fill sizes="104px" className="object-cover" />
+                ) : null}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Class 12 · Bihar Board</p>
+                <h2 className="mt-1.5 text-xl font-semibold leading-snug text-coal sm:text-[22px]">{course.title}</h2>
+                <p className="mt-1 text-[15px] text-taupe">
+                  with {course.teacher} · {course.language}
+                </p>
+              </div>
+            </div>
+            <ul className="grid gap-3 border-t border-sand px-5 py-5 text-[15px] text-coal sm:grid-cols-2 sm:px-6">
+              {[
+                "Recorded classes — watch anytime",
+                `Live doubt sessions with ${course.teacher}`,
+                "On the website and the AB Academy app",
+                `Access ${course.validity.charAt(0).toLowerCase()}${course.validity.slice(1)}`,
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2.5">
+                  <span className="mt-0.5">
+                    <CheckBadge size={18} />
                   </span>
-                  <span className="flex-1">
-                    <span className="block text-[15px] font-semibold text-navy">{m.name}</span>
-                    <span className="text-[13px] text-muted">{m.sub}</span>
-                  </span>
-                  <span
-                    className={`size-[18px] rounded-full ${on ? "border-[5px] border-primary" : "border-2 border-[#c7cad3]"}`}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        </section>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (coupon.trim()) setCouponNote(`“${coupon.trim()}” is not a valid coupon.`);
-          }}
-          className="mt-4 rounded-xl border border-border bg-white px-6 py-5"
-        >
-          <div className="flex gap-2.5">
-            <input
-              value={coupon}
-              onChange={(e) => {
-                setCoupon(e.target.value);
-                setCouponNote(null);
-              }}
-              placeholder="Have a coupon code?"
-              className="h-[42px] min-w-0 flex-1 rounded-lg border border-field px-3 text-sm outline-none focus:border-primary"
-            />
-            <button
-              type="submit"
-              className="h-[42px] rounded-lg border border-primary-line bg-white px-4 text-sm font-semibold text-primary hover:bg-primary-soft"
-            >
-              Apply
-            </button>
-          </div>
-          {couponNote ? <p className="mt-2 text-[13px] text-danger">{couponNote}</p> : null}
-        </form>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="mt-4 flex items-center justify-between gap-4 rounded-[22px] border border-sand bg-cream px-5 py-4 sm:px-6">
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-taupe">Buying as</p>
+              <p className="mt-1 truncate text-[15px] font-semibold text-coal">
+                {student.name}
+                {student.contact && student.contact !== student.name ? (
+                  <span className="font-normal text-taupe"> · {student.contact}</span>
+                ) : null}
+              </p>
+            </div>
+            <span className="hidden shrink-0 text-[13px] text-taupe sm:inline">Course unlocks on this account</span>
+          </section>
+        </div>
+
+        {/* Price and pay */}
+        <aside className="rounded-[22px] border border-sand bg-cream p-5 sm:p-6 md:sticky md:top-8 md:mt-[183px]">
+          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-taupe">Order summary</h2>
+          <dl className="mt-4 flex flex-col gap-3 text-[15px] text-coal">
+            <div className="flex justify-between">
+              <dt>Course price</dt>
+              <dd>{formatInr(course.originalPrice)}</dd>
+            </div>
+            {discount > 0 ? (
+              <div className="flex justify-between">
+                <dt>Discount</dt>
+                <dd className="font-semibold text-success">− {formatInr(discount)}</dd>
+              </div>
+            ) : null}
+            <div className="flex items-end justify-between border-t border-sand pt-4">
+              <dt className="font-semibold">Total</dt>
+              <dd className="font-serif text-[40px] leading-none">{formatInr(course.price)}</dd>
+            </div>
+            <p className="-mt-1 text-right text-xs text-taupe">One-time payment</p>
+          </dl>
+
+          {enrolled ? (
+            <Enrolled />
+          ) : (
+            <>
+              {error ? (
+                <p role="alert" className="mt-5 rounded-xl border border-[#f2d6d6] bg-[#fdf1f1] px-4 py-3 text-sm leading-[1.5] text-[#9b2c2c]">
+                  {error}
+                </p>
+              ) : null}
+              <button
+                type="button"
+                onClick={pay}
+                disabled={busy}
+                className="mt-5 hidden h-14 w-full items-center justify-center gap-2 rounded-full bg-clay text-base font-semibold text-white transition hover:bg-coal disabled:cursor-wait disabled:opacity-70 md:flex"
+              >
+                {payLabel}
+              </button>
+              <TrustNotes />
+            </>
+          )}
+        </aside>
       </div>
 
-      <aside className="overflow-hidden rounded-xl border border-border bg-white md:sticky md:top-6">
-        <div className="p-5 text-white" style={{ background: thumbnailGradient(course.hue) }}>
-          <p className="text-[11px] font-semibold tracking-[0.06em]">BIHAR BOARD · 90-DAY CRASH COURSE</p>
-          <p className="mt-1.5 text-[17px] font-semibold">{course.title}</p>
-          <p className="mt-1 text-[13px] text-[#dbe6ff]">
-            {course.stream} · {course.teacher}
-          </p>
-        </div>
-        <div className="flex flex-col gap-2.5 p-5 text-sm text-ink">
-          <div className="flex justify-between">
-            <span>Course price</span>
-            <span>{formatInr(course.originalPrice)}</span>
-          </div>
-          {discount > 0 ? (
-            <div className="flex justify-between">
-              <span>Discount</span>
-              <span className="text-success">− {formatInr(discount)}</span>
+      {/* Phones: the pay button stays in reach. */}
+      {enrolled ? null : (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-sand bg-cream/95 px-4 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 backdrop-blur md:hidden">
+          <div className="flex items-center gap-4">
+            <div>
+              <p className="text-xs text-taupe">Total</p>
+              <p className="font-serif text-[28px] leading-none text-coal">{formatInr(course.price)}</p>
             </div>
-          ) : null}
-          <div className="flex justify-between border-t border-border pt-3 text-[17px] font-bold text-navy">
-            <span>Total</span>
-            <span>{formatInr(course.price)}</span>
+            <button
+              type="button"
+              onClick={pay}
+              disabled={busy}
+              className="h-[52px] flex-1 rounded-full bg-clay text-[15px] font-semibold text-white disabled:opacity-70"
+            >
+              {busy ? "Opening…" : "Pay securely"}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setOrderId(`ABA-${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`)}
-            className="mt-2 h-12 rounded-lg bg-primary text-[15px] font-semibold text-white hover:bg-primary-dark"
-          >
-            Pay {formatInr(course.price)}
-          </button>
-          <p className="mt-1 text-xs leading-[1.5] text-muted">
-            Access {course.validity.toLowerCase()}, including the full board revision series in January.
-          </p>
         </div>
-      </aside>
+      )}
+    </>
+  );
+}
+
+function TrustNotes() {
+  return (
+    <div className="mt-5 flex flex-col gap-3 text-[13px] leading-[1.5] text-taupe">
+      <div className="flex flex-wrap gap-1.5">
+        {["UPI", "Cards", "Net banking", "Wallets"].map((m) => (
+          <span key={m} className="rounded-full border border-sand bg-paper px-2.5 py-1 text-xs font-semibold text-coal">
+            {m}
+          </span>
+        ))}
+      </div>
+      <p>Payments are processed securely by Razorpay. We never see your card or UPI details.</p>
+      <p>
+        7-day refund if you&apos;ve watched 3 lectures or fewer. By paying you agree to our{" "}
+        <Link href="/terms" className="font-semibold text-clay hover:underline">
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link href="/refund" className="font-semibold text-clay hover:underline">
+          Refund policy
+        </Link>
+        .
+      </p>
+      <p>
+        Need help?{" "}
+        <a href={`mailto:${CONTACT.email}`} className="font-semibold text-clay hover:underline">
+          {CONTACT.email}
+        </a>
+      </p>
+    </div>
+  );
+}
+
+function Enrolled() {
+  return (
+    <div className="mt-5 flex flex-col gap-3">
+      <p className="rounded-xl bg-[#e9f6ee] px-4 py-3 text-sm font-semibold text-[#1d6b3d]">
+        You&apos;re already enrolled in this course.
+      </p>
+      <Link
+        href="/my-courses"
+        className="flex h-14 items-center justify-center rounded-full bg-clay text-base font-semibold text-white hover:bg-coal"
+      >
+        Go to my courses
+      </Link>
+    </div>
+  );
+}
+
+function Success({ course, receipt }: { course: Props["course"]; receipt: Receipt }) {
+  return (
+    <div className="mx-auto w-full max-w-[560px] px-4 py-14 text-center sm:px-6 sm:py-20">
+      <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-[#e9f6ee]">
+        <CheckBadge size={34} />
+      </span>
+      <p className="kicker mt-6 text-clay">Payment successful</p>
+      <h1 className="mt-2 font-serif text-[44px] leading-none tracking-[-0.02em] text-coal">You&apos;re in.</h1>
+      <p className="mt-3 text-base text-taupe">{course.title} is now unlocked on your account.</p>
+      <dl className="mt-8 divide-y divide-sand rounded-[22px] border border-sand bg-cream text-left text-[15px]">
+        {[
+          ["Order ID", <span key="id" className="font-mono text-sm text-coal">{receipt.orderId.slice(0, 8).toUpperCase()}</span>],
+          ["Amount paid", <span key="amt" className="font-semibold text-coal">{formatInr(receipt.amount)}</span>],
+          ["Access", <span key="v" className="font-semibold text-coal">{course.validity}</span>],
+        ].map(([label, value]) => (
+          <div key={String(label)} className="flex justify-between gap-4 px-5 py-4">
+            <dt className="text-taupe">{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+      {receipt.testMode ? (
+        <p className="mt-4 rounded-xl bg-[#fff6e5] px-4 py-2.5 text-xs text-coal">
+          Test mode — payments are not connected yet, so nothing was charged.
+        </p>
+      ) : null}
+      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <Link
+          href="/my-courses"
+          className="flex h-[52px] items-center justify-center rounded-full bg-clay px-7 text-[15px] font-semibold text-white hover:bg-coal"
+        >
+          Start learning
+        </Link>
+        <Link
+          href="/dashboard"
+          className="flex h-[52px] items-center justify-center rounded-full border border-sand px-7 text-[15px] font-semibold text-coal hover:bg-cream"
+        >
+          Go to dashboard
+        </Link>
+      </div>
     </div>
   );
 }

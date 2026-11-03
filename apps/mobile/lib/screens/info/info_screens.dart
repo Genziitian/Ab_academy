@@ -227,7 +227,7 @@ class AboutScreen extends StatelessWidget {
             for (final (i, f) in Academy.founders.indexed) ...[
               if (i > 0) const SizedBox(width: 14),
               Expanded(
-                child: _FounderCard(name: f.name, role: f.role),
+                child: _FounderCard(name: f.name, role: f.role, photo: f.photo),
               ),
             ],
           ],
@@ -263,10 +263,11 @@ class AboutScreen extends StatelessWidget {
 }
 
 class _FounderCard extends StatelessWidget {
-  const _FounderCard({required this.name, required this.role});
+  const _FounderCard({required this.name, required this.role, this.photo});
 
   final String name;
   final String role;
+  final String? photo;
 
   String get _initials => name
       .replaceAll(RegExp(r"\b(Sir|Ma'am)\b"), '')
@@ -294,10 +295,19 @@ class _FounderCard extends StatelessWidget {
                 colors: [AppColors.surfaceMuted, AppColors.fillMutedAlt],
               ),
             ),
-            child: Text(
-              _initials,
-              style: AppText.serif(72, color: AppColors.ink),
-            ),
+            clipBehavior: Clip.antiAlias,
+            child: photo != null
+                ? Image.asset(
+                    photo!,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                    width: double.infinity,
+                    height: double.infinity,
+                  )
+                : Text(
+                    _initials,
+                    style: AppText.serif(72, color: AppColors.ink),
+                  ),
           ),
         ),
         const SizedBox(height: 12),

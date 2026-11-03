@@ -14,12 +14,12 @@ export const TEACHER = {
   years: 10,
   bio: "One teacher for all three subjects, so concepts connect across Physics, Chemistry and Maths. Ajit Sir records every class and takes every live doubt session himself.",
   /** Put a portrait at apps/web/public/images/ajit-sir.jpg and set this. */
-  photo: null as string | null,
+  photo: "/images/ajit-sir.jpg" as string | null,
 };
 
 export const CONTACT = {
   address: ["Moldiyar Tola, near Gayatri Bhawan", "Mokama, Bihar 803302"],
-  email: "contact@abacademy.in",
+  email: "support@abacademy.in",
   site: "abacademy.in",
 };
 
@@ -117,8 +117,8 @@ export const FREE_NOTES = [
 ];
 
 export const FOUNDERS = [
-  { name: "Ajit Sir", role: "Founder" },
-  { name: "Sriram", role: "Co-founder & Developer" },
+  { name: "Ajit Sir", role: "Founder", photo: "/images/ajit-sir.jpg" as string | null },
+  { name: "Sriram", role: "Co-founder & Developer", photo: null as string | null },
 ];
 
 /**

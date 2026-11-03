@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CONTACT } from "@/lib/landing";
 import { ContactForm } from "./ContactForm";
 
 export const metadata = {
@@ -7,9 +8,9 @@ export const metadata = {
 };
 
 const rows = [
-  ["Email", "support@akhandbharatacademy.in"],
-  ["WhatsApp", "+91 90000 00000 (placeholder)"],
-  ["Hours", "Mon–Sat, 9:00 AM – 7:00 PM IST"],
+  ["Email", CONTACT.email],
+  ["Reply time", "Within 2 working days"],
+  ["Address", CONTACT.address.join(", ")],
 ];
 
 export default function ContactPage() {

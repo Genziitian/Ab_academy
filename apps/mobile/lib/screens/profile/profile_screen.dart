@@ -212,7 +212,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   title: 'Privacy & terms',
                   onTap: () => showDemoSnack(
                     context,
-                    'Read them at akhandbharatacademy.in/privacy',
+                    'Read them at abacademy.in/privacy',
                   ),
                 ),
               ],

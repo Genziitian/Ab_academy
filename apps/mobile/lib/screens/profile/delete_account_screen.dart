@@ -89,10 +89,14 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         params: {'p_kind': _kind, 'p_reason': _reason.text.trim()},
       );
       await _load();
-      if (mounted) _snack('Request received. We will complete it within 3 days.');
+      if (mounted) {
+        _snack('Request received. We will complete it within 3 days.');
+      }
     } catch (_) {
       if (mounted) {
-        _snack('Could not send your request. Try again, or email contact@abacademy.in.');
+        _snack(
+          'Could not send your request. Try again, or email support@abacademy.in.',
+        );
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -104,7 +108,10 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
     if (pending == null || _busy) return;
     setState(() => _busy = true);
     try {
-      await Api.client.rpc('cancel_deletion_request', params: {'p_id': pending.id});
+      await Api.client.rpc(
+        'cancel_deletion_request',
+        params: {'p_id': pending.id},
+      );
       await _load();
       if (mounted) _snack('Your request was cancelled.');
     } catch (_) {
@@ -140,7 +147,10 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       style: AppText.bodyLg,
     ),
     const SizedBox(height: 24),
-    SecondaryButton(label: 'Cancel my request', onPressed: _busy ? null : _cancel),
+    SecondaryButton(
+      label: 'Cancel my request',
+      onPressed: _busy ? null : _cancel,
+    ),
   ];
 
   List<Widget> _form() => [

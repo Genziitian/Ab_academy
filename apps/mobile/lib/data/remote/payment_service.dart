@@ -77,10 +77,10 @@ class PaymentService {
       'order_id': order['razorpay_order_id'],
       'amount': amount * 100,
       'currency': order['currency'] ?? 'INR',
-      'name': 'Akhand Bharat Academy',
+      'name': 'AB Academy',
       'description': order['course_title'] ?? 'Crash course',
       'prefill': prefill,
-      'theme': {'color': '#2962FF'},
+      'theme': {'color': '#B4521A'},
       'retry': {'enabled': true, 'max_count': 2},
     });
     final payment = await _pending!.future;

@@ -48,17 +48,19 @@ class Ticket {
 
   TicketMessage? get latest => messages.isEmpty ? null : messages.last;
 
-  bool get isClosed => status == TicketStatus.resolved || status == TicketStatus.closed;
+  bool get isClosed =>
+      status == TicketStatus.resolved || status == TicketStatus.closed;
 
-  Ticket copyWith({TicketStatus? status, List<TicketMessage>? messages}) => Ticket(
-    id: id,
-    reference: reference,
-    subject: subject,
-    category: category,
-    status: status ?? this.status,
-    openedLabel: openedLabel,
-    messages: messages ?? this.messages,
-  );
+  Ticket copyWith({TicketStatus? status, List<TicketMessage>? messages}) =>
+      Ticket(
+        id: id,
+        reference: reference,
+        subject: subject,
+        category: category,
+        status: status ?? this.status,
+        openedLabel: openedLabel,
+        messages: messages ?? this.messages,
+      );
 }
 
 /// Mirrors `public.ticket_messages`.

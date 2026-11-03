@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CurriculumAccordion, FaqAccordion } from "@/components/CurriculumAccordion";
 import { PlayIcon } from "@/components/icons";
 import { fetchCourseBySlug, listCourseSlugs } from "@/lib/catalog";
+import { CONTACT } from "@/lib/landing";
 import {
   CRASH_COURSE_DAYS,
   courseFaqs,
@@ -250,8 +251,10 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
             <span>✓ Notes &amp; recordings included</span>
           </div>
           <div className="mt-[18px] rounded-lg bg-surface-soft p-3.5 text-sm">
-            <p className="font-semibold text-navy">Call student support</p>
-            <p className="mt-0.5 text-muted">+91 90000 00000</p>
+            <p className="font-semibold text-navy">Questions before you buy?</p>
+            <a href={`mailto:${CONTACT.email}`} className="mt-0.5 block font-semibold text-primary hover:underline">
+              {CONTACT.email}
+            </a>
           </div>
         </aside>
       </div>

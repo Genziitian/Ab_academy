@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { listCourseSlugs } from "@/lib/catalog";
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://akhandbharatacademy.in";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://abacademy.in";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPaths = [

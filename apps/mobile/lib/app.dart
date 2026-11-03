@@ -17,7 +17,9 @@ class AkhandBharatAcademyApp extends ConsumerWidget {
       routerConfig: ref.watch(routerProvider),
       builder: (context, child) {
         // Keep type scale stable — the design is tuned for a fixed 390pt layout.
-        final clamped = MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.2);
+        final clamped = MediaQuery.textScalerOf(
+          context,
+        ).clamp(maxScaleFactor: 1.2);
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaler: clamped),
           child: PopupHost(child: child!),

@@ -3,7 +3,7 @@
 abstract final class Academy {
   static const name = 'AB Academy';
   static const fullName = 'Akhand Bharat Academy';
-  static const email = 'contact@abacademy.in';
+  static const email = 'support@abacademy.in';
   static const site = 'abacademy.in';
   static const address = [
     'Moldiyar Tola, near Gayatri Bhawan',
@@ -14,8 +14,12 @@ abstract final class Academy {
   static const teacherYears = 10;
 
   static const founders = [
-    (name: 'Ajit Sir', role: 'Founder'),
-    (name: 'Sriram', role: 'Co-founder & Developer'),
+    (
+      name: 'Ajit Sir',
+      role: 'Founder',
+      photo: 'assets/people/ajit-sir.jpg' as String?,
+    ),
+    (name: 'Sriram', role: 'Co-founder & Developer', photo: null as String?),
   ];
 
   /// Date shown on the policy pages; matches LEGAL_UPDATED on the website.

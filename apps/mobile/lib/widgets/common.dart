@@ -770,7 +770,9 @@ class CourseThumbnail extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          DecoratedBox(decoration: BoxDecoration(gradient: courseGradient(hue))),
+          DecoratedBox(
+            decoration: BoxDecoration(gradient: courseGradient(hue)),
+          ),
           if (hasImage)
             url!.startsWith('assets/')
                 ? Image.asset(url!, fit: BoxFit.cover)

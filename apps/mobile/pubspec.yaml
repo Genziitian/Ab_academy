@@ -82,6 +82,7 @@ flutter:
     - assets/images/
     - assets/images/art/
     - assets/images/promo/
+    - assets/people/
 
   # Bundled so text renders in the brand fonts from the first launch,
   # offline included. All SIL Open Font License (see assets/fonts/OFL-*).

@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 
-const SUPPORT_EMAIL = "support@akhandbharatacademy.in";
+import { CONTACT } from "@/lib/landing";
+
+const SUPPORT_EMAIL = CONTACT.email;
 const topics = [
   "Course & batch selection",
   "Payment",
@@ -41,12 +43,11 @@ export function ContactForm() {
         <input name="name" required placeholder="Rahul Kumar" className={field} />
       </label>
       <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
-        Mobile number
+        Email or mobile number (so we can find your account)
         <input
           name="phone"
           required
-          inputMode="tel"
-          placeholder="98765 43210"
+          placeholder="you@gmail.com"
           className={field}
         />
       </label>

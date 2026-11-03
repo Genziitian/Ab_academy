@@ -330,7 +330,13 @@ export default async function HomePage() {
           <div className="grid grid-cols-2 gap-4 sm:gap-5">
             {FOUNDERS.map((f) => (
               <div key={f.name}>
-                <Initials name={f.name} className="aspect-square rounded-[18px] text-[72px] sm:text-[96px]" />
+                {f.photo ? (
+                  <div className="relative aspect-square overflow-hidden rounded-[18px] bg-sand">
+                    <Image src={f.photo} alt={f.name} fill sizes="(min-width: 1024px) 320px, 45vw" className="object-cover object-top" />
+                  </div>
+                ) : (
+                  <Initials name={f.name} className="aspect-square rounded-[18px] text-[72px] sm:text-[96px]" />
+                )}
                 <p className="mt-4 font-serif text-[28px] leading-none sm:text-4xl">{f.name}</p>
                 <p className="mt-1.5 text-xs font-bold uppercase tracking-[0.12em] text-clay sm:text-[13px]">{f.role}</p>
               </div>

@@ -30,20 +30,25 @@ class Student {
   /// "Class 10 • Bihar Board • Hindi Medium"
   String get summary => 'Class $classLevel • $board • $medium Medium';
 
-  Student copyWith({int? classLevel, String? medium, String? stream}) => Student(
-    fullName: fullName,
-    phone: phone,
-    classLevel: classLevel ?? this.classLevel,
-    board: board,
-    medium: medium ?? this.medium,
-    stream: stream ?? this.stream,
-    studentCode: studentCode,
-  );
+  Student copyWith({int? classLevel, String? medium, String? stream}) =>
+      Student(
+        fullName: fullName,
+        phone: phone,
+        classLevel: classLevel ?? this.classLevel,
+        board: board,
+        medium: medium ?? this.medium,
+        stream: stream ?? this.stream,
+        studentCode: studentCode,
+      );
 }
 
 /// Mirrors `public.teachers`.
 class Teacher {
-  const Teacher({required this.displayName, required this.subject, required this.yearsExperience});
+  const Teacher({
+    required this.displayName,
+    required this.subject,
+    required this.yearsExperience,
+  });
 
   final String displayName;
   final String subject;
@@ -60,5 +65,6 @@ class Teacher {
 }
 
 extension on String {
-  String get characters2 => length >= 2 ? substring(0, 2).toUpperCase() : toUpperCase();
+  String get characters2 =>
+      length >= 2 ? substring(0, 2).toUpperCase() : toUpperCase();
 }
