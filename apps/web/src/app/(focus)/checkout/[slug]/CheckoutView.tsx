@@ -58,25 +58,15 @@ function loadRazorpay() {
   });
 }
 
-/** Calls the `checkout` Edge Function — the only place that touches money. */
-async function callCheckout(token: string, body: Record<string, unknown>) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/checkout`, {
+/** Calls the site's payment API (/api/create-order, /api/verify-payment). */
+async function callPayments(path: string, token: string, body: Record<string, unknown>) {
+  const res = await fetch(path, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      "Content-Type": "application/json",
-    },
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(
-      res.status === 404 && data?.code === "NOT_FOUND"
-        ? "Payments are not set up yet. Please try again later."
-        : (data?.error ?? "Something went wrong. Nothing was charged — please try again."),
-    );
-  }
+  if (!res.ok) throw new Error(data?.error ?? "Something went wrong. Nothing was charged — please try again.");
   return data as Record<string, unknown>;
 }
 
@@ -120,55 +110,51 @@ export function CheckoutView({ enrolled, initialLanguage, student, course }: Pro
           .then(() => undefined);
       }
 
-      const order = await callCheckout(token, { action: "create", course_id: course.id });
-      const orderId = String(order.order_id);
-      const amount = Number(order.amount_inr ?? course.price);
-
-      if (order.test_mode === true) {
-        await callCheckout(token, { action: "complete_test", order_id: orderId });
-        setReceipt({ orderId, amount, testMode: true, language });
-        return;
-      }
+      const order = await callPayments("/api/create-order", token, { course_id: course.id });
+      const receiptId = String(order.receipt);
+      const amountPaise = Number(order.amount);
 
       await loadRazorpay();
       await new Promise<void>((resolve, reject) => {
+        let lastFailure: string | null = null;
         const rzp = new window.Razorpay!({
           key: order.key_id,
-          order_id: order.razorpay_order_id,
-          amount: amount * 100,
+          order_id: order.order_id,
+          amount: amountPaise,
           currency: order.currency ?? "INR",
           name: "AB Academy",
           description: course.title,
           image: `${window.location.origin}/images/logo.png`,
           prefill: order.prefill ?? {},
+          notes: { language },
           theme: { color: "#B4521A" },
-          retry: { enabled: true, max_count: 2 },
+          retry: { enabled: true, max_count: 3 },
           modal: {
-            ondismiss: () => reject(new Error("Payment cancelled. Nothing was charged.")),
+            // Closing the window after a failed try reports that failure.
+            ondismiss: () => reject(new Error(lastFailure ?? "Payment cancelled. Nothing was charged.")),
           },
           handler: async (r: RazorpayResponse) => {
             try {
-              await callCheckout(token, {
-                action: "verify",
-                order_id: orderId,
+              await callPayments("/api/verify-payment", token, {
                 razorpay_order_id: r.razorpay_order_id,
                 razorpay_payment_id: r.razorpay_payment_id,
                 razorpay_signature: r.razorpay_signature,
               });
-              setReceipt({ orderId, amount, testMode: false, language });
+              setReceipt({ orderId: receiptId, amount: amountPaise / 100, testMode: String(order.key_id).startsWith("rzp_test_"), language });
               resolve();
             } catch {
               reject(
                 new Error(
-                  `Your payment went through and is being confirmed. The course unlocks within a few minutes — if it doesn't, write to ${CONTACT.email} with order ${orderId}.`,
+                  `Your payment went through and is being confirmed. The course unlocks within a few minutes — if it doesn't, write to ${CONTACT.email} with payment ID ${r.razorpay_payment_id}.`,
                 ),
               );
             }
           },
         });
-        rzp.on("payment.failed", (r) =>
-          reject(new Error(r.error?.description ?? "Payment failed. Nothing was charged.")),
-        );
+        // Razorpay keeps its window open so the student can retry.
+        rzp.on("payment.failed", (r) => {
+          lastFailure = `${r.error?.description ?? "Payment failed."} Nothing was charged.`;
+        });
         rzp.open();
       });
     } catch (e) {
@@ -384,7 +370,7 @@ function Success({ course, receipt }: { course: Props["course"]; receipt: Receip
       </dl>
       {receipt.testMode ? (
         <p className="mt-4 rounded-xl bg-[#fff6e5] px-4 py-2.5 text-xs text-coal">
-          Test mode — payments are not connected yet, so nothing was charged.
+          Test mode — this was a Razorpay test payment, so no real money moved.
         </p>
       ) : null}
       <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
