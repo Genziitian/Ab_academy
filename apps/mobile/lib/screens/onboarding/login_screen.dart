@@ -14,6 +14,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../config/env.dart';
+import '../../widgets/academy_mark.dart';
 import '../../widgets/buttons.dart';
 
 /// 02 · Login — phone number or Google.
@@ -176,7 +177,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         _Reveal(
                           animation: _intro,
                           from: 0,
-                          to: 0.45,
+                          to: 0.4,
+                          child: Row(
+                            children: [
+                              const AcademyMark(size: 44),
+                              const SizedBox(width: 12),
+                              Text('AB Academy', style: AppText.serif(28)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _Reveal(
+                          animation: _intro,
+                          from: 0.05,
+                          to: 0.5,
                           child: _LoginHero(ambient: _ambient),
                         ),
                         const SizedBox(height: 26),

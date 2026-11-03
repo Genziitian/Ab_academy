@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { BrandMark } from "@/components/icons";
 
 const NAV = [
   { href: "/admin", label: "Dashboard" },
@@ -29,10 +30,13 @@ export function AdminSidebar({ role }: { role: string }) {
   return (
     <aside className="w-full shrink-0 border-b border-border bg-surface md:h-screen md:w-60 md:border-r md:border-b-0">
       <div className="px-5 py-5">
-        <Link href="/" className="text-sm font-semibold text-navy">
-          Akhand Bharat Academy
+        <Link href="/" className="flex items-center gap-2.5 text-sm font-semibold text-navy">
+          <BrandMark size={34} />
+          <span>
+            AB Academy
+            <span className="block text-xs font-normal text-muted">Admin console</span>
+          </span>
         </Link>
-        <p className="mt-0.5 text-xs text-muted">Admin console</p>
       </div>
       <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-col md:overflow-visible">
         {items.map((item) => {

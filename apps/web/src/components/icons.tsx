@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 // Stroke icons shared by the site, the student portal and the checkout. They
 // inherit `currentColor` so the caller controls colour with a text-* class.
 
@@ -239,14 +241,17 @@ export function GoogleMark() {
 }
 
 /** The academy logo tile: white mortarboard on a blue square. */
+/** The Akhand Bharat Academy logo, as a round badge. */
 export function BrandMark({ size = 36 }: { size?: number }) {
   return (
-    <span
-      className="flex shrink-0 items-center justify-center rounded-lg bg-primary text-white"
+    <Image
+      src="/images/logo.png"
+      alt="Akhand Bharat Academy logo"
+      width={size}
+      height={size}
+      className="shrink-0 rounded-full"
       style={{ width: size, height: size }}
-    >
-      <GraduationIcon size={Math.round(size / 2)} />
-    </span>
+    />
   );
 }
 

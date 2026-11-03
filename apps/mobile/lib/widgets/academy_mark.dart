@@ -1,31 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
-import '../theme/app_colors.dart';
-
-/// The Akhand Bharat Academy mark — a mortarboard in a rounded square, the same
-/// tile the website header uses. [inverted] draws it white-on-blue's opposite
-/// for the blue splash screen.
+/// The Akhand Bharat Academy logo, as a round badge.
 class AcademyMark extends StatelessWidget {
-  const AcademyMark({super.key, this.size = 84, this.inverted = false});
+  const AcademyMark({super.key, this.size = 84});
 
   final double size;
-  final bool inverted;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: inverted ? Colors.white : AppColors.primary,
-        borderRadius: BorderRadius.circular(size * 0.26),
-      ),
-      child: Icon(
-        LucideIcons.graduationCap,
-        size: size / 2,
-        color: inverted ? AppColors.primary : Colors.white,
+    return ClipOval(
+      child: Image.asset(
+        'assets/images/logo.png',
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        semanticLabel: 'Akhand Bharat Academy logo',
       ),
     );
   }

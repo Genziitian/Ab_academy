@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PlayBadge } from "@/components/landing/PlayBadge";
 import { LEGAL_DOCS } from "@/components/LegalPage";
 import {
+  BrandMark,
   InstagramIcon,
   LinkedInIcon,
   WhatsAppIcon,
@@ -47,7 +48,10 @@ export function SiteFooter() {
     <footer className="mt-auto bg-coal text-mist">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-4 pb-8 pt-16 sm:px-6 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.3fr] lg:gap-12 lg:px-16 lg:pt-[72px]">
         <div>
-          <p className="font-serif text-4xl leading-none text-cream">AB Academy</p>
+          <div className="flex items-center gap-3">
+            <BrandMark size={52} />
+            <p className="font-serif text-4xl leading-none text-cream">AB Academy</p>
+          </div>
           <p className="mt-1.5 text-[13px] text-[#9a8f82]">Akhand Bharat Academy</p>
           <p className="mt-4 max-w-[300px] text-[15px] leading-[1.6]">
             Class 12 crash courses for Bihar Board. Recorded classes and live doubt sessions with{" "}
