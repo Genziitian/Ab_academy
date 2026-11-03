@@ -18,7 +18,7 @@ const _streams = <(String, String)>[
 
 const _mediums = <(String, String)>[
   ('Hindi', 'हिंदी माध्यम'),
-  ('English', 'अंग्रेज़ी माध्यम'),
+  ('Hinglish', 'Hindi + English terms'),
 ];
 
 /// 05 · Stream & medium.

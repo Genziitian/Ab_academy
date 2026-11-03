@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { CurriculumAccordion, FaqAccordion } from "@/components/CurriculumAccordion";
 import { PlayIcon } from "@/components/icons";
 import { fetchCourseBySlug, listCourseSlugs } from "@/lib/catalog";
-import { CONTACT } from "@/lib/landing";
+import { EnrollWithLanguage } from "@/components/LanguagePicker";
+import { CONTACT, TEACHER } from "@/lib/landing";
 import {
   CRASH_COURSE_DAYS,
   courseFaqs,
@@ -40,19 +41,15 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
   if (!course) notFound();
 
   const off = discountPercent(course.price, course.originalPrice);
-  const bilingual = /hindi/i.test(course.language) && /english/i.test(course.language);
   const deliverables =
     course.deliverables ??
     course.highlights.map((title) => ({ title, body: "Included with your enrolment." }));
 
   const stats = [
-    { value: `${course.lessons}+`, label: "Lectures" },
+    { value: String(course.curriculum?.length ?? course.lessons), label: "Chapters" },
     { value: String(CRASH_COURSE_DAYS), label: "Day plan" },
-    {
-      value: course.questions ? `${course.questions.toLocaleString("en-IN")}+` : "Weekly",
-      label: course.questions ? "Questions" : "Tests",
-    },
-    { value: bilingual ? "Bilingual" : course.language, label: "Language" },
+    { value: "Lecture + practice", label: "In every chapter" },
+    { value: "Hindi / Hinglish", label: "Your choice of language" },
   ];
 
   return (
@@ -74,7 +71,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
             <div className="mt-6 flex flex-wrap gap-2">
               <Chip className="bg-primary">{CRASH_COURSE_DAYS}-day crash course</Chip>
               <Chip className="bg-white/10">
-                {course.board} · {course.language}
+                {course.board} · Hindi or Hinglish
               </Chip>
               {course.badge ? (
                 <Chip className="bg-orange text-navy">{course.badge}</Chip>
@@ -170,12 +167,18 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
           ) : null}
 
           <section className="mt-12 grid items-center gap-7 rounded-xl border border-border bg-white p-7 sm:grid-cols-[120px_minmax(0,1fr)]">
-            <div className="flex size-[120px] items-center justify-center rounded-xl bg-primary text-[34px] font-bold text-white">
-              {initials(course.teacher)}
-            </div>
+            {course.teacher === TEACHER.name && TEACHER.photo ? (
+              <div className="relative size-[120px] overflow-hidden rounded-xl bg-sand">
+                <Image src={TEACHER.photo} alt={course.teacher} fill sizes="120px" className="object-cover object-top" />
+              </div>
+            ) : (
+              <div className="flex size-[120px] items-center justify-center rounded-xl bg-primary text-[34px] font-bold text-white">
+                {initials(course.teacher)}
+              </div>
+            )}
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-primary">
-                Master Faculty
+                Founder &amp; teacher
               </p>
               <h2 className="mt-1 text-xl font-bold text-navy">{course.teacher}</h2>
               {course.teacherTitle ? (
@@ -186,9 +189,9 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
               ) : null}
               <div className="mt-4 flex gap-7">
                 {[
-                  ["40+", "Toppers guided"],
-                  ["2k+", "Alumni"],
-                  ["Board", "Pass focus"],
+                  [`${TEACHER.years} yrs`, "Teaching"],
+                  ["3", "Subjects"],
+                  ["Live", "Doubt sessions"],
                 ].map(([value, label]) => (
                   <div key={label}>
                     <p className="text-lg font-bold text-navy">{value}</p>
@@ -228,22 +231,11 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
               </span>
             ) : null}
           </div>
-          <Link
-            href={`/checkout/${course.slug}`}
-            className="mt-5 flex h-12 items-center justify-center rounded-full bg-primary text-[15px] font-semibold text-white hover:bg-primary-dark"
-          >
-            Enroll in Batch Now
-          </Link>
-          <Link
-            href="/notes"
-            className="mt-2.5 flex h-11 items-center justify-center rounded-full border border-primary-line text-sm font-semibold text-primary hover:bg-primary-soft"
-          >
-            Download Syllabus PDF
-          </Link>
+          <EnrollWithLanguage slug={course.slug} />
           <div className="mt-[22px] flex flex-col gap-2.5 text-sm text-ink">
-            <Row label="Lectures" value="Recorded — watch anytime" />
+            <Row label="Each chapter" value="1 lecture + 1 practice session" />
             <Row label="Validity" value={course.validity ?? course.batch} />
-            <Row label="Medium" value={course.language} />
+            <Row label="Language" value="Hindi or Hinglish" />
           </div>
           <div className="mt-[18px] flex flex-col gap-2 border-t border-border pt-[18px] text-sm text-ink">
             <span>✓ Board-aligned content</span>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BrandMark } from "@/components/icons";
 import { fetchCourseBySlug } from "@/lib/catalog";
-import { courseArt, getCourse } from "@/lib/courses";
+import { courseArt, getCourse, isCourseLanguage } from "@/lib/courses";
 import { getStudent } from "@/lib/portal/student";
 import { createServerClient } from "@/lib/supabase/server";
 import { CheckoutView } from "./CheckoutView";
@@ -30,8 +30,15 @@ async function isEnrolled(courseId: string | undefined) {
   return Boolean(data);
 }
 
-export default async function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function CheckoutPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lang?: string }>;
+}) {
   const { slug } = await params;
+  const { lang } = await searchParams;
   // Signs the visitor in first; enrolment needs an account.
   const student = await getStudent();
 
@@ -58,6 +65,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
       </header>
       <CheckoutView
         enrolled={enrolled}
+        initialLanguage={isCourseLanguage(lang) ? lang : "Hindi"}
         student={{ name: student.name, contact: student.email ?? student.phone ?? "" }}
         course={{
           id: course.id ?? null,
@@ -65,7 +73,6 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
           title: course.title,
           teacher: course.teacher,
           art: courseArt(course),
-          language: course.language,
           price: course.price,
           originalPrice: course.originalPrice ?? course.price,
           validity: course.validity ?? "Until 31 March 2027",

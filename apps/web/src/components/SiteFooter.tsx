@@ -8,7 +8,7 @@ import {
   WhatsAppIcon,
   YouTubeIcon,
 } from "@/components/icons";
-import { CONTACT, SOCIAL_LINKS, TEACHER } from "@/lib/landing";
+import { CONTACT, NOTES_LIVE, SOCIAL_LINKS, TEACHER } from "@/lib/landing";
 import { helpHref, helpIsWhatsApp } from "@/lib/support";
 
 const socials = [
@@ -29,7 +29,7 @@ const columns = [
       { href: "/#courses", label: "Physics" },
       { href: "/#courses", label: "Chemistry" },
       { href: "/#courses", label: "Maths" },
-      { href: "/notes", label: "Free notes" },
+      { href: "/notes", label: NOTES_LIVE ? "Notes" : "Notes (coming soon)" },
     ],
   },
   {

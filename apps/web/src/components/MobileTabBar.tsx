@@ -5,22 +5,22 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { BookIcon, CloseIcon, DownloadIcon, HomeIcon, MenuIcon } from "@/components/icons";
 import { LEGAL_DOCS } from "@/components/LegalPage";
-import { PLAY_STORE_URL } from "@/lib/landing";
+import { NOTES_LIVE, PLAY_STORE_URL } from "@/lib/landing";
 import { helpHref } from "@/lib/support";
 
 const MORE_GROUPS = [
   {
     title: "Learn",
     links: [
-      { href: "/#how", label: "How it works" },
-      { href: "/notes", label: "Free notes" },
-      { href: "/#faq", label: "FAQ" },
       { href: "/#about", label: "About us" },
+      { href: "/notes", label: NOTES_LIVE ? "Notes" : "Notes — coming soon" },
+      { href: "/#how", label: "How it works" },
+      { href: "/#faq", label: "FAQ" },
     ],
   },
   {
     title: "Help",
-    links: [{ href: helpHref, label: "Help & support" }],
+    links: [{ href: helpHref, label: "Contact & support" }],
   },
   {
     title: "Legal",

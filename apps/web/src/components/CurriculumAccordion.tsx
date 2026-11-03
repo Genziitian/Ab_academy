@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PlayIcon } from "@/components/icons";
+import { PlayIcon, TestIcon } from "@/components/icons";
 import type { CurriculumChapter } from "@/lib/courses";
 
 export function CurriculumAccordion({
@@ -14,8 +14,8 @@ export function CurriculumAccordion({
   const [open, setOpen] = useState<number[]>([0]);
   const [all, setAll] = useState(false);
 
-  const totalLectures = chapters.reduce((sum, c) => sum + c.lectures, 0);
-  const totalNotes = chapters.reduce((sum, c) => sum + c.notes, 0);
+  const count = (kind: "lecture" | "practice") =>
+    chapters.reduce((sum, c) => sum + c.lessons.filter((l) => l.kind === kind).length, 0);
 
   return (
     <section className="mt-12">
@@ -26,7 +26,7 @@ export function CurriculumAccordion({
           </h2>
           <p className="mt-1.5 text-sm text-muted">
             {subject ? `${subject} · ` : ""}
-            {chapters.length} units shown · {totalLectures} lectures · {totalNotes} notes
+            {chapters.length} chapters · {count("lecture")} lectures · {count("practice")} practice sessions
           </p>
         </div>
         <button
@@ -66,7 +66,7 @@ export function CurriculumAccordion({
                     {chapter.title}
                   </span>
                   <span className="text-[13px] text-muted">
-                    {chapter.lectures} lectures · {chapter.notes} notes
+                    1 lecture · 1 practice session
                   </span>
                 </span>
                 <span className="text-lg text-muted">{isOpen ? "−" : "+"}</span>
@@ -78,15 +78,14 @@ export function CurriculumAccordion({
                       key={lesson.title}
                       className="flex items-center gap-3 rounded-lg bg-surface-grey px-3 py-2.5 text-sm"
                     >
-                      <PlayIcon size={14} className="shrink-0 text-muted" />
+                      {lesson.kind === "lecture" ? (
+                        <PlayIcon size={14} className="shrink-0 text-primary" />
+                      ) : (
+                        <TestIcon size={14} className="shrink-0 text-primary" />
+                      )}
                       <span className="min-w-0 flex-1 text-navy">{lesson.title}</span>
-                      <span className="text-[13px] text-muted">{lesson.duration}</span>
-                      <span
-                        className={`hidden whitespace-nowrap rounded bg-primary-soft px-2 py-0.5 text-xs font-semibold text-primary sm:inline ${
-                          lesson.hasNotes ? "" : "invisible"
-                        }`}
-                      >
-                        Notes PDF
+                      <span className="whitespace-nowrap rounded bg-primary-soft px-2 py-0.5 text-xs font-semibold text-primary">
+                        {lesson.kind === "lecture" ? "Video lecture" : "Practice"}
                       </span>
                     </div>
                   ))}

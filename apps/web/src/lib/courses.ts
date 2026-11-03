@@ -1,17 +1,27 @@
+import { SYLLABUS, type SubjectKey } from "@/lib/landing";
 export type CourseClass = 9 | 10 | 11 | 12;
 
 export type CurriculumLesson = {
   title: string;
-  duration: string;
-  hasNotes?: boolean;
+  kind: "lecture" | "practice";
 };
 
 export type CurriculumChapter = {
   title: string;
-  lectures: number;
-  notes: number;
   lessons: CurriculumLesson[];
 };
+
+/** Languages every crash course is taught in; the student picks one. */
+export const COURSE_LANGUAGES = [
+  { value: "Hindi", label: "Hindi", hint: "पूरी पढ़ाई हिंदी में" },
+  { value: "Hinglish", label: "Hinglish", hint: "Hindi with English terms" },
+] as const;
+
+export type CourseLanguage = (typeof COURSE_LANGUAGES)[number]["value"];
+
+export function isCourseLanguage(value: unknown): value is CourseLanguage {
+  return COURSE_LANGUAGES.some((l) => l.value === value);
+}
 
 export type Course = {
   id?: string;
@@ -132,46 +142,16 @@ const standardDeliverables = (lectures: number, subjects: string) => [
   },
 ];
 
-const physics12: CurriculumChapter[] = [
-  {
-    title: "Electric Charges and Fields",
-    lectures: 5,
-    notes: 2,
+/** A crash course chapter is one lecture and one practice session. */
+function crashCurriculum(subject: SubjectKey): CurriculumChapter[] {
+  return SYLLABUS[subject].map((title) => ({
+    title,
     lessons: [
-      { title: "Coulomb's Law", duration: "22:10", hasNotes: true },
-      { title: "Electric Field Lines", duration: "19:40", hasNotes: true },
-      { title: "Gauss's Law", duration: "28:05" },
-      { title: "Board Practice Set", duration: "30:40", hasNotes: true },
+      { title: `Lecture — ${title}`, kind: "lecture" },
+      { title: `Practice session — ${title}`, kind: "practice" },
     ],
-  },
-  {
-    title: "Electrostatic Potential and Capacitance",
-    lectures: 5,
-    notes: 2,
-    lessons: [
-      { title: "Potential due to a Point Charge", duration: "21:00", hasNotes: true },
-      { title: "Capacitors in Series and Parallel", duration: "26:15" },
-    ],
-  },
-  {
-    title: "Current Electricity",
-    lectures: 6,
-    notes: 3,
-    lessons: [
-      { title: "Ohm's Law and Resistivity", duration: "20:30", hasNotes: true },
-      { title: "Kirchhoff's Rules", duration: "27:00" },
-    ],
-  },
-  {
-    title: "Moving Charges and Magnetism",
-    lectures: 4,
-    notes: 2,
-    lessons: [
-      { title: "Biot–Savart Law", duration: "23:45", hasNotes: true },
-      { title: "Ampere's Circuital Law", duration: "24:10" },
-    ],
-  },
-];
+  }));
+}
 
 // The three launch courses, matched to the database by slug (see catalog.ts).
 // Price, title, description and publishing come from the database; this adds
@@ -192,10 +172,10 @@ export const courses: Course[] = [
     subjects: ["Physics"],
     stream: "Physics",
     ...ajit,
-    language: "Hindi + English",
+    language: "Hindi · Hinglish",
     price: 249,
     rating: 0,
-    lessons: 14,
+    lessons: 28,
     batch: "Board 2027 Batch",
     validity: "Until 31 March 2027",
     tagline: "14 chapters · Board pattern",
@@ -209,7 +189,7 @@ export const courses: Course[] = [
       "Board-pattern questions",
     ],
     deliverables: standardDeliverables(14, "Physics"),
-    curriculum: physics12,
+    curriculum: crashCurriculum("Physics"),
     curriculumSubject: "Physics",
   },
   {
@@ -220,10 +200,10 @@ export const courses: Course[] = [
     subjects: ["Chemistry"],
     stream: "Chemistry",
     ...ajit,
-    language: "Hindi + English",
+    language: "Hindi · Hinglish",
     price: 249,
     rating: 0,
-    lessons: 10,
+    lessons: 20,
     batch: "Board 2027 Batch",
     validity: "Until 31 March 2027",
     tagline: "10 chapters · Board pattern",
@@ -237,6 +217,8 @@ export const courses: Course[] = [
       "Board-pattern questions",
     ],
     deliverables: standardDeliverables(10, "Chemistry"),
+    curriculum: crashCurriculum("Chemistry"),
+    curriculumSubject: "Chemistry",
   },
   {
     slug: "class-12-maths-crash-course",
@@ -246,10 +228,10 @@ export const courses: Course[] = [
     subjects: ["Mathematics"],
     stream: "Maths",
     ...ajit,
-    language: "Hindi + English",
+    language: "Hindi · Hinglish",
     price: 249,
     rating: 0,
-    lessons: 13,
+    lessons: 26,
     batch: "Board 2027 Batch",
     validity: "Until 31 March 2027",
     tagline: "13 chapters · Board pattern",
@@ -263,6 +245,8 @@ export const courses: Course[] = [
       "Board-pattern questions",
     ],
     deliverables: standardDeliverables(13, "Maths"),
+    curriculum: crashCurriculum("Maths"),
+    curriculumSubject: "Maths",
   },
 ];
 

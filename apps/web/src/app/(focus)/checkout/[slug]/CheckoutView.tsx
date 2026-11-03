@@ -6,11 +6,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CheckBadge } from "@/components/icons";
+import { LanguageToggle } from "@/components/LanguagePicker";
 import { CONTACT } from "@/lib/landing";
-import { formatInr } from "@/lib/courses";
+import { formatInr, type CourseLanguage } from "@/lib/courses";
 
 type Props = {
   enrolled: boolean;
+  initialLanguage: CourseLanguage;
   student: { name: string; contact: string };
   course: {
     id: string | null;
@@ -18,14 +20,13 @@ type Props = {
     title: string;
     teacher: string;
     art: string | null;
-    language: string;
     price: number;
     originalPrice: number;
     validity: string;
   };
 };
 
-type Receipt = { orderId: string; amount: number; testMode: boolean };
+type Receipt = { orderId: string; amount: number; testMode: boolean; language: CourseLanguage };
 
 type RazorpayResponse = {
   razorpay_order_id: string;
@@ -84,8 +85,9 @@ async function callCheckout(token: string, body: Record<string, unknown>) {
  * Razorpay's own window then offers UPI, cards, net banking and wallets, and
  * the server verifies the payment before the course unlocks.
  */
-export function CheckoutView({ enrolled, student, course }: Props) {
+export function CheckoutView({ enrolled, initialLanguage, student, course }: Props) {
   const router = useRouter();
+  const [language, setLanguage] = useState<CourseLanguage>(initialLanguage);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<Receipt | null>(null);
@@ -109,13 +111,22 @@ export function CheckoutView({ enrolled, student, course }: Props) {
         return;
       }
 
+      // Remember the language the student studies in; it never blocks paying.
+      const userId = data.session?.user.id;
+      if (userId) {
+        void supabase
+          .from("student_profiles")
+          .upsert({ user_id: userId, medium: language }, { onConflict: "user_id" })
+          .then(() => undefined);
+      }
+
       const order = await callCheckout(token, { action: "create", course_id: course.id });
       const orderId = String(order.order_id);
       const amount = Number(order.amount_inr ?? course.price);
 
       if (order.test_mode === true) {
         await callCheckout(token, { action: "complete_test", order_id: orderId });
-        setReceipt({ orderId, amount, testMode: true });
+        setReceipt({ orderId, amount, testMode: true, language });
         return;
       }
 
@@ -144,7 +155,7 @@ export function CheckoutView({ enrolled, student, course }: Props) {
                 razorpay_payment_id: r.razorpay_payment_id,
                 razorpay_signature: r.razorpay_signature,
               });
-              setReceipt({ orderId, amount, testMode: false });
+              setReceipt({ orderId, amount, testMode: false, language });
               resolve();
             } catch {
               reject(
@@ -195,13 +206,17 @@ export function CheckoutView({ enrolled, student, course }: Props) {
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Class 12 · Bihar Board</p>
                 <h2 className="mt-1.5 text-xl font-semibold leading-snug text-coal sm:text-[22px]">{course.title}</h2>
                 <p className="mt-1 text-[15px] text-taupe">
-                  with {course.teacher} · {course.language}
+                  with {course.teacher} · in {language}
                 </p>
               </div>
             </div>
+            <div className="border-t border-sand px-5 py-5 sm:px-6">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-taupe">Study language</p>
+              <LanguageToggle value={language} onChange={setLanguage} />
+            </div>
             <ul className="grid gap-3 border-t border-sand px-5 py-5 text-[15px] text-coal sm:grid-cols-2 sm:px-6">
               {[
-                "Recorded classes — watch anytime",
+                "1 lecture + 1 practice session per chapter",
                 `Live doubt sessions with ${course.teacher}`,
                 "On the website and the AB Academy app",
                 `Access ${course.validity.charAt(0).toLowerCase()}${course.validity.slice(1)}`,
@@ -358,6 +373,7 @@ function Success({ course, receipt }: { course: Props["course"]; receipt: Receip
         {[
           ["Order ID", <span key="id" className="font-mono text-sm text-coal">{receipt.orderId.slice(0, 8).toUpperCase()}</span>],
           ["Amount paid", <span key="amt" className="font-semibold text-coal">{formatInr(receipt.amount)}</span>],
+          ["Language", <span key="l" className="font-semibold text-coal">{receipt.language}</span>],
           ["Access", <span key="v" className="font-semibold text-coal">{course.validity}</span>],
         ].map(([label, value]) => (
           <div key={String(label)} className="flex justify-between gap-4 px-5 py-4">
