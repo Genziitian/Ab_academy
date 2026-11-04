@@ -44,7 +44,7 @@ android {
         applicationId = "in.akhandbharatacademy.app"
         // Supabase Auth's PKCE flow and firebase_messaging both need 21+;
         // 23 is the floor for the Play Integrity defaults.
-        minSdk = 23
+        minSdk = 24
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
