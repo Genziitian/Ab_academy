@@ -143,6 +143,32 @@ abstract final class AuthRepo {
     }
   }
 
+  /// Email + password sign-in for accounts made by the academy, such as the
+  /// Google Play review account. Students sign in with Google; there is no
+  /// sign-up here, so this only opens accounts that already exist.
+  static Future<({bool ok, String? error})> signInWithEmail(
+    String email,
+    String password,
+  ) async {
+    if (!enabled) return (ok: true, error: null);
+    try {
+      await Api.auth.signInWithPassword(
+        email: email.trim(),
+        password: password,
+      );
+      return (ok: true, error: null);
+    } on AuthException catch (e) {
+      return (
+        ok: false,
+        error: e.code == 'invalid_credentials'
+            ? 'Wrong email or password.'
+            : e.message,
+      );
+    } catch (e) {
+      return (ok: false, error: e.toString());
+    }
+  }
+
   static String _randomNonce([int length = 32]) {
     const chars =
         '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';

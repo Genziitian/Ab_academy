@@ -157,6 +157,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     context.go(Routes.home);
   }
 
+  /// Email sign-in for accounts the academy creates (Play review account).
+  Future<void> _emailLogin() async {
+    if (_busy) return;
+    final creds = await showModalBottomSheet<(String, String)>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => const _EmailSheet(),
+    );
+    if (creds == null || !mounted) return;
+
+    setState(() => _busy = true);
+    final result = await AuthRepo.signInWithEmail(creds.$1, creds.$2);
+    if (!mounted) return;
+    setState(() => _busy = false);
+
+    if (!result.ok) {
+      _snack(result.error ?? 'Sign-in failed.');
+      return;
+    }
+    await ref.read(sessionProvider.notifier).signIn();
+    if (!mounted) return;
+    context.go(Routes.home);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -225,6 +253,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           child: Env.phoneLogin
                               ? _phoneForm()
                               : _PhoneComingSoon(onTap: _phoneComingSoon),
+                        ),
+                        const SizedBox(height: 4),
+                        Center(
+                          child: TextButton(
+                            onPressed: _busy ? null : _emailLogin,
+                            child: Text(
+                              'Sign in with email',
+                              style: AppText.meta.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ),
                         if (kDebugMode) ...[
                           const SizedBox(height: 10),
@@ -385,6 +426,85 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
 /// "Continue with Google", following Google's own button guidance: white
 /// surface, hairline border, the four-colour mark at 18pt.
+class _EmailSheet extends StatefulWidget {
+  const _EmailSheet();
+
+  @override
+  State<_EmailSheet> createState() => _EmailSheetState();
+}
+
+class _EmailSheetState extends State<_EmailSheet> {
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  bool _hidden = true;
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
+  bool get _ready => _email.text.contains('@') && _password.text.isNotEmpty;
+
+  void _submit() {
+    if (!_ready) return;
+    Navigator.of(context).pop((_email.text.trim(), _password.text));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        24,
+        20,
+        24,
+        24 + MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Sign in with email', style: AppText.h2),
+          const SizedBox(height: 6),
+          Text(
+            'For accounts created by AB Academy. Students, please use Google.',
+            style: AppText.meta,
+          ),
+          const SizedBox(height: 18),
+          TextField(
+            controller: _email,
+            autofocus: true,
+            keyboardType: TextInputType.emailAddress,
+            autofillHints: const [AutofillHints.email],
+            textInputAction: TextInputAction.next,
+            onChanged: (_) => setState(() {}),
+            decoration: const InputDecoration(labelText: 'Email'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _password,
+            obscureText: _hidden,
+            autofillHints: const [AutofillHints.password],
+            textInputAction: TextInputAction.done,
+            onChanged: (_) => setState(() {}),
+            onSubmitted: (_) => _submit(),
+            decoration: InputDecoration(
+              labelText: 'Password',
+              suffixIcon: IconButton(
+                icon: Icon(_hidden ? LucideIcons.eye : LucideIcons.eyeOff),
+                onPressed: () => setState(() => _hidden = !_hidden),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          PrimaryButton(label: 'Sign in', enabled: _ready, onPressed: _submit),
+        ],
+      ),
+    );
+  }
+}
+
 class _GoogleButton extends StatelessWidget {
   const _GoogleButton({required this.onPressed, this.busy = false});
 
