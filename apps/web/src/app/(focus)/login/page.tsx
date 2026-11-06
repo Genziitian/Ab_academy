@@ -24,7 +24,7 @@ export default async function LoginPage({
       <div className="flex flex-col bg-coal px-6 py-8 text-cream sm:px-14 sm:py-10">
         <Link href="/" className="flex items-center gap-3 text-cream">
           <BrandMark />
-          <Wordmark />
+          <Wordmark tone="light" />
         </Link>
         <div className="mt-auto hidden pt-12 lg:block">
           <p className="font-hindi text-base text-saffron">

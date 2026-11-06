@@ -43,7 +43,9 @@ export async function signInWithPassword(
     .maybeSingle();
   const staff = ["teacher", "admin", "super_admin"].includes(profile?.role ?? "");
 
-  redirect(staff ? next : "/dashboard");
+  // Students (e.g. the Play review account) go where they were headed,
+  // never into the console.
+  redirect(staff ? next : next.startsWith("/admin") ? "/dashboard" : next);
 }
 
 /** Student sign-in: phone OTP. Step 1 — send the code. */

@@ -6,6 +6,7 @@ import { GoogleMark } from "@/components/icons";
 import {
   sendPhoneOtp,
   signInWithGoogle,
+  signInWithPassword,
   verifyPhoneOtp,
   type LoginState,
 } from "./actions";
@@ -122,6 +123,8 @@ function StudentLogin({
             </button>
           </form>
 
+          {demo ? null : <EmailLogin next={next} />}
+
           {demo ? <DemoNote /> : null}
 
           <p className="mt-[18px] text-center text-xs leading-[1.5] text-muted">
@@ -138,6 +141,49 @@ function StudentLogin({
         </>
       )}
     </>
+  );
+}
+
+/**
+ * Email + password, for accounts the academy creates (such as the Google Play
+ * review account). Folded away: students sign in with phone or Google.
+ */
+function EmailLogin({ next }: { next: string }) {
+  const [state, action, pending] = useActionState(signInWithPassword, initial);
+  return (
+    <details className="group mt-4" open={Boolean(state.error)}>
+      <summary className="mx-auto w-fit cursor-pointer list-none text-sm font-semibold text-primary hover:underline [&::-webkit-details-marker]:hidden">
+        Sign in with email
+      </summary>
+      <form action={action} className="mt-4 flex flex-col gap-3">
+        <input type="hidden" name="next" value={next} />
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
+          Email
+          <input
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            className={`${input} h-12 rounded-full px-4`}
+          />
+        </label>
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
+          Password
+          <input
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            className={`${input} h-12 rounded-full px-4`}
+          />
+        </label>
+        <ErrorNote message={state.error} />
+        <button type="submit" disabled={pending} className={`mt-1 ${primaryButton}`}>
+          {pending ? "Signing in…" : "Sign in"}
+        </button>
+        <p className="text-center text-xs text-muted">For accounts created by AB Academy.</p>
+      </form>
+    </details>
   );
 }
 
