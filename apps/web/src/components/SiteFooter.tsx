@@ -118,6 +118,20 @@ export function SiteFooter() {
           </p>
         </div>
       </div>
+      <p className="mx-auto max-w-[1200px] px-4 pb-6 text-xs leading-relaxed text-dust sm:px-6 lg:px-16">
+        AB Academy is a private coaching institute and is not affiliated with, endorsed by or
+        representing the Bihar School Examination Board (BSEB) or any government body. For the
+        official syllabus, exam dates and results, visit{" "}
+        <a
+          href="https://biharboardonline.bihar.gov.in"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-saffron"
+        >
+          biharboardonline.bihar.gov.in
+        </a>
+        .
+      </p>
       {/* Oversized wordmark, barely lighter than the footer. */}
       <p
         aria-hidden

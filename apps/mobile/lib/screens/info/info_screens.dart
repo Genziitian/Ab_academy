@@ -257,7 +257,83 @@ class AboutScreen extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         const _ContactCard(),
+        const SizedBox(height: 20),
+        const _GovDisclaimer(),
       ],
+    );
+  }
+}
+
+/// Google Play's Misleading Claims policy: the app mentions the Bihar Board,
+/// so it must say it is not a government body and link the official source.
+class _GovDisclaimer extends StatelessWidget {
+  const _GovDisclaimer();
+
+  static const officialUrl = 'https://biharboardonline.bihar.gov.in';
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(LucideIcons.info, size: 18, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                'Not a government app',
+                style: AppText.bodyLg.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${Academy.name} is a private coaching institute. It is not '
+            'affiliated with, endorsed by or representing the Bihar School '
+            'Examination Board (BSEB) or any government body. For the official '
+            'syllabus, exam dates, notices and results, use the official BSEB '
+            'website:',
+            style: AppText.meta.copyWith(height: 1.5),
+          ),
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: () {
+              Clipboard.setData(const ClipboardData(text: officialUrl));
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  const SnackBar(
+                    content: Text('Link copied — paste it in your browser.'),
+                  ),
+                );
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: SelectableText(
+                      officialUrl,
+                      style: AppText.meta.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(
+                    LucideIcons.copy,
+                    size: 14,
+                    color: AppColors.primary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
