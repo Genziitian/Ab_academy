@@ -133,6 +133,28 @@ async function fulfil(
   return order;
 }
 
+/** Null when Razorpay confirms the payment; otherwise why it was refused. */
+async function confirmWithRazorpay(rzpOrderId: string, paymentId: string, amountInr: number) {
+  const auth = { Authorization: `Basic ${btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`)}` };
+  const expected = Math.round(Number(amountInr) * 100);
+  const res = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}`, { headers: auth });
+  let payment = await res.json();
+  if (!res.ok) return "Payment could not be verified.";
+  if (payment.order_id !== rzpOrderId) return "This payment does not match your order.";
+  if (payment.currency !== "INR" || Number(payment.amount) !== expected) {
+    return "The amount paid does not match the course price.";
+  }
+  if (payment.status === "authorized") {
+    const capture = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}/capture`, {
+      method: "POST",
+      headers: { ...auth, "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: expected, currency: "INR" }),
+    });
+    payment = await capture.json();
+  }
+  return payment.status === "captured" ? null : "Payment could not be verified.";
+}
+
 async function create(req: Request, db: SupabaseClient, body: Record<string, unknown>) {
   const studentId = await callerId(req, db);
   if (!studentId) return json({ error: "Sign in to buy a course." }, 401);
@@ -164,7 +186,10 @@ async function create(req: Request, db: SupabaseClient, body: Record<string, unk
     .insert({ student_id: studentId, course_id: course.id, amount_inr: course.price_inr })
     .select("id")
     .single();
-  if (error || !order) return json({ error: error?.message ?? "Could not create the order." }, 500);
+  if (error || !order) {
+    console.error("create order failed:", error?.message);
+    return json({ error: "Could not create the order. Please try again." }, 500);
+  }
 
   const { data: profile } = await db
     .from("profiles")
@@ -219,9 +244,17 @@ async function verify(req: Request, db: SupabaseClient, body: Record<string, unk
   const paymentId = String(body.razorpay_payment_id ?? "");
   const signature = String(body.razorpay_signature ?? "");
 
+  // Without the secret a signature cannot be checked at all — never unlock.
+  if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+    return json({ error: "Payments are not set up yet. Please try again later." }, 503);
+  }
+  if (!rzpOrderId || !paymentId || !signature) {
+    return json({ error: "Payment could not be verified." }, 400);
+  }
+
   const { data: order } = await db
     .from("orders")
-    .select("id, student_id, razorpay_order_id")
+    .select("id, student_id, razorpay_order_id, amount_inr")
     .eq("id", orderId)
     .maybeSingle();
   if (!order || order.student_id !== studentId || order.razorpay_order_id !== rzpOrderId) {
@@ -233,12 +266,21 @@ async function verify(req: Request, db: SupabaseClient, body: Record<string, unk
     return json({ error: "Payment could not be verified." }, 400);
   }
 
+  // The signature proves the payment was authorised; ask Razorpay that it is
+  // for this order, for the full amount, and captured.
+  const problem = await confirmWithRazorpay(rzpOrderId, paymentId, order.amount_inr);
+  if (problem) return json({ error: problem }, 400);
+
   await fulfil(db, order.id, paymentId, body);
   return json({ ok: true, order_id: order.id, payment_id: paymentId });
 }
 
 async function completeTest(req: Request, db: SupabaseClient, body: Record<string, unknown>) {
-  if (!ALLOW_TEST_CHECKOUT) return json({ error: "Test checkout is disabled." }, 403);
+  // Free enrolment for testing. Refused whenever real keys are configured, so
+  // a leftover ALLOW_TEST_CHECKOUT=true on production cannot give courses away.
+  if (!ALLOW_TEST_CHECKOUT || RAZORPAY_KEY_ID || RAZORPAY_KEY_SECRET) {
+    return json({ error: "Test checkout is disabled." }, 403);
+  }
   const studentId = await callerId(req, db);
   if (!studentId) return json({ error: "Sign in again." }, 401);
 
@@ -266,10 +308,13 @@ async function webhook(req: Request, db: SupabaseClient, raw: string) {
   const payment = event.payload?.payment?.entity;
   const { data: order } = await db
     .from("orders")
-    .select("id")
+    .select("id, amount_inr")
     .eq("razorpay_order_id", payment?.order_id ?? "")
     .maybeSingle();
   if (!order) return json({ error: "Unknown order." }, 404);
+  if (payment.currency !== "INR" || Number(payment.amount) !== Math.round(Number(order.amount_inr) * 100)) {
+    return json({ error: "Amount does not match the order." }, 400);
+  }
 
   await fulfil(db, order.id, payment.id, event);
   return json({ ok: true });
@@ -297,6 +342,8 @@ Deno.serve(async (req) => {
         return json({ error: "Unknown action." }, 400);
     }
   } catch (e) {
-    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+    // Database and gateway messages stay in the logs, not in the response.
+    console.error("checkout failed:", e instanceof Error ? e.message : e);
+    return json({ error: "Something went wrong. Nothing was charged — please try again." }, 500);
   }
 });

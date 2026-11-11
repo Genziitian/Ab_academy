@@ -3,6 +3,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getT } from "@/lib/i18n/server";
+import { safeNext as safePath } from "@/lib/safe-next";
+
+const safeNext = (value: FormDataEntryValue | null, fallback: string) => safePath(value, fallback);
 import { createServerClient } from "@/lib/supabase/server";
 
 export type LoginState = { error?: string; sent?: boolean; phone?: string };
@@ -10,12 +13,6 @@ export type LoginState = { error?: string; sent?: boolean; phone?: string };
 /** Error messages in the visitor's language. */
 async function errs() {
   return (await getT()).t.login.errors;
-}
-
-/** Only same-site paths, so `next` cannot turn sign-in into an open redirect. */
-function safeNext(value: FormDataEntryValue | null, fallback: string) {
-  const next = String(value ?? "");
-  return next.startsWith("/") && !next.startsWith("//") ? next : fallback;
 }
 
 /**

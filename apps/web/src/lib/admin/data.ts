@@ -828,7 +828,7 @@ export async function listSessions(): Promise<AdminSession[]> {
   const { data, error } = await supabase
     .from("live_sessions")
     .select(
-      `id, title, starts_at, ends_at, status, provider, youtube_video_id,
+      `id, title, starts_at, ends_at, status, provider,
        teachers ( display_name ),
        subjects ( name ),
        course_batches ( course_id )`,

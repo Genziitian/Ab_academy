@@ -30,6 +30,15 @@ export async function POST(req: Request) {
       .maybeSingle();
     if (existing) throw new PaymentError("You are already enrolled in this course.", 409);
 
+    // A student opening checkout over and over should not fill the orders table.
+    const hourAgo = new Date(Date.now() - 3600_000).toISOString();
+    const { count } = await db
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("student_id", studentId)
+      .gte("created_at", hourAgo);
+    if ((count ?? 0) >= 15) throw new PaymentError("Too many attempts. Please try again in an hour.", 429);
+
     const { client, keyId } = razorpay();
 
     const { data: order, error } = await db
@@ -37,7 +46,10 @@ export async function POST(req: Request) {
       .insert({ student_id: studentId, course_id: course.id, amount_inr: course.price_inr })
       .select("id")
       .single();
-    if (error || !order) throw new PaymentError(error?.message ?? "Could not create the order.", 500);
+    if (error || !order) {
+      console.error("create-order: insert failed:", error?.message);
+      throw new PaymentError("Could not create the order. Please try again.", 500);
+    }
 
     let rzpOrder: { id: string; amount: number | string; currency: string };
     try {

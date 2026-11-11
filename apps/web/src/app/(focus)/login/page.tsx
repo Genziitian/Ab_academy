@@ -7,6 +7,7 @@ import { isDemoMode } from "@/lib/admin/auth";
 import { getT } from "@/lib/i18n/server";
 import { BATCH_START, EXAM_DATE } from "@/lib/landing";
 import { requestNow } from "@/lib/now";
+import { safeNext } from "@/lib/safe-next";
 import { LoginForm } from "./LoginForm";
 
 export const metadata = {
@@ -18,7 +19,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const [{ next, error }, { t, locale }] = await Promise.all([searchParams, getT()]);
   const demo = isDemoMode();
   // The console has its own sign-in at /access.
-  const studentNext = next && !next.startsWith("/admin") ? next : "/dashboard";
+  const cleanNext = safeNext(next, "/dashboard");
+  const studentNext = cleanNext.startsWith("/admin") ? "/dashboard" : cleanNext;
 
   return (
     <div className="ab grid min-h-screen flex-1 lg:grid-cols-[1fr_1.05fr]">
@@ -59,7 +61,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <div className="w-full max-w-[400px]">
             {error ? (
               <p role="alert" className="mb-6 rounded-[10px] border border-[#f3cdc8] bg-ab-danger-soft px-3.5 py-2.5 text-sm text-ab-danger">
-                {decodeURIComponent(error)}
+                {t.login.errors.generic}
               </p>
             ) : null}
             <LoginForm next={studentNext} demo={demo} />

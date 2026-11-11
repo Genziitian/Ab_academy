@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { safeNext } from "@/lib/safe-next";
 
 /** Student portal routes; signed-out visitors are sent to /login. */
 const PORTAL_PREFIXES = [
@@ -77,7 +78,7 @@ export async function middleware(request: NextRequest) {
 
     const staff = ["admin", "super_admin", "teacher"].includes(profile?.role ?? "");
     const next = request.nextUrl.searchParams.get("next");
-    const safe = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+    const safe = next ? safeNext(next.split("?")[0], "") || null : null;
     const target = request.nextUrl.clone();
     target.pathname = safe ?? (staff ? "/admin" : "/dashboard");
     target.search = "";

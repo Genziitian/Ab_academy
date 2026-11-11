@@ -58,6 +58,27 @@ export function signatureMatches(secret: string, payload: string, signature: str
 }
 
 /**
+ * Asks Razorpay about a payment before we trust it: it must belong to this
+ * Razorpay order, be for the full amount in rupees, and be captured. A valid
+ * checkout signature alone only proves the payment was *authorised*; with
+ * manual capture, or a tampered amount, that is not money received.
+ */
+export async function confirmWithRazorpay(client: Razorpay, razorpayOrderId: string, paymentId: string, amountInr: number) {
+  const expected = Math.round(Number(amountInr) * 100);
+  let payment = await client.payments.fetch(paymentId);
+  if (payment.order_id !== razorpayOrderId) throw new PaymentError("This payment does not match your order.", 400);
+  if (payment.currency !== "INR" || Number(payment.amount) !== expected) {
+    throw new PaymentError("The amount paid does not match the course price.", 400);
+  }
+  if (payment.status === "authorized") {
+    // Not captured automatically (account set to manual capture): capture now.
+    payment = await client.payments.capture(paymentId, expected, "INR");
+  }
+  if (payment.status !== "captured") throw new PaymentError("Payment could not be verified.", 400);
+  return payment;
+}
+
+/**
  * Marks an order paid, records the payment and enrols the student. Safe to
  * run twice for the same payment (verify and the webhook can race).
  */
@@ -75,7 +96,10 @@ export async function fulfil(db: SupabaseClient, orderId: string, paymentId: str
       .update({ status: "paid", razorpay_payment_id: paymentId, paid_at: new Date().toISOString() })
       .eq("id", order.id)
       .neq("status", "paid");
-    if (updateError) throw new PaymentError(updateError.message, 500);
+    if (updateError) {
+      console.error("fulfil: order update failed:", updateError.message);
+      throw new PaymentError("Could not record the payment. Please contact support.", 500);
+    }
 
     await db.from("payments").upsert(
       {
@@ -103,7 +127,10 @@ export async function fulfil(db: SupabaseClient, orderId: string, paymentId: str
     { student_id: order.student_id, course_id: order.course_id, batch_id: batch?.id ?? null, status: "active" },
     { onConflict: "student_id,course_id" },
   );
-  if (enrolError) throw new PaymentError(enrolError.message, 500);
+  if (enrolError) {
+    console.error("fulfil: enrolment failed:", enrolError.message);
+    throw new PaymentError("Payment received, but the course could not be unlocked. Please contact support.", 500);
+  }
   return order;
 }
 

@@ -80,6 +80,20 @@ Deno.serve(async (req) => {
 
   let notificationId = "";
 
+  // Only staff may fan a notification out. Without this check anyone holding
+  // the app's public key could re-send any notification to every student.
+  const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  const { data: caller } = token ? await supabase.auth.getUser(token) : { data: { user: null } };
+  const { data: callerProfile } = caller?.user
+    ? await supabase.from("profiles").select("role").eq("id", caller.user.id).maybeSingle()
+    : { data: null };
+  if (!["teacher", "admin", "super_admin"].includes(callerProfile?.role ?? "")) {
+    return new Response(JSON.stringify({ error: "Staff only." }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const { notification_id } = (await req.json()) as Payload;
     notificationId = notification_id;

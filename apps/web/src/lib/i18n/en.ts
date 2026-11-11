@@ -396,6 +396,7 @@ export const en = {
       code: "Enter the 6-digit code.",
       google: "Google sign-in is not enabled yet.",
       config: "Sign-in is not configured yet.",
+      generic: "Sign-in didn't complete. Please try again.",
     },
   },
 

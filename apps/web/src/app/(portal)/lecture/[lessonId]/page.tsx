@@ -35,13 +35,24 @@ export default async function LecturePage({ params }: { params: Promise<{ lesson
           <div className="relative aspect-video overflow-hidden rounded-2xl bg-ab-ink">
             {lesson.entitled && lesson.youtubeId ? (
               <>
+                {/*
+                  Link-sharing guard. The sandbox has no allow-popups, so the
+                  player's title, Share and "Watch on YouTube" links cannot
+                  open youtube.com; clipboard access is not granted, so its
+                  "Copy link" does nothing. This slows sharing down — it
+                  cannot make an unlisted video secret.
+                */}
                 <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(lesson.youtubeId)}?rel=0&modestbranding=1&playsinline=1`}
+                  src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(lesson.youtubeId)}?rel=0&modestbranding=1&playsinline=1&iv_load_policy=3`}
                   title={lesson.title}
-                  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                  sandbox="allow-scripts allow-same-origin allow-presentation"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allow="accelerometer; autoplay; encrypted-media; gyroscope; fullscreen"
                   allowFullScreen
                   className="absolute inset-0 size-full"
                 />
+                {/* Covers the title and Share row at the top of the player. */}
+                <span aria-hidden className="absolute inset-x-0 top-0 h-[60px]" />
                 {/* Watermark: discourages screen recording and sharing. */}
                 <span className="ab-num pointer-events-none absolute right-4 top-4 select-none text-xs text-white/35">{mark}</span>
               </>

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { safeNext } from "@/lib/safe-next";
 import { createServerClient } from "@/lib/supabase/server";
 
 /**
@@ -8,7 +9,7 @@ import { createServerClient } from "@/lib/supabase/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get("code");
-  const next = safeNext(searchParams.get("next"));
+  const next = safeNext(searchParams.get("next"), "/dashboard");
 
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=missing-code`);
@@ -21,15 +22,9 @@ export async function GET(request: NextRequest) {
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
-    return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(error.message)}`,
-    );
+    console.error("auth callback failed:", error.message);
+    return NextResponse.redirect(`${origin}/login?error=sign-in-failed`);
   }
 
   return NextResponse.redirect(`${origin}${next}`);
-}
-
-/** Only same-site paths; anything else would make this an open redirect. */
-function safeNext(next: string | null) {
-  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/dashboard";
 }

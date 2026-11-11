@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandMark, Wordmark } from "@/components/icons";
 import { isDemoMode } from "@/lib/admin/auth";
+import { safeNext } from "@/lib/safe-next";
 import { AccessForm } from "./AccessForm";
 
 // Not linked from anywhere, and kept out of search results.
@@ -15,7 +16,8 @@ export default async function AccessPage({
   searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const { next, error } = await searchParams;
-  const safe = next && next.startsWith("/admin") ? next : "/admin";
+  const clean = safeNext(next, "/admin");
+  const safe = clean === "/admin" || clean.startsWith("/admin/") ? clean : "/admin";
 
   return (
     <div className="ab flex min-h-screen flex-1 items-center justify-center px-6 py-10">
