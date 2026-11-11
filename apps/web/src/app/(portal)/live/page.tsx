@@ -1,56 +1,49 @@
 import { PortalTopbar } from "@/components/portal/PortalTopbar";
-import { BATCH_START_LABEL, TEACHER, batchStarted } from "@/lib/landing";
+import { Pill } from "@/components/ui";
+import { formatDate, formatTime } from "@/lib/i18n/config";
+import { getT } from "@/lib/i18n/server";
+import { BATCH_START, batchStarted } from "@/lib/landing";
 import { getUpcomingClasses } from "@/lib/portal/live";
 
 export const metadata = { title: "Live classes" };
 
-const when = (iso: string) =>
-  new Date(iso).toLocaleString("en-IN", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "Asia/Kolkata",
-  });
-
 export default async function LivePage() {
-  const classes = await getUpcomingClasses(20);
+  const [classes, { t, locale }] = await Promise.all([getUpcomingClasses(20), getT()]);
+  const p = t.portal;
   const started = batchStarted();
 
   return (
     <>
-      <PortalTopbar crumb="Doubt sessions with your teacher" title="Live classes" />
-      <div className="px-4 pb-16 pt-6 sm:px-8">
+      <PortalTopbar title={p.live} lead={p.liveLead} />
+      <div className="px-4 pb-16 pt-5 sm:px-8">
         {classes.length ? (
-          <ul className="divide-y divide-sand overflow-hidden rounded-[22px] border border-sand bg-cream">
+          <ul className="overflow-hidden rounded-2xl border border-ab-rule">
             {classes.map((c) => (
-              <li key={c.id} className="flex flex-wrap items-center gap-4 px-5 py-4">
-                <span className="w-[150px] shrink-0 text-sm font-semibold text-coal">{when(c.startsAt)}</span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-semibold text-coal">{c.title}</span>
-                  <span className="text-sm text-taupe">{c.course}</span>
+              <li key={c.id} className="grid grid-cols-[88px_1fr] items-center gap-4 border-b border-ab-rule px-5 py-4 last:border-b-0 sm:grid-cols-[120px_1fr_auto]">
+                <span className="ab-num text-sm leading-[1.45] text-ab-ink-2">
+                  {formatDate(c.startsAt, locale, { weekday: "short", day: "numeric", month: "short" })}
+                  <br />
+                  <span className="text-ab-ink">{formatTime(c.startsAt, locale)}</span>
                 </span>
-                {c.status === "LIVE" ? (
-                  <span className="rounded-full bg-[#c8321e] px-3 py-1 text-xs font-bold uppercase tracking-[0.08em] text-white">
-                    Live now
-                  </span>
-                ) : (
-                  <span className="text-xs font-bold uppercase tracking-[0.08em] text-taupe">Scheduled</span>
-                )}
+                <span className="min-w-0">
+                  <span className="block font-medium text-ab-ink">{c.title}</span>
+                  <span className="text-sm text-ab-ink-3">{c.course}</span>
+                </span>
+                <span className="col-start-2 sm:col-start-auto">
+                  {c.status === "LIVE" ? <Pill tone="live">{p.liveNow}</Pill> : <Pill>{p.scheduledTag}</Pill>}
+                </span>
               </li>
             ))}
           </ul>
         ) : (
-          <div className="rounded-[26px] bg-coal px-6 py-14 text-center text-cream">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-saffron">Live doubt classes</p>
-            <p className="mt-3 font-serif text-[40px] leading-none sm:text-[56px]">
-              {started ? "No live class scheduled yet." : `Classes start ${BATCH_START_LABEL}.`}
-            </p>
-            <p className="mx-auto mt-4 max-w-[460px] text-mist">
-              {TEACHER.name}&apos;s live sessions will be listed here with their date and time. Join them from the AB Academy
-              app.
-            </p>
+          <div className="rounded-[22px] bg-ab-tray p-1.5">
+            <div className="rounded-[16px] border border-ab-rule bg-ab-panel px-6 py-14 text-center">
+              <Pill className="mx-auto">{p.live}</Pill>
+              <p className="ab-title mt-5 text-[28px] sm:text-[34px]">
+                {started ? p.liveEmptyStarted : p.liveEmptyStarts(formatDate(BATCH_START, locale, { day: "numeric", month: "long" }))}
+              </p>
+              <p className="mx-auto mt-3 max-w-[460px] text-[15px] leading-[1.6] text-ab-ink-2">{p.liveEmptyBody}</p>
+            </div>
           </div>
         )}
       </div>

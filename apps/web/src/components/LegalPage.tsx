@@ -1,74 +1,75 @@
 import Link from "next/link";
+import { formatDate, type Locale } from "@/lib/i18n/config";
+import type { Dict } from "@/lib/i18n/dictionaries";
+import { LEGAL_DOCS, type LegalHref } from "@/lib/legal-docs";
+import { HINDI_LEGAL_NOTE, LEGAL_UPDATED, type LegalDoc } from "@/lib/i18n/legal";
 
-export const LEGAL_DOCS = [
-  { href: "/privacy", label: "Privacy policy" },
-  { href: "/terms", label: "Terms & conditions" },
-  { href: "/refund", label: "Refund policy" },
-  { href: "/data-deletion", label: "Data & account deletion" },
-] as const;
-
-export type LegalHref = (typeof LEGAL_DOCS)[number]["href"];
-
-/** A paragraph is a string; a bulleted list is an array of strings. */
-export type LegalSection = { heading?: string; body: (string | string[])[] };
-
-export const LEGAL_UPDATED = "3 November 2026";
-
-/** Shared shell for the legal pages: document list on the left, text on the right. */
+/** Shared shell for the legal pages: the document list on the left, text on the right. */
 export function LegalPage({
   active,
-  title,
-  intro,
-  sections,
+  doc,
+  t,
+  locale,
   children,
 }: {
   active: LegalHref;
-  title: string;
-  intro?: string;
-  sections: LegalSection[];
+  doc: LegalDoc;
+  t: Dict;
+  locale: Locale;
   children?: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto grid max-w-[1200px] gap-10 px-4 pb-24 pt-12 sm:px-6 sm:pt-16 md:grid-cols-[230px_minmax(0,720px)] md:gap-16">
-      <nav aria-label="Legal" className="flex flex-col gap-0.5 self-start md:sticky md:top-28">
-        <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-muted">Legal</p>
-        {LEGAL_DOCS.map((doc) => (
-          <Link
-            key={doc.href}
-            href={doc.href}
-            aria-current={active === doc.href ? "page" : undefined}
-            className={`rounded-full px-4 py-2.5 text-[15px] ${
-              active === doc.href ? "bg-primary-soft font-semibold text-primary" : "font-medium text-ink hover:text-navy"
-            }`}
-          >
-            {doc.label}
-          </Link>
-        ))}
+    <div className="mx-auto grid max-w-[1200px] gap-10 px-4 pb-24 pt-12 sm:px-6 sm:pt-16 md:grid-cols-[220px_minmax(0,700px)] md:gap-16">
+      <nav aria-label={t.nav.legal} className="flex flex-col gap-0.5 self-start md:sticky md:top-28">
+        <p className="ab-eyebrow mb-3 px-3">{t.nav.legal}</p>
+        {LEGAL_DOCS.map((d) => {
+          const on = active === d.href;
+          return (
+            <Link
+              key={d.href}
+              href={d.href}
+              aria-current={on ? "page" : undefined}
+              className={`flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[15px] ${
+                on ? "bg-ab-panel font-medium text-ab-ink shadow-[0_0_0_1px_var(--color-ab-rule)]" : "text-ab-ink-2 hover:text-ab-ink"
+              }`}
+            >
+              <span className={`size-1.5 rounded-full ${on ? "bg-ab-accent" : "bg-transparent"}`} />
+              {t.legalDocs[d.key]}
+            </Link>
+          );
+        })}
       </nav>
       <article>
-        <h1 className="font-serif text-[44px] leading-none tracking-[-0.02em] text-navy sm:text-[60px]">{title}</h1>
-        <p className="mt-3 text-sm text-muted">Last updated {LEGAL_UPDATED}</p>
-        {intro ? <p className="mt-6 text-lg leading-[1.65] text-ink">{intro}</p> : null}
+        <h1 className="ab-display text-[38px] sm:text-[52px]">{doc.title}</h1>
+        <p className="ab-num mt-3 text-[13px] text-ab-ink-3">{t.legalDocs.updated(formatDate(LEGAL_UPDATED, locale, { day: "numeric", month: "long", year: "numeric" }))}</p>
+        {locale === "hi" ? (
+          <p className="mt-5 rounded-xl border border-ab-rule bg-ab-panel px-4 py-3 text-sm text-ab-ink-2">{HINDI_LEGAL_NOTE}</p>
+        ) : null}
+        <p className="mt-6 text-lg leading-[1.65] text-ab-ink-2">{doc.intro}</p>
         {children ? <div className="mt-8">{children}</div> : null}
-        <div className="mt-8 flex flex-col gap-9 border-t border-border pt-8">
-          {sections.map((section, i) => (
-            <section key={section.heading ?? i} className="flex flex-col gap-3.5">
-              {section.heading ? (
-                <h2 className="text-xl font-bold tracking-[-0.01em] text-navy">{section.heading}</h2>
-              ) : null}
-              {section.body.map((block, j) =>
-                Array.isArray(block) ? (
-                  <ul key={j} className="flex list-disc flex-col gap-2 pl-5 text-base leading-[1.7] text-ink">
-                    {block.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p key={j} className="text-base leading-[1.75] text-ink">
-                    {block}
-                  </p>
-                ),
-              )}
+        <div className="mt-10 flex flex-col gap-10 border-t border-ab-rule pt-10">
+          {doc.sections.map((section, i) => (
+            <section key={section.heading ?? i} className="grid gap-3.5 sm:grid-cols-[40px_1fr]">
+              <span className="ab-num pt-1 text-[13px] text-ab-ink-3">{String(i + 1).padStart(2, "0")}</span>
+              <div className="flex flex-col gap-3.5">
+                {section.heading ? <h2 className="ab-title text-xl text-ab-ink">{section.heading}</h2> : null}
+                {section.body.map((block, j) =>
+                  Array.isArray(block) ? (
+                    <ul key={j} className="flex flex-col gap-2.5">
+                      {block.map((item) => (
+                        <li key={item} className="flex gap-3 text-base leading-[1.7] text-ab-ink-2">
+                          <span className="mt-[11px] h-px w-3 shrink-0 bg-ab-ink-3" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p key={j} className="text-base leading-[1.75] text-ab-ink-2">
+                      {block}
+                    </p>
+                  ),
+                )}
+              </div>
             </section>
           ))}
         </div>

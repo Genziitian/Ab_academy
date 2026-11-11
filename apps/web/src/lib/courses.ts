@@ -59,8 +59,8 @@ export type Course = {
   bestseller?: boolean;
 };
 
-/** Every crash course runs on the same 90-day board plan. */
-export const CRASH_COURSE_DAYS = 90;
+/** Every crash course runs on the same 60-day board plan. */
+export const CRASH_COURSE_DAYS = 60;
 
 export const classes = [
   {
@@ -121,7 +121,7 @@ const standardDeliverables = (lectures: number, subjects: string) => [
     body: `Every chapter of ${subjects}, recorded so you can learn at your own pace.`,
   },
   {
-    title: "90-day board plan",
+    title: "60-day board plan",
     body: "Chapter flow mapped to the Bihar Board pattern with weekly revision checkpoints.",
   },
   {

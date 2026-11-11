@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { subjectName } from "@/lib/i18n/content";
+import { getT } from "@/lib/i18n/server";
 import { getFreeNote } from "@/lib/notes";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -10,19 +12,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 /** A free notes PDF in Google Drive's viewer. */
 export default async function FreeNotePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const note = await getFreeNote(id);
+  const [note, { t, locale }] = await Promise.all([getFreeNote(id), getT()]);
   if (!note) notFound();
 
   return (
     <section className="mx-auto max-w-[1080px] px-4 pb-16 pt-8 sm:px-6">
-      <Link href="/notes" className="text-sm font-semibold text-clay hover:underline">
-        ← All notes
+      <Link href="/notes" className="text-sm text-ab-ink-2 hover:text-ab-ink">
+        ← {t.notes.all}
       </Link>
-      <p className="mt-6 text-xs font-bold uppercase tracking-[0.14em] text-clay">
-        {note.subject} · {note.chapter}
+      <p className="ab-eyebrow mt-6">
+        {subjectName(note.subject, locale)} · {note.chapter}
       </p>
-      <h1 className="mt-2 font-serif text-[40px] leading-none tracking-[-0.02em] sm:text-[52px]">{note.title}</h1>
-      <div className="mt-6 overflow-hidden rounded-[22px] border border-sand bg-white">
+      <h1 className="ab-display mt-2 text-[34px] sm:text-[44px]">{note.title}</h1>
+      <div className="mt-6 overflow-hidden rounded-2xl border border-ab-rule bg-ab-panel">
         <iframe
           src={`https://drive.google.com/file/d/${encodeURIComponent(note.driveFileId)}/preview`}
           title={note.title}
@@ -30,10 +32,10 @@ export default async function FreeNotePage({ params }: { params: Promise<{ id: s
           allow="autoplay"
         />
       </div>
-      <p className="mt-4 text-sm text-taupe">
-        Want every chapter taught step by step?{" "}
-        <Link href="/#courses" className="font-semibold text-clay hover:underline">
-          See the Class 12 crash courses →
+      <p className="mt-4 text-sm text-ab-ink-2">
+        {t.notes.wantMore}{" "}
+        <Link href="/#courses" className="font-medium text-ab-ink underline decoration-ab-rule-strong underline-offset-4 hover:decoration-ab-ink">
+          {t.notes.seeCourses}
         </Link>
       </p>
     </section>

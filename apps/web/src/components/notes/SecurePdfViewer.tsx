@@ -2,6 +2,7 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 
 /**
  * Class notes, drawn page by page onto canvases — the same `notes` Edge
@@ -12,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
  * ways to copy notes out.
  */
 export function SecurePdfViewer({ resourceId, watermark }: { resourceId: string; watermark: string }) {
+  const n = useT().notes;
   const pagesRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [message, setMessage] = useState("");
@@ -29,7 +31,7 @@ export function SecurePdfViewer({ resourceId, watermark }: { resourceId: string;
         );
         const { data } = await supabase.auth.getSession();
         const token = data.session?.access_token;
-        if (!token) throw new Error("Sign in again to open these notes.");
+        if (!token) throw new Error(n.signInAgain);
 
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/notes?id=${encodeURIComponent(resourceId)}`,
@@ -43,7 +45,7 @@ export function SecurePdfViewer({ resourceId, watermark }: { resourceId: string;
         );
         if (!res.ok) {
           const body = await res.json().catch(() => null);
-          throw new Error(body?.error ?? "These notes could not be opened.");
+          throw new Error(body?.error ?? n.cantOpen);
         }
         const bytes = new Uint8Array(await res.arrayBuffer());
 
@@ -88,13 +90,13 @@ export function SecurePdfViewer({ resourceId, watermark }: { resourceId: string;
       window.removeEventListener("keydown", blockKeys);
       container?.replaceChildren();
     };
-  }, [resourceId]);
+  }, [resourceId, n]);
 
   return (
     <div className="relative select-none print:hidden" onContextMenu={(e) => e.preventDefault()}>
-      {state === "loading" ? <p className="py-16 text-center text-taupe">Opening notes…</p> : null}
+      {state === "loading" ? <p className="py-16 text-center text-ab-ink-3">{n.opening}</p> : null}
       {state === "error" ? (
-        <p role="alert" className="rounded-2xl border border-sand bg-paper px-6 py-10 text-center text-coal">
+        <p role="alert" className="rounded-2xl border border-ab-rule bg-ab-panel px-6 py-10 text-center text-ab-ink">
           {message}
         </p>
       ) : null}
@@ -111,7 +113,7 @@ export function SecurePdfViewer({ resourceId, watermark }: { resourceId: string;
           }}
         />
       ) : null}
-      {pageCount ? <p className="mt-6 text-center text-sm text-taupe">{pageCount} pages</p> : null}
+      {pageCount ? <p className="ab-num mt-6 text-center text-sm text-ab-ink-3">{n.pages(pageCount)}</p> : null}
     </div>
   );
 }

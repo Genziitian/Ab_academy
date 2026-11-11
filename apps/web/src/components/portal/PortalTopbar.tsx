@@ -1,24 +1,23 @@
-import Link from "next/link";
-import { getStudent } from "@/lib/portal/student";
-
-/** Page header: a small label, a serif title and the student's avatar. */
-export async function PortalTopbar({ title, crumb }: { title: string; crumb?: React.ReactNode }) {
-  const student = await getStudent();
+/** Page header inside the portal frame: optional crumb, title, lead and actions. */
+export function PortalTopbar({
+  title,
+  crumb,
+  lead,
+  actions,
+}: {
+  title: React.ReactNode;
+  crumb?: React.ReactNode;
+  lead?: React.ReactNode;
+  actions?: React.ReactNode;
+}) {
   return (
-    <header className="flex items-end gap-5 px-4 pb-2 pt-8 sm:px-8 lg:pt-10">
-      <div className="min-w-0 flex-1">
-        {crumb ? <p className="truncate text-sm font-semibold text-clay">{crumb}</p> : null}
-        <h1 className="mt-1 font-serif text-[40px] leading-none tracking-[-0.02em] text-coal sm:text-[48px]">{title}</h1>
+    <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4 px-4 pb-2 pt-7 sm:px-8 lg:pt-9">
+      <div className="min-w-0">
+        {crumb ? <div className="mb-2 truncate text-sm text-ab-ink-2">{crumb}</div> : null}
+        <h1 className="ab-title text-[28px] sm:text-[32px]">{title}</h1>
+        {lead ? <p className="mt-1.5 text-[15px] text-ab-ink-2">{lead}</p> : null}
       </div>
-      <Link href="/profile" className="hidden items-center gap-3 sm:flex" aria-label="Profile">
-        <span className="text-right leading-tight">
-          <span className="block text-sm font-semibold text-coal">{student.name}</span>
-          <span className="block text-xs text-taupe">{student.summary}</span>
-        </span>
-        <span className="flex size-11 items-center justify-center rounded-full bg-clay text-sm font-bold text-white">
-          {student.initials}
-        </span>
-      </Link>
+      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
     </header>
   );
 }

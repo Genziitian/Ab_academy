@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BrandMark, Wordmark } from "@/components/icons";
+import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { fetchCourseBySlug } from "@/lib/catalog";
 import { courseArt, getCourse, isCourseLanguage } from "@/lib/courses";
+import { courseTitle, validityText } from "@/lib/i18n/content";
+import { getT } from "@/lib/i18n/server";
+import { TEACHER } from "@/lib/landing";
 import { getStudent } from "@/lib/portal/student";
 import { createServerClient } from "@/lib/supabase/server";
 import { CheckoutView } from "./CheckoutView";
@@ -47,20 +51,23 @@ export default async function CheckoutPage({
   const course = remote ? { ...local, ...remote } : local;
   if (!course) notFound();
 
-  const enrolled = await isEnrolled(course.id);
+  const [enrolled, { t, locale }] = await Promise.all([isEnrolled(course.id), getT()]);
 
   return (
-    <div className="theme-saffron flex min-h-screen flex-1 flex-col bg-paper">
-      <header className="border-b border-sand bg-cream">
-        <div className="mx-auto flex h-16 max-w-[1080px] items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2.5">
-            <BrandMark size={34} />
+    <div className="ab flex min-h-screen flex-1 flex-col">
+      <header className="border-b border-ab-rule bg-ab-panel">
+        <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between gap-4 px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-2.5" aria-label={t.common.brand}>
+            <BrandMark size={32} />
             <Wordmark size="sm" />
           </Link>
-          <span className="flex items-center gap-1.5 text-[13px] font-semibold text-taupe">
-            <LockGlyph />
-            Secure checkout
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="hidden items-center gap-1.5 text-[13px] text-ab-ink-2 sm:flex">
+              <LockGlyph />
+              {t.checkout.secure}
+            </span>
+            <LanguageSwitch />
+          </div>
         </div>
       </header>
       <CheckoutView
@@ -70,12 +77,12 @@ export default async function CheckoutPage({
         course={{
           id: course.id ?? null,
           slug: course.slug,
-          title: course.title,
-          teacher: course.teacher,
+          title: courseTitle(course, locale),
+          teacher: course.teacher === TEACHER.name ? t.common.teacherName : course.teacher,
           art: courseArt(course),
           price: course.price,
           originalPrice: course.originalPrice ?? course.price,
-          validity: course.validity ?? "Until 31 March 2027",
+          validity: validityText(course.validity, locale),
         }}
       />
     </div>

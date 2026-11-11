@@ -3,33 +3,21 @@
 import Link from "next/link";
 import { useActionState, useRef, useState } from "react";
 import { GoogleMark } from "@/components/icons";
-import {
-  sendPhoneOtp,
-  signInWithGoogle,
-  signInWithPassword,
-  verifyPhoneOtp,
-  type LoginState,
-} from "./actions";
+import { btn } from "@/components/ui";
+import { useT } from "@/lib/i18n/client";
+import { sendPhoneOtp, signInWithGoogle, signInWithPassword, verifyPhoneOtp, type LoginState } from "./actions";
 
 const initial: LoginState = {};
 
+/** Also used by the staff sign-in at /access. */
 export const input =
-  "h-[46px] rounded-lg border border-field px-3 text-[15px] font-normal outline-none focus:border-primary";
-export const primaryButton =
-  "flex h-12 w-full items-center justify-center rounded-full bg-primary text-[15px] font-semibold text-white hover:bg-primary-dark disabled:opacity-60";
+  "h-12 rounded-[10px] border border-ab-rule-strong bg-ab-panel px-3.5 text-[15px] font-normal text-ab-ink outline-none focus:border-ab-ink";
+export const primaryButton = `${btn.primary} !h-12 w-full`;
 
-/** Student sign-in: phone OTP or Google. Staff sign in at /access. */
+/** Student sign-in: phone OTP, Google, or email for academy-made accounts. */
 export function LoginForm({ next, demo }: { next: string; demo: boolean }) {
-  return <StudentLogin next={next} demo={demo} />;
-}
-
-function StudentLogin({
-  next,
-  demo,
-}: {
-  next: string;
-  demo: boolean;
-}) {
+  const t = useT();
+  const l = t.login;
   const [sendState, sendAction, sending] = useActionState(sendPhoneOtp, initial);
   const [verifyState, verifyAction, verifying] = useActionState(verifyPhoneOtp, initial);
   const [googleState, googleAction, googlePending] = useActionState(signInWithGoogle, initial);
@@ -38,34 +26,24 @@ function StudentLogin({
 
   const otpStep = !editingPhone && Boolean(sendState.sent);
   const phone = sendState.phone ?? "";
-  const error = otpStep
-    ? verifyState.error
-    : (sendState.error ?? googleState.error);
+  const error = otpStep ? verifyState.error : (sendState.error ?? googleState.error);
 
   return (
     <>
-      <h2 className="text-[28px] font-bold tracking-[-0.02em] text-navy">
-        {otpStep ? "Enter the 6-digit OTP" : "Log in or sign up"}
-      </h2>
-      <p className="mt-2 text-[15px] text-muted">
-        {otpStep ? `Sent to ${formatPhone(phone)}` : "Use your mobile number or Google account."}
-      </p>
+      <h2 className="ab-title text-[30px]">{otpStep ? l.otpTitle : l.title}</h2>
+      <p className="mt-2 text-[15px] text-ab-ink-2">{otpStep ? l.sentTo(formatPhone(phone)) : l.sub}</p>
 
       {otpStep ? (
-        <form action={verifyAction} className="mt-7">
+        <form action={verifyAction} className="mt-8">
           <input type="hidden" name="phone" value={phone} />
           <input type="hidden" name="next" value={next} />
           <OtpBoxes />
           <ErrorNote message={error} />
           <button type="submit" disabled={verifying} className={`mt-4 ${primaryButton}`}>
-            {verifying ? "Verifying…" : "Verify & continue"}
+            {verifying ? l.verifying : l.verify}
           </button>
-          <button
-            type="button"
-            onClick={() => setEditingPhone(true)}
-            className="mt-2.5 w-full text-sm text-muted hover:text-navy"
-          >
-            Change number
+          <button type="button" onClick={() => setEditingPhone(true)} className="mt-3 w-full text-sm text-ab-ink-2 hover:text-ab-ink">
+            {l.changeNumber}
           </button>
         </form>
       ) : (
@@ -75,66 +53,59 @@ function StudentLogin({
               setEditingPhone(false);
               sendAction(formData);
             }}
-            className="mt-7"
+            className="mt-8"
           >
-            <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
-              Mobile number
-              <div className="flex h-12 overflow-hidden rounded-full border border-field focus-within:border-primary">
-                <span className="flex items-center border-r border-field bg-surface-grey px-3.5 text-[15px] text-ink">
-                  +91
-                </span>
+            <label className="flex flex-col gap-1.5 text-sm font-medium text-ab-ink">
+              {l.mobile}
+              <div className="flex h-12 overflow-hidden rounded-[10px] border border-ab-rule-strong bg-ab-panel focus-within:border-ab-ink">
+                <span className="ab-num flex items-center border-r border-ab-rule bg-ab-canvas px-3.5 text-[15px] text-ab-ink-2">+91</span>
                 <input
                   name="phone"
                   inputMode="numeric"
                   autoComplete="tel-national"
                   required
                   placeholder="98765 43210"
-                  className="min-w-0 flex-1 px-3 text-[15px] font-normal outline-none"
+                  className="ab-num min-w-0 flex-1 px-3.5 text-[15px] font-normal outline-none"
                 />
               </div>
             </label>
             <ErrorNote message={error} />
             {demo ? (
               <Link href={next} className={`mt-3.5 ${primaryButton}`}>
-                Continue to demo portal
+                {l.continueDemo}
               </Link>
             ) : (
               <button type="submit" disabled={sending} className={`mt-3.5 ${primaryButton}`}>
-                {sending ? "Sending…" : "Send OTP"}
+                {sending ? l.sending : l.sendOtp}
               </button>
             )}
           </form>
 
-          <div className="my-[22px] flex items-center gap-3" aria-hidden>
-            <span className="h-px flex-1 bg-border" />
-            <span className="text-xs uppercase tracking-[0.08em] text-muted">or</span>
-            <span className="h-px flex-1 bg-border" />
+          <div className="my-6 flex items-center gap-3" aria-hidden>
+            <span className="h-px flex-1 bg-ab-rule" />
+            <span className="text-xs text-ab-ink-3">{l.or}</span>
+            <span className="h-px flex-1 bg-ab-rule" />
           </div>
 
           <form action={googleAction}>
             <input type="hidden" name="next" value={next} />
-            <button
-              type="submit"
-              disabled={googlePending || demo}
-              className="flex h-12 w-full items-center justify-center gap-2.5 rounded-full border border-field bg-white text-[15px] font-semibold text-navy hover:bg-surface-grey disabled:opacity-60"
-            >
+            <button type="submit" disabled={googlePending || demo} className={`${btn.secondary} !h-12 w-full`}>
               <GoogleMark />
-              {googlePending ? "Redirecting…" : "Continue with Google"}
+              {googlePending ? l.redirecting : l.google}
             </button>
           </form>
 
           {demo ? null : <EmailLogin next={next} />}
-
           {demo ? <DemoNote /> : null}
 
-          <p className="mt-[18px] text-center text-xs leading-[1.5] text-muted">
-            By continuing you agree to our{" "}
-            <Link href="/terms" className="text-primary">
-              Terms
+          <p className="mt-6 text-center text-xs leading-[1.6] text-ab-ink-3">
+            {l.agree}{" "}
+            <Link href="/terms" className="text-ab-ink underline underline-offset-2">
+              {l.terms}
             </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="text-primary">
-              Privacy Policy
+            {l.and}{" "}
+            <Link href="/privacy" className="text-ab-ink underline underline-offset-2">
+              {l.privacy}
             </Link>
             .
           </p>
@@ -149,39 +120,28 @@ function StudentLogin({
  * review account). Folded away: students sign in with phone or Google.
  */
 function EmailLogin({ next }: { next: string }) {
+  const l = useT().login;
   const [state, action, pending] = useActionState(signInWithPassword, initial);
   return (
-    <details className="group mt-4" open={Boolean(state.error)}>
-      <summary className="mx-auto w-fit cursor-pointer list-none text-sm font-semibold text-primary hover:underline [&::-webkit-details-marker]:hidden">
-        Sign in with email
+    <details className="group mt-5" open={Boolean(state.error)}>
+      <summary className="mx-auto w-fit cursor-pointer list-none text-sm text-ab-ink-2 underline decoration-ab-rule-strong underline-offset-4 hover:text-ab-ink">
+        {l.emailToggle}
       </summary>
       <form action={action} className="mt-4 flex flex-col gap-3">
         <input type="hidden" name="next" value={next} />
-        <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
-          Email
-          <input
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            className={`${input} h-12 rounded-full px-4`}
-          />
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-ab-ink">
+          {l.email}
+          <input name="email" type="email" autoComplete="email" required className={input} />
         </label>
-        <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
-          Password
-          <input
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            className={`${input} h-12 rounded-full px-4`}
-          />
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-ab-ink">
+          {l.password}
+          <input name="password" type="password" autoComplete="current-password" required className={input} />
         </label>
         <ErrorNote message={state.error} />
         <button type="submit" disabled={pending} className={`mt-1 ${primaryButton}`}>
-          {pending ? "Signing in…" : "Sign in"}
+          {pending ? l.signingIn : l.signIn}
         </button>
-        <p className="text-center text-xs text-muted">For accounts created by AB Academy.</p>
+        <p className="text-center text-xs text-ab-ink-3">{l.emailNote}</p>
       </form>
     </details>
   );
@@ -189,6 +149,7 @@ function EmailLogin({ next }: { next: string }) {
 
 /** Six single-digit boxes that auto-advance and accept a pasted code. */
 function OtpBoxes() {
+  const l = useT().login;
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const refs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -218,15 +179,13 @@ function OtpBoxes() {
             value={digit}
             inputMode="numeric"
             autoComplete={index === 0 ? "one-time-code" : "off"}
-            aria-label={`Digit ${index + 1}`}
+            aria-label={l.digit(index + 1)}
             autoFocus={index === 0}
             onChange={(e) => setAt(index, e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Backspace" && !digit && index > 0) {
-                refs.current[index - 1]?.focus();
-              }
+              if (e.key === "Backspace" && !digit && index > 0) refs.current[index - 1]?.focus();
             }}
-            className="h-14 min-w-0 flex-1 rounded-lg border border-field text-center text-[22px] font-semibold text-navy outline-none focus:border-primary"
+            className="ab-num h-14 min-w-0 flex-1 rounded-[10px] border border-ab-rule-strong bg-ab-panel text-center text-[22px] font-medium text-ab-ink outline-none focus:border-ab-ink"
           />
         ))}
       </div>
@@ -237,17 +196,17 @@ function OtpBoxes() {
 export function ErrorNote({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p role="alert" className="mt-3 rounded-lg bg-danger-soft px-3 py-2.5 text-sm text-danger">
+    <p role="alert" className="mt-3 rounded-[10px] border border-[#f3cdc8] bg-ab-danger-soft px-3.5 py-2.5 text-sm text-ab-danger">
       {message}
     </p>
   );
 }
 
 export function DemoNote() {
+  const l = useT().login;
   return (
-    <p className="mt-4 rounded-lg bg-amber-soft px-3 py-2.5 text-xs leading-[1.5] text-navy">
-      <strong className="font-semibold">Demo mode.</strong> No Supabase project
-      is connected, so sign-in is skipped and pages show sample data.
+    <p className="mt-5 rounded-[10px] border border-ab-rule bg-ab-canvas px-3.5 py-3 text-xs leading-[1.5] text-ab-ink-2">
+      <strong className="font-medium text-ab-ink">{l.demoTitle}</strong> {l.demoBody}
     </p>
   );
 }

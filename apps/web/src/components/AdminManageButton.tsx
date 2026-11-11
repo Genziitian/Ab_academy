@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
  * admins. Checked in the browser so the page itself stays static and fast;
  * the admin console enforces access on its own.
  */
-export function AdminManageButton({ courseId }: { courseId: string }) {
+export function AdminManageButton({ courseId, label = "Manage course" }: { courseId: string; label?: string }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -34,12 +34,12 @@ export function AdminManageButton({ courseId }: { courseId: string }) {
   return (
     <Link
       href={`/admin/courses/${courseId}`}
-      className="fixed bottom-24 left-1/2 z-50 flex h-12 -translate-x-1/2 items-center gap-2 rounded-full bg-coal px-6 text-[15px] font-semibold text-cream shadow-[0_14px_40px_rgba(28,24,20,0.3)] hover:bg-clay lg:bottom-6"
+      className="fixed bottom-24 left-1/2 z-50 flex h-11 -translate-x-1/2 items-center gap-2 rounded-full bg-ab-ink px-5 text-sm font-medium text-white shadow-[0_14px_40px_-12px_rgba(23,21,17,0.45)] hover:bg-black lg:bottom-6"
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
         <path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" />
       </svg>
-      Manage course
+      {label}
     </Link>
   );
 }

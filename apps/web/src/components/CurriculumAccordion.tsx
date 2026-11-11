@@ -2,94 +2,70 @@
 
 import { useState } from "react";
 import { PlayIcon, TestIcon } from "@/components/icons";
-import type { CurriculumChapter } from "@/lib/courses";
+import { useT } from "@/lib/i18n/client";
 
-export function CurriculumAccordion({
-  chapters,
-  subject,
-}: {
-  chapters: CurriculumChapter[];
-  subject?: string;
-}) {
+/** Chapters of a course; each opens to its lecture and practice session. */
+export function CurriculumAccordion({ chapters, subject }: { chapters: string[]; subject?: string }) {
+  const t = useT();
   const [open, setOpen] = useState<number[]>([0]);
-  const [all, setAll] = useState(false);
-
-  const count = (kind: "lecture" | "practice") =>
-    chapters.reduce((sum, c) => sum + c.lessons.filter((l) => l.kind === kind).length, 0);
+  const allOpen = open.length === chapters.length;
 
   return (
-    <section className="mt-12">
+    <section className="mt-14">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold tracking-[-0.01em] text-navy">
-            Curriculum Structure
-          </h2>
-          <p className="mt-1.5 text-sm text-muted">
+          <h2 className="ab-title text-[26px]">{t.course.curriculumTitle}</h2>
+          <p className="ab-num mt-1.5 text-[13px] text-ab-ink-3">
             {subject ? `${subject} · ` : ""}
-            {chapters.length} chapters · {count("lecture")} lectures · {count("practice")} practice sessions
+            {t.course.curriculumMeta(chapters.length, chapters.length, chapters.length)}
           </p>
         </div>
         <button
           type="button"
-          onClick={() => {
-            setAll(!all);
-            setOpen(all ? [] : [0]);
-          }}
-          className="text-sm font-semibold text-primary"
+          onClick={() => setOpen(allOpen ? [] : chapters.map((_, i) => i))}
+          className="text-sm font-medium text-ab-ink underline decoration-ab-rule-strong underline-offset-4 hover:decoration-ab-ink"
         >
-          {all ? "Collapse all" : "Expand all chapters"}
+          {allOpen ? t.course.collapseAll : t.course.expandAll}
         </button>
       </div>
 
-      <div className="mt-5 overflow-hidden rounded-xl border border-border bg-white">
-        {chapters.map((chapter, index) => {
-          const isOpen = all || open.includes(index);
+      <div className="mt-5 overflow-hidden rounded-2xl border border-ab-rule bg-ab-panel">
+        {chapters.map((title, index) => {
+          const isOpen = open.includes(index);
           return (
-            <div key={chapter.title} className={index ? "border-t border-border" : ""}>
+            <div key={title} className={index ? "border-t border-ab-rule" : ""}>
               <button
                 type="button"
                 aria-expanded={isOpen}
-                onClick={() =>
-                  setOpen((prev) =>
-                    prev.includes(index)
-                      ? prev.filter((i) => i !== index)
-                      : [...prev, index],
-                  )
-                }
-                className="flex w-full items-center gap-3.5 bg-white px-5 py-4 text-left"
+                onClick={() => setOpen((prev) => (prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]))}
+                className="flex w-full items-center gap-4 px-5 py-4 text-left hover:bg-ab-canvas/60"
               >
-                <span className="flex size-[34px] shrink-0 items-center justify-center rounded-lg bg-primary-soft text-[13px] font-semibold text-primary">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
+                <span className="ab-num w-7 shrink-0 text-[13px] text-ab-ink-3">{String(index + 1).padStart(2, "0")}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[15px] font-semibold text-navy">
-                    {chapter.title}
-                  </span>
-                  <span className="text-[13px] text-muted">
-                    1 lecture · 1 practice session
-                  </span>
+                  <span className="block text-[15px] font-medium text-ab-ink">{title}</span>
+                  <span className="text-[13px] text-ab-ink-3">{t.course.perChapter}</span>
                 </span>
-                <span className="text-lg text-muted">{isOpen ? "−" : "+"}</span>
+                <span className="relative size-3.5 shrink-0 text-ab-ink-3" aria-hidden>
+                  <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-current" />
+                  <span className={`absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-current transition-transform ${isOpen ? "scale-y-0" : ""}`} />
+                </span>
               </button>
               {isOpen ? (
-                <div className="flex flex-col gap-0.5 pb-4 pl-5 pr-5 pt-1 sm:pl-[68px]">
-                  {chapter.lessons.map((lesson) => (
-                    <div
-                      key={lesson.title}
-                      className="flex items-center gap-3 rounded-lg bg-surface-grey px-3 py-2.5 text-sm"
-                    >
-                      {lesson.kind === "lecture" ? (
-                        <PlayIcon size={14} className="shrink-0 text-primary" />
-                      ) : (
-                        <TestIcon size={14} className="shrink-0 text-primary" />
-                      )}
-                      <span className="min-w-0 flex-1 text-navy">{lesson.title}</span>
-                      <span className="whitespace-nowrap rounded bg-primary-soft px-2 py-0.5 text-xs font-semibold text-primary">
-                        {lesson.kind === "lecture" ? "Video lecture" : "Practice"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <ul className="flex flex-col gap-1 px-5 pb-4 sm:pl-[64px]">
+                  {[
+                    [t.course.lectureOf(title), t.course.lectureTag, PlayIcon],
+                    [t.course.practiceOf(title), t.course.practiceTag, TestIcon],
+                  ].map(([label, tag, Icon]) => {
+                    const I = Icon as typeof PlayIcon;
+                    return (
+                      <li key={label as string} className="flex items-center gap-3 rounded-[10px] bg-ab-canvas px-3 py-2.5 text-sm">
+                        <I size={13} className="shrink-0 text-ab-ink-2" />
+                        <span className="min-w-0 flex-1 text-ab-ink">{label as string}</span>
+                        <span className="whitespace-nowrap text-xs text-ab-ink-3">{tag as string}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
               ) : null}
             </div>
           );
@@ -99,30 +75,21 @@ export function CurriculumAccordion({
   );
 }
 
-export function FaqAccordion({ faqs }: { faqs: { q: string; a: string }[] }) {
-  const [open, setOpen] = useState(0);
-
+export function FaqList({ faqs }: { faqs: [string, string][] }) {
   return (
-    <div className="mt-5 overflow-hidden rounded-xl border border-border bg-white">
-      {faqs.map((faq, index) => {
-        const isOpen = open === index;
-        return (
-          <div key={faq.q} className={index ? "border-t border-border" : ""}>
-            <button
-              type="button"
-              aria-expanded={isOpen}
-              onClick={() => setOpen(isOpen ? -1 : index)}
-              className="flex w-full justify-between gap-4 bg-white px-5 py-[18px] text-left text-[15px] font-semibold text-navy"
-            >
-              {faq.q}
-              <span className="text-muted">{isOpen ? "−" : "+"}</span>
-            </button>
-            {isOpen ? (
-              <p className="px-5 pb-[18px] text-sm leading-[1.6] text-muted">{faq.a}</p>
-            ) : null}
-          </div>
-        );
-      })}
+    <div className="mt-5 overflow-hidden rounded-2xl border border-ab-rule bg-ab-panel">
+      {faqs.map(([q, a], i) => (
+        <details key={q} open={i === 0} className="group border-b border-ab-rule last:border-b-0">
+          <summary className="flex cursor-pointer list-none justify-between gap-4 px-5 py-4 text-[15px] font-medium text-ab-ink">
+            {q}
+            <span className="relative mt-1 size-3.5 shrink-0 text-ab-ink-3" aria-hidden>
+              <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-current" />
+              <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-current transition-transform group-open:scale-y-0" />
+            </span>
+          </summary>
+          <p className="px-5 pb-5 text-[15px] leading-[1.6] text-ab-ink-2">{a}</p>
+        </details>
+      ))}
     </div>
   );
 }

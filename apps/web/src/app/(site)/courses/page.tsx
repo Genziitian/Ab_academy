@@ -1,22 +1,14 @@
 import { CoursesCatalog } from "@/components/CoursesCatalog";
 import { listCourses } from "@/lib/catalog";
-
-type CoursesPageProps = {
-  searchParams: Promise<{ class?: string }>;
-};
+import { getT } from "@/lib/i18n/server";
 
 export const metadata = {
   title: "Courses",
-  description:
-    "Class 11 & 12 crash courses for Bihar Board — Science, Commerce and Arts with recorded lectures, notes and practice.",
+  description: "Class 12 crash courses for Bihar Board — recorded lectures, live doubt sessions, notes and board-pattern practice.",
 };
 
-export default async function CoursesPage({ searchParams }: CoursesPageProps) {
-  const params = await searchParams;
-  const classFilter = Number(params.class);
-  const initialClass = classFilter === 11 || classFilter === 12 ? classFilter : undefined;
-
-  const courses = await listCourses();
-
-  return <CoursesCatalog initialCourses={courses} initialClass={initialClass} />;
+export default async function CoursesPage({ searchParams }: { searchParams: Promise<{ subject?: string }> }) {
+  const [{ subject }, courses, { t, locale }] = await Promise.all([searchParams, listCourses(), getT()]);
+  const valid = subject && courses.some((c) => c.subjects.includes(subject)) ? subject : null;
+  return <CoursesCatalog courses={courses} subject={valid} t={t} locale={locale} />;
 }

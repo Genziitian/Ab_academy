@@ -220,3 +220,106 @@ body {
 .hard-shadow {
   box-shadow: 4px 4px 0 var(--color-coal, #1c1814);
 }
+
+/* ------------------------------------------------------------------------
+ * "Calm classroom" — the public site, sign-in, checkout and student portal.
+ * Warm paper grey, white panels, near-black ink. Saffron only marks things:
+ * the brand, today, live and the active item. No gradients, no glows.
+ * The admin console keeps the tokens above.
+ * --------------------------------------------------------------------- */
+@theme {
+  --color-ab-canvas: #f3f2ee;
+  --color-ab-panel: #ffffff;
+  --color-ab-tray: #eae8e2;
+  --color-ab-rule: #e3e0d8;
+  --color-ab-rule-strong: #cdc9be;
+  --color-ab-ink: #171511;
+  --color-ab-ink-2: #55514a;
+  --color-ab-ink-3: #8b867c;
+  --color-ab-accent: #d4622a;
+  --color-ab-accent-ink: #a8481b;
+  --color-ab-accent-soft: #fbeee5;
+  --color-ab-live: #2c7a4b;
+  --color-ab-live-soft: #e5f1e9;
+  --color-ab-danger: #b42318;
+  --color-ab-danger-soft: #fcebe9;
+  --font-ab: var(--font-geist), var(--font-mukta), ui-sans-serif, system-ui, sans-serif;
+  --font-num: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.ab {
+  background: var(--color-ab-canvas);
+  color: var(--color-ab-ink);
+  font-family: var(--font-ab);
+  font-feature-settings: "ss01", "cv11";
+  /* Shared tokens re-pointed, for any older component still using them. */
+  --primary: #171511;
+  --primary-dark: #000000;
+  --primary-soft: #f3f2ee;
+  --background: #f3f2ee;
+}
+
+.ab ::selection {
+  background: #fbe0cf;
+  color: #171511;
+}
+
+.ab :focus-visible {
+  outline: 2px solid var(--color-ab-accent);
+  outline-offset: 2px;
+}
+
+/* Headings: tight Latin, natural Devanagari (no negative tracking, taller lines). */
+.ab-display {
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.ab-title {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.ab-eyebrow {
+  font-family: var(--font-num);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ab-ink-3);
+}
+.ab-num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+html[lang="hi"] .ab-display {
+  letter-spacing: -0.01em;
+  line-height: 1.22;
+}
+html[lang="hi"] .ab-title {
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+html[lang="hi"] .ab-eyebrow {
+  font-family: var(--font-ab);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+html[lang="hi"] .ab {
+  line-height: 1.6;
+}
+
+/* Native <details> without the marker. */
+.ab summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Big figures: Geist with even-width digits (mono is for small dates and times). */
+.ab-fig {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.035em;
+}

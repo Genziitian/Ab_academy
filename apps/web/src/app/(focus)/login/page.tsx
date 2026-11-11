@@ -1,7 +1,12 @@
-import Image from "next/image";
 import Link from "next/link";
 import { BrandMark, Wordmark } from "@/components/icons";
+import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { PlanRegister } from "@/components/plan/PlanRegister";
+import { Check } from "@/components/ui";
 import { isDemoMode } from "@/lib/admin/auth";
+import { getT } from "@/lib/i18n/server";
+import { BATCH_START, EXAM_DATE } from "@/lib/landing";
+import { requestNow } from "@/lib/now";
 import { LoginForm } from "./LoginForm";
 
 export const metadata = {
@@ -9,56 +14,56 @@ export const metadata = {
   description: "Student sign-in for AB Academy.",
 };
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ next?: string; error?: string }>;
-}) {
-  const { next, error } = await searchParams;
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
+  const [{ next, error }, { t, locale }] = await Promise.all([searchParams, getT()]);
   const demo = isDemoMode();
   // The console has its own sign-in at /access.
   const studentNext = next && !next.startsWith("/admin") ? next : "/dashboard";
 
   return (
-    <div className="theme-saffron grid min-h-screen flex-1 lg:grid-cols-2">
-      <div className="flex flex-col bg-coal px-6 py-8 text-cream sm:px-14 sm:py-10">
-        <Link href="/" className="flex items-center gap-3 text-cream">
-          <BrandMark />
-          <Wordmark tone="light" />
-        </Link>
-        <div className="mt-auto hidden pt-12 lg:block">
-          <p className="font-hindi text-base text-saffron">
-            आज शुरू करें — कल का आत्मविश्वास बनाएँ।
+    <div className="ab grid min-h-screen flex-1 lg:grid-cols-[1fr_1.05fr]">
+      <div className="flex flex-col px-5 py-6 sm:px-10 sm:py-8 lg:border-r lg:border-ab-rule lg:px-12 lg:py-10">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-2.5" aria-label={t.common.brand}>
+            <BrandMark size={36} />
+            <Wordmark />
+          </Link>
+          <LanguageSwitch className="lg:hidden" />
+        </div>
+
+        <div className="hidden flex-1 flex-col justify-center py-12 lg:flex">
+          <p className="text-[15px] text-ab-accent-ink" lang="hi">
+            {t.login.panelHindi}
           </p>
-          <h1 className="mt-3.5 max-w-[460px] font-serif text-[56px] leading-[0.98] tracking-[-0.02em]">
-            The <em className="text-saffron">last 90 days</em> before your boards.
-          </h1>
-          <div className="mt-8 aspect-[16/10] max-w-[520px] overflow-hidden rounded-3xl bg-coal-soft">
-            <Image
-              src="/images/feature-live-class.png"
-              alt="A recorded lecture"
-              width={1040}
-              height={650}
-              className="size-full object-cover"
-            />
+          <h1 className="ab-display mt-3 max-w-[480px] text-[48px]">{t.login.panelTitle}</h1>
+          <ul className="mt-6 flex flex-col gap-2.5 text-[15px] text-ab-ink-2">
+            {t.login.panelPoints.map((p) => (
+              <li key={p} className="flex items-center gap-2.5">
+                <Check className="text-ab-accent" />
+                {p}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-10 max-w-[520px]">
+            <PlanRegister start={BATCH_START} exam={EXAM_DATE} now={requestNow()} t={t} locale={locale} compact />
           </div>
         </div>
-        <p className="mt-10 hidden text-[13px] text-dust lg:block">
-          © {new Date().getFullYear()} AB Academy
-        </p>
+        <p className="hidden text-[13px] text-ab-ink-3 lg:block">© {new Date().getFullYear()} AB Academy</p>
       </div>
 
-      <div className="flex items-center justify-center px-6 py-10 sm:p-10">
-        <div className="w-full max-w-[400px]">
-          {error ? (
-            <p
-              role="alert"
-              className="mb-6 rounded-lg bg-danger-soft px-3 py-2.5 text-sm text-danger"
-            >
-              {decodeURIComponent(error)}
-            </p>
-          ) : null}
-          <LoginForm next={studentNext} demo={demo} />
+      <div className="flex flex-col bg-ab-panel px-5 py-10 sm:px-10 lg:py-10">
+        <div className="hidden justify-end lg:flex">
+          <LanguageSwitch />
+        </div>
+        <div className="flex flex-1 items-center justify-center">
+          <div className="w-full max-w-[400px]">
+            {error ? (
+              <p role="alert" className="mb-6 rounded-[10px] border border-[#f3cdc8] bg-ab-danger-soft px-3.5 py-2.5 text-sm text-ab-danger">
+                {decodeURIComponent(error)}
+              </p>
+            ) : null}
+            <LoginForm next={studentNext} demo={demo} />
+          </div>
         </div>
       </div>
     </div>

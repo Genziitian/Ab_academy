@@ -2,11 +2,15 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { getT } from "@/lib/i18n/server";
 import { createServerClient } from "@/lib/supabase/server";
 
 export type LoginState = { error?: string; sent?: boolean; phone?: string };
 
-const NOT_CONFIGURED = "Supabase is not configured. Set the env vars first.";
+/** Error messages in the visitor's language. */
+async function errs() {
+  return (await getT()).t.login.errors;
+}
 
 /** Only same-site paths, so `next` cannot turn sign-in into an open redirect. */
 function safeNext(value: FormDataEntryValue | null, fallback: string) {
@@ -22,19 +26,20 @@ export async function signInWithPassword(
   _prev: LoginState,
   formData: FormData,
 ): Promise<LoginState> {
+  const e = await errs();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const next = safeNext(formData.get("next"), "/admin");
 
-  if (!email || !password) return { error: "Email and password are required." };
+  if (!email || !password) return { error: e.required };
 
   const supabase = await createServerClient();
-  if (!supabase) return { error: NOT_CONFIGURED };
+  if (!supabase) return { error: e.config };
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   // One message for every failure, so the form does not reveal which emails
   // have accounts. Supabase rate-limits repeated attempts.
-  if (error || !data.user) return { error: "Incorrect email or password." };
+  if (error || !data.user) return { error: e.wrong };
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -53,12 +58,13 @@ export async function sendPhoneOtp(
   _prev: LoginState,
   formData: FormData,
 ): Promise<LoginState> {
+  const e = await errs();
   const raw = String(formData.get("phone") ?? "").replace(/\D/g, "");
-  if (raw.length < 10) return { error: "Enter a valid 10-digit mobile number." };
+  if (raw.length < 10) return { error: e.phone };
   const phone = `+91${raw.slice(-10)}`;
 
   const supabase = await createServerClient();
-  if (!supabase) return { error: NOT_CONFIGURED };
+  if (!supabase) return { error: e.config };
 
   const { error } = await supabase.auth.signInWithOtp({ phone });
   if (error) return { error: error.message };
@@ -71,14 +77,15 @@ export async function verifyPhoneOtp(
   _prev: LoginState,
   formData: FormData,
 ): Promise<LoginState> {
+  const e = await errs();
   const phone = String(formData.get("phone") ?? "");
   const token = String(formData.get("token") ?? "").replace(/\D/g, "");
   const next = safeNext(formData.get("next"), "/dashboard");
 
-  if (token.length !== 6) return { sent: true, phone, error: "Enter the 6-digit code." };
+  if (token.length !== 6) return { sent: true, phone, error: e.code };
 
   const supabase = await createServerClient();
-  if (!supabase) return { error: NOT_CONFIGURED };
+  if (!supabase) return { error: e.config };
 
   const { error } = await supabase.auth.verifyOtp({ phone, token, type: "sms" });
   if (error) return { sent: true, phone, error: error.message };
@@ -98,10 +105,11 @@ export async function signInWithGoogle(
   _prev: LoginState,
   formData: FormData,
 ): Promise<LoginState> {
+  const e = await errs();
   const next = safeNext(formData.get("next"), "/dashboard");
 
   const supabase = await createServerClient();
-  if (!supabase) return { error: NOT_CONFIGURED };
+  if (!supabase) return { error: e.config };
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
@@ -111,7 +119,7 @@ export async function signInWithGoogle(
   });
 
   if (error) return { error: error.message };
-  if (!data.url) return { error: "Google sign-in is not enabled yet." };
+  if (!data.url) return { error: e.google };
 
   redirect(data.url);
 }

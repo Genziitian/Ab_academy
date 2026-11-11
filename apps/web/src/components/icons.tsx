@@ -303,17 +303,20 @@ export function Wordmark({
   className?: string;
 }) {
   const [top, bottom] = {
-    sm: ["text-[21px]", "text-[9px] tracking-[0.46em]"],
-    md: ["text-[26px] sm:text-[29px]", "text-[10px] sm:text-[11px] tracking-[0.5em]"],
-    lg: ["text-[34px]", "text-[13px] tracking-[0.5em]"],
+    sm: ["text-[16px]", "text-[9.5px]"],
+    md: ["text-[18px]", "text-[10px]"],
+    lg: ["text-[24px]", "text-[11px]"],
   }[size];
+  const dark = tone === "dark";
   return (
     <span className={`inline-flex flex-col leading-none ${className}`}>
-      <span className={`whitespace-nowrap font-serif ${top} ${tone === "dark" ? "text-coal" : "text-cream"}`}>
+      <span className={`whitespace-nowrap font-semibold tracking-[-0.02em] ${top} ${dark ? "text-ab-ink" : "text-white"}`}>
         Akhand Bharat
       </span>
       <span
-        className={`mt-1 whitespace-nowrap font-bold uppercase ${bottom} ${tone === "dark" ? "text-clay" : "text-saffron"}`}
+        className={`mt-[3px] whitespace-nowrap font-[family-name:var(--font-geist-mono)] uppercase tracking-[0.32em] ${bottom} ${
+          dark ? "text-ab-accent-ink" : "text-ab-accent"
+        }`}
       >
         Academy
       </span>

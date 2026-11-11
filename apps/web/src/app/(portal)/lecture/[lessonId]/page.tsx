@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PlayIcon } from "@/components/icons";
+import { PdfBadge } from "@/components/PdfBadge";
 import { PortalTopbar } from "@/components/portal/PortalTopbar";
+import { Arrow } from "@/components/ui";
+import { courseTitle, subjectName } from "@/lib/i18n/content";
+import { getT } from "@/lib/i18n/server";
 import { CONTACT } from "@/lib/landing";
 import { getLessonForStudent } from "@/lib/portal/live";
 import { getStudent } from "@/lib/portal/student";
@@ -10,23 +14,25 @@ export const metadata = { title: "Lecture" };
 
 export default async function LecturePage({ params }: { params: Promise<{ lessonId: string }> }) {
   const { lessonId } = await params;
-  const [lesson, student] = await Promise.all([getLessonForStudent(lessonId), getStudent()]);
+  const [lesson, student, { t, locale }] = await Promise.all([getLessonForStudent(lessonId), getStudent(), getT()]);
   if (!lesson) notFound();
+  const p = t.portal;
   const mark = [student.phone ?? student.email ?? student.name].filter(Boolean).join(" ");
 
   return (
     <>
       <PortalTopbar
         crumb={
-          <Link href={`/my-courses/${lesson.course.id}`} className="hover:underline">
-            ← {lesson.course.title}
+          <Link href={`/my-courses/${lesson.course.id}`} className="hover:text-ab-ink">
+            ← {courseTitle({ title: lesson.course.title, subjects: [lesson.subject] }, locale)}
           </Link>
         }
         title={lesson.title}
+        lead={`${subjectName(lesson.subject, locale)} · ${lesson.chapterTitle}`}
       />
-      <div className="grid gap-6 px-4 pb-16 pt-6 sm:px-8 xl:grid-cols-[1fr_340px]">
+      <div className="grid gap-6 px-4 pb-16 pt-5 sm:px-8 xl:grid-cols-[1fr_340px]">
         <div>
-          <div className="relative aspect-video overflow-hidden rounded-[22px] bg-coal">
+          <div className="relative aspect-video overflow-hidden rounded-2xl bg-ab-ink">
             {lesson.entitled && lesson.youtubeId ? (
               <>
                 <iframe
@@ -37,66 +43,62 @@ export default async function LecturePage({ params }: { params: Promise<{ lesson
                   className="absolute inset-0 size-full"
                 />
                 {/* Watermark: discourages screen recording and sharing. */}
-                <span className="pointer-events-none absolute right-4 top-4 select-none text-xs font-semibold text-white/35">
-                  {mark}
-                </span>
+                <span className="ab-num pointer-events-none absolute right-4 top-4 select-none text-xs text-white/35">{mark}</span>
               </>
             ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center text-cream">
-                <span className="flex size-14 items-center justify-center rounded-full bg-white/10">
-                  <PlayIcon size={20} />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center text-white">
+                <span className="flex size-12 items-center justify-center rounded-full bg-white/10">
+                  <PlayIcon size={18} />
                 </span>
-                <p className="max-w-[420px] text-mist">
-                  {!lesson.entitled
-                    ? "This lecture is for students enrolled in the course."
-                    : lesson.hasVideo
-                      ? "This video plays in the AB Academy app."
-                      : "The video for this lecture is being uploaded. Check back soon."}
-                </p>
+                <p className="max-w-[420px] text-white/70">{!lesson.entitled ? p.enrolledOnly : lesson.hasVideo ? p.playsInApp : p.uploading}</p>
               </div>
             )}
           </div>
-          <p className="mt-4 text-sm text-taupe">
-            {lesson.subject} · {lesson.chapterTitle}
-          </p>
+
           {lesson.notes.length ? (
-            <div className="mt-5 rounded-[20px] border border-sand bg-cream p-5">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">Notes for this lecture</p>
-              <ul className="mt-3 flex flex-col gap-2">
+            <div className="mt-5 rounded-2xl border border-ab-rule p-2">
+              <p className="px-3 pb-1 pt-2 text-sm text-ab-ink-2">{p.lectureNotes}</p>
+              <ul>
                 {lesson.notes.map((n) => (
                   <li key={n.id}>
-                    <Link href={`/notes/${n.id}`} className="font-semibold text-coal hover:text-clay">
-                      {n.title} →
+                    <Link href={`/notes/${n.id}`} className="flex items-center gap-3 rounded-[10px] px-3 py-2.5 hover:bg-ab-canvas">
+                      <PdfBadge size={28} />
+                      <span className="flex-1 text-[15px] font-medium text-ab-ink">{n.title}</span>
+                      <Arrow className="text-ab-ink-3" />
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
           ) : null}
-          <p className="mt-5 text-sm text-taupe">
-            Doubt about this lecture? <Link href="/support" className="font-semibold text-clay hover:underline">Raise a ticket</Link> or write to {CONTACT.email}.
+          <p className="mt-5 text-sm text-ab-ink-2">
+            {p.doubtPre}{" "}
+            <Link href="/support" className="font-medium text-ab-ink underline decoration-ab-rule-strong underline-offset-4 hover:decoration-ab-ink">
+              {p.raiseTicket}
+            </Link>{" "}
+            {p.orWrite(CONTACT.email)}
           </p>
         </div>
 
-        <aside className="h-fit rounded-[22px] border border-sand bg-cream">
-          <p className="border-b border-sand px-5 py-4 text-xs font-bold uppercase tracking-[0.14em] text-clay">
-            In this chapter
-          </p>
-          <ul className="divide-y divide-sand">
-            {lesson.chapterLessons.map((l) => (
-              <li key={l.id}>
-                <Link
-                  href={`/lecture/${l.id}`}
-                  aria-current={l.id === lesson.id ? "page" : undefined}
-                  className={`flex items-center gap-3 px-5 py-3.5 ${l.id === lesson.id ? "bg-primary-soft" : "hover:bg-paper"}`}
-                >
-                  <span className={`flex size-8 shrink-0 items-center justify-center rounded-full ${l.id === lesson.id ? "bg-clay text-white" : "bg-paper text-coal"}`}>
-                    <PlayIcon size={12} />
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-coal">{l.title}</span>
-                </Link>
-              </li>
-            ))}
+        <aside className="h-fit rounded-[20px] bg-ab-tray p-1.5">
+          <p className="px-3 pb-2 pt-1.5 text-sm text-ab-ink-2">{p.inChapter}</p>
+          <ul className="overflow-hidden rounded-[14px] border border-ab-rule bg-ab-panel">
+            {lesson.chapterLessons.map((l, i) => {
+              const on = l.id === lesson.id;
+              return (
+                <li key={l.id} className="border-b border-ab-rule last:border-b-0">
+                  <Link
+                    href={`/lecture/${l.id}`}
+                    aria-current={on ? "page" : undefined}
+                    className={`flex items-center gap-3 px-4 py-3 ${on ? "bg-ab-canvas" : "hover:bg-ab-canvas/60"}`}
+                  >
+                    <span className={`ab-num w-6 shrink-0 text-[13px] ${on ? "text-ab-accent-ink" : "text-ab-ink-3"}`}>{String(i + 1).padStart(2, "0")}</span>
+                    <span className={`min-w-0 flex-1 truncate text-sm ${on ? "font-medium text-ab-ink" : "text-ab-ink-2"}`}>{l.title}</span>
+                    {on ? <span className="size-1.5 rounded-full bg-ab-accent" /> : null}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </aside>
       </div>

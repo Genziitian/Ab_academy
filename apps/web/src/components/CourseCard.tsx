@@ -1,150 +1,45 @@
+import Image from "next/image";
 import Link from "next/link";
-import {
-  Course,
-  courseArt,
-  CRASH_COURSE_DAYS,
-  discountPercent,
-  formatInr,
-  thumbnailGradient,
-} from "@/lib/courses";
+import { Panel, btn } from "@/components/ui";
+import { type Course, courseArt, discountPercent, formatInr } from "@/lib/courses";
+import type { Locale } from "@/lib/i18n/config";
+import { courseTitle } from "@/lib/i18n/content";
+import type { Dict } from "@/lib/i18n/dictionaries";
 
-type Props = {
-  course: Course;
-  /**
-   * "featured" is the larger home-page card with the stream name on the
-   * thumbnail; "catalog" is the compact card in the course grid, which also
-   * shows the teacher and medium.
-   */
-  variant?: "featured" | "catalog";
-  className?: string;
-};
-
-export function CourseCard({ course, variant = "catalog", className = "" }: Props) {
+/** A course in the catalog grid. */
+export function CourseCard({ course, t, locale }: { course: Course; t: Dict; locale: Locale }) {
   const off = discountPercent(course.price, course.originalPrice);
   const href = `/course/${course.slug}`;
-  const featured = variant === "featured";
+  const art = courseArt(course);
+  const free = course.price === 0;
 
   return (
-    <article
-      className={`flex flex-col overflow-hidden rounded-2xl border border-border bg-white transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] ${className}`}
-    >
-      <Link
-        href={href}
-        className={`flex flex-col justify-between ${featured ? "min-h-[170px] p-4" : "min-h-[140px] p-3.5"}`}
-        style={{
-          background: courseArt(course)
-            ? `linear-gradient(180deg, rgba(28,24,20,.1), rgba(28,24,20,.55)), center / cover no-repeat url(${courseArt(course)})`
-            : thumbnailGradient(course.thumbnailHue),
-        }}
-      >
-        <div className="flex gap-1.5">
-          {course.badge ? (
-            <span className="whitespace-nowrap rounded bg-navy/70 px-2 py-[3px] text-[11px] font-semibold uppercase tracking-[0.04em] text-white">
-              {course.badge}
-            </span>
-          ) : null}
-          <span className="whitespace-nowrap rounded bg-white/[0.22] px-2 py-[3px] text-[11px] font-semibold text-white">
-            Class {course.classLevel}
-          </span>
-        </div>
-        {featured ? (
-          <div>
-            <p className="text-[22px] font-bold tracking-[-0.01em] text-white">
-              {course.stream ?? course.subjects.join(" · ")}
-            </p>
-            <div className="mt-1.5 flex items-end justify-between">
-              <span className="text-[13px] text-white/90">
-                {course.lessons}+ lectures · {CRASH_COURSE_DAYS} days
-              </span>
-              <Rating value={course.rating} />
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-end justify-between">
-            <span className="text-[13px] text-white/90">
-              {course.lessons}+ lectures
-            </span>
-            <Rating value={course.rating} />
-          </div>
-        )}
+    <Panel as="article" className="flex flex-col overflow-hidden transition-colors hover:border-ab-rule-strong">
+      <Link href={href} className="relative block aspect-[16/8] bg-ab-tray" tabIndex={-1} aria-hidden>
+        {art ? <Image src={art} alt="" fill sizes="(min-width: 1280px) 380px, 50vw" className="object-cover" /> : null}
       </Link>
-
-      <div className={`flex flex-1 flex-col ${featured ? "p-5" : "p-[18px]"}`}>
-        {course.tagline ? (
-          <p className="text-xs font-semibold uppercase tracking-[0.04em] text-primary">
-            {course.tagline}
-          </p>
-        ) : null}
-        <Link
-          href={href}
-          className={`mt-1.5 font-semibold leading-[1.35] text-navy hover:text-primary ${featured ? "text-lg" : "text-base"}`}
-        >
-          {course.title}
-        </Link>
-        <p
-          className={`mt-2 line-clamp-3 flex-1 leading-[1.6] text-muted ${featured ? "text-[15px]" : "text-sm"}`}
-        >
-          {course.description}
+      <div className="flex flex-1 flex-col p-5">
+        <p className="text-[13px] text-ab-ink-3">
+          {t.common.classN(course.classLevel)} · {free ? t.catalog.demo : t.common.board}
         </p>
-        {featured ? null : (
-          <p className="mt-3 text-sm text-ink">
-            <span className="font-semibold text-navy">{course.teacher}</span> ·{" "}
-            {course.language}
-          </p>
-        )}
-
-        <div
-          className={`flex items-center justify-between gap-3 border-t border-border ${featured ? "mt-4 pt-4" : "mt-3.5 pt-3.5"}`}
-        >
-          {featured ? (
-            <div className="flex min-w-0 items-baseline gap-x-1.5 whitespace-nowrap">
-              <span className="text-lg font-bold text-navy">
-                {formatInr(course.price)}
-              </span>
-              {course.originalPrice ? (
-                <span className="text-xs text-muted line-through">
-                  {formatInr(course.originalPrice)}
-                </span>
-              ) : null}
-              {off ? (
-                <span className="text-xs font-semibold text-success">
-                  {off}% OFF
-                </span>
-              ) : null}
-            </div>
-          ) : (
-            <div>
-              <p className="text-lg font-bold text-navy">{formatInr(course.price)}</p>
-              {course.originalPrice ? (
-                <p className="text-xs">
-                  <span className="text-muted line-through">
-                    {formatInr(course.originalPrice)}
-                  </span>{" "}
-                  {off ? (
-                    <span className="font-semibold text-success">{off}% OFF</span>
-                  ) : null}
-                </p>
-              ) : null}
-            </div>
-          )}
-          <Link
-            href={href}
-            className="flex h-10 shrink-0 items-center whitespace-nowrap rounded-full bg-primary-soft px-4 text-sm font-semibold text-primary hover:bg-primary hover:text-white"
-          >
-            View course
+        <Link href={href} className="ab-title mt-1.5 text-lg hover:underline">
+          {courseTitle(course, locale)}
+        </Link>
+        <div className="min-h-5 flex-1" />
+        <div className="flex items-end justify-between gap-3 border-t border-ab-rule pt-4">
+          <div>
+            {course.originalPrice && off ? (
+              <p className="ab-num text-xs text-ab-ink-3">
+                <span className="line-through">{formatInr(course.originalPrice)}</span> · {t.course.off(off)}
+              </p>
+            ) : null}
+            <p className="ab-num text-[22px] font-medium text-ab-ink">{free ? t.common.free : formatInr(course.price)}</p>
+          </div>
+          <Link href={href} className={`${btn.secondary} !h-10 !px-4 !text-sm`}>
+            {t.catalog.viewCourse}
           </Link>
         </div>
       </div>
-    </article>
-  );
-}
-
-/** Shown only once a course has real ratings. */
-function Rating({ value }: { value: number }) {
-  if (!value) return null;
-  return (
-    <span className="whitespace-nowrap rounded bg-white px-2 py-[3px] text-xs font-bold text-navy">
-      ★ {value}
-    </span>
+    </Panel>
   );
 }

@@ -1,19 +1,9 @@
 "use client";
 
 import { useState } from "react";
-
+import { btn, field, label } from "@/components/ui";
+import { useT } from "@/lib/i18n/client";
 import { CONTACT } from "@/lib/landing";
-
-const SUPPORT_EMAIL = CONTACT.email;
-const topics = [
-  "Course & batch selection",
-  "Payment",
-  "Lectures & notes",
-  "Refund / Grievance",
-];
-
-const field =
-  "h-11 rounded-lg border border-field px-3 text-[15px] font-normal outline-none focus:border-primary";
 
 /**
  * Visitors are not signed in, so they cannot open a support ticket (tickets
@@ -21,6 +11,8 @@ const field =
  * instead; enrolled students are pointed at tickets in the portal.
  */
 export function ContactForm() {
+  const t = useT();
+  const c = t.contact;
   const [sent, setSent] = useState(false);
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -28,59 +20,37 @@ export function ContactForm() {
     const data = new FormData(event.currentTarget);
     const subject = `[${data.get("topic")}] ${data.get("name")}`;
     const body = `${data.get("message")}\n\n— ${data.get("name")}, ${data.get("phone")}`;
-    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:${CONTACT.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     setSent(true);
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="flex flex-col gap-[18px] rounded-xl border border-border bg-white p-6 shadow-[var(--shadow-card)] sm:p-8"
-    >
-      <h2 className="text-xl font-semibold text-navy">Send us a message</h2>
-      <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
-        Full name
-        <input name="name" required placeholder="Rahul Kumar" className={field} />
+    <form onSubmit={onSubmit} className="flex flex-col gap-5 rounded-[22px] border border-ab-rule bg-ab-panel p-6 sm:p-8">
+      <h2 className="ab-title text-[22px]">{c.formTitle}</h2>
+      <label className={label}>
+        {c.name}
+        <input name="name" required placeholder={c.namePh} className={field} />
       </label>
-      <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
-        Email or mobile number (so we can find your account)
-        <input
-          name="phone"
-          required
-          placeholder="you@gmail.com"
-          className={field}
-        />
+      <label className={label}>
+        {c.reach}
+        <input name="phone" required placeholder={c.reachPh} className={field} />
       </label>
-      <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
-        Topic
-        <select name="topic" className={`${field} bg-white px-2.5`}>
-          {topics.map((topic) => (
+      <label className={label}>
+        {c.topic}
+        <select name="topic" className={field}>
+          {c.topics.map((topic) => (
             <option key={topic}>{topic}</option>
           ))}
         </select>
       </label>
-      <label className="flex flex-col gap-1.5 text-sm font-medium text-navy">
-        Message
-        <textarea
-          name="message"
-          required
-          rows={4}
-          placeholder="How can we help?"
-          className="resize-y rounded-lg border border-field px-3 py-2.5 text-[15px] font-normal outline-none focus:border-primary"
-        />
+      <label className={label}>
+        {c.message}
+        <textarea name="message" required rows={4} placeholder={c.messagePh} className={`${field} h-auto resize-y py-2.5`} />
       </label>
-      <button
-        type="submit"
-        className="h-12 rounded-full bg-primary text-[15px] font-semibold text-white hover:bg-primary-dark"
-      >
-        Send message
+      <button type="submit" className={`${btn.primary} ${btn.lg}`}>
+        {c.send}
       </button>
-      {sent ? (
-        <p className="text-[13px] text-muted">
-          Your email app should open with the message filled in. If it
-          doesn&apos;t, write to {SUPPORT_EMAIL}.
-        </p>
-      ) : null}
+      {sent ? <p className="text-[13px] text-ab-ink-2">{c.sent(CONTACT.email)}</p> : null}
     </form>
   );
 }

@@ -1,7 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PdfBadge } from "@/components/PdfBadge";
-import { NOTES_LIVE, SYLLABUS, type SubjectKey } from "@/lib/landing";
+import { Arrow, Eyebrow, Pill, btn } from "@/components/ui";
+import { subjectName, syllabusFor } from "@/lib/i18n/content";
+import { getT } from "@/lib/i18n/server";
+import { NOTES_LIVE, type SubjectKey } from "@/lib/landing";
 import { getFreeNotes } from "@/lib/notes";
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -10,7 +13,7 @@ export const metadata = {
   description: "Chapter notes and solved PYQs for Bihar Board Class 12 Physics, Chemistry and Maths.",
 };
 
-const SUBJECTS = Object.keys(SYLLABUS) as SubjectKey[];
+const SUBJECTS: SubjectKey[] = ["Physics", "Chemistry", "Maths"];
 
 type NoteRow = {
   id: string;
@@ -35,75 +38,60 @@ async function listNotes() {
 }
 
 export default async function NotesPage() {
+  const { t, locale } = await getT();
+  const n = t.notes;
   const notes = NOTES_LIVE ? await listNotes() : [];
   // The free library from Admin → Free notes; it switches the page on.
   const library = (await getFreeNotes())
     .map((s) => ({ ...s, chapters: s.chapters.filter((c) => c.notes.length) }))
     .filter((s) => s.chapters.length);
   const hasLibrary = library.length > 0;
+  const syllabus = syllabusFor(locale);
+  const row = "flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-[15px] text-ab-ink hover:bg-ab-canvas";
 
   return (
     <>
-      <section className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 pb-14 pt-10 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-14 lg:px-16 lg:py-[72px]">
+      <section className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 pb-14 pt-12 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-14 lg:px-10 lg:py-20">
         <div>
-          <p className="kicker text-clay">Free notes</p>
-          <h1 className="mt-3 font-serif text-[52px] leading-[0.95] tracking-[-0.02em] text-balance sm:text-[84px]">
-            {hasLibrary || NOTES_LIVE ? "Free notes for every chapter." : "Notes are coming soon."}
-          </h1>
-          <p className="mt-5 max-w-[520px] text-lg leading-[1.6] text-taupe">
-            A notes PDF and solved PYQs for every Class 12 chapter, in Hindi and English. They open in a secure
-            viewer on the website and in the app — sign in once and read anywhere.
-          </p>
+          <Eyebrow>{n.eyebrow}</Eyebrow>
+          <h1 className="ab-display mt-4 text-[40px] sm:text-[60px]">{hasLibrary || NOTES_LIVE ? n.titleLive : n.titleSoon}</h1>
+          <p className="mt-5 max-w-[520px] text-[17px] leading-[1.6] text-ab-ink-2">{n.lead}</p>
           {!NOTES_LIVE && !hasLibrary ? (
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/#courses"
-                className="flex h-[52px] items-center justify-center rounded-full bg-saffron px-7 text-base font-bold text-coal hover:bg-coal hover:text-cream"
-              >
-                Join Class 12 Crash Course
+              <Link href="/#courses" className={`${btn.primary} ${btn.lg}`}>
+                {n.join}
               </Link>
-              <Link
-                href="/login"
-                className="flex h-[52px] items-center justify-center rounded-full border border-coal px-7 text-base font-semibold text-coal hover:bg-coal hover:text-cream"
-              >
-                Sign in to get notified
+              <Link href="/login" className={`${btn.secondary} ${btn.lg}`}>
+                {n.notify}
               </Link>
             </div>
           ) : null}
         </div>
-        <div className="relative aspect-[1260/714] overflow-hidden rounded-3xl">
-          <Image
-            src="/images/brand/banner-notes.png"
-            alt="Free notes and solved PYQs"
-            fill
-            priority
-            sizes="(min-width: 1024px) 560px, 100vw"
-            className="object-cover"
-          />
+        <div className="relative aspect-[1260/714] overflow-hidden rounded-2xl bg-ab-tray">
+          <Image src="/images/brand/banner-notes.png" alt={n.bannerAlt} fill priority sizes="(min-width: 1024px) 560px, 100vw" className="object-cover" />
         </div>
       </section>
 
-      <section className="border-t border-sand bg-paper">
-        <div className="mx-auto max-w-[1280px] px-4 py-16 sm:px-6 lg:px-16 lg:py-20">
-          {hasLibrary ? (
-            <div className="grid gap-10 lg:grid-cols-3">
-              {library.map((subject) => (
+      <section className="border-t border-ab-rule bg-ab-panel">
+        <div className="mx-auto grid max-w-[1280px] gap-8 px-4 py-16 sm:px-6 lg:grid-cols-3 lg:px-10 lg:py-20">
+          {hasLibrary
+            ? library.map((subject) => (
                 <div key={subject.id}>
-                  <h2 className="font-serif text-4xl">{subject.name}</h2>
-                  <ol className="mt-4 border-t-2 border-coal">
+                  <h2 className="ab-title border-b border-ab-ink pb-3 text-2xl">{subjectName(subject.name, locale)}</h2>
+                  <ol className="mt-2">
                     {subject.chapters.map((chapter, i) => (
-                      <li key={chapter.id} className="border-b border-sand py-3">
-                        <p className="flex gap-3 text-[15px] font-semibold text-coal">
-                          <span className="w-6 shrink-0 tabular-nums">{i + 1}.</span>
+                      <li key={chapter.id} className="border-b border-ab-rule py-3">
+                        <p className="flex gap-3 px-3 text-[15px] font-medium text-ab-ink">
+                          <span className="ab-num w-6 shrink-0 text-[13px] text-ab-ink-3">{String(i + 1).padStart(2, "0")}</span>
                           {chapter.title}
                         </p>
-                        <ul className="mt-1.5 flex flex-col gap-1 pl-9">
-                          {chapter.notes.map((n) => (
-                            <li key={n.id}>
-                              <Link href={`/notes/free/${n.id}`} className="flex items-center gap-2.5 py-1 text-[15px] text-taupe hover:text-clay">
+                        <ul className="mt-1 pl-6">
+                          {chapter.notes.map((note) => (
+                            <li key={note.id}>
+                              <Link href={`/notes/free/${note.id}`} className={row}>
                                 <PdfBadge size={26} />
-                                <span className="flex-1">{n.title}</span>
-                                <span className="text-sm font-semibold text-clay">Read →</span>
+                                <span className="flex-1">{note.title}</span>
+                                <Arrow className="text-ab-ink-3" />
                               </Link>
                             </li>
                           ))}
@@ -112,51 +100,42 @@ export default async function NotesPage() {
                     ))}
                   </ol>
                 </div>
-              ))}
-            </div>
-          ) : NOTES_LIVE && notes.length ? (
-            <div className="grid gap-10 lg:grid-cols-3">
-              {[...new Set(notes.map((n) => n.subject))].map((subject) => (
-                <div key={subject}>
-                  <h2 className="font-serif text-4xl">{subject}</h2>
-                  <ul className="mt-4 border-t-2 border-coal">
-                    {notes
-                      .filter((n) => n.subject === subject)
-                      .map((n) => (
-                        <li key={n.id} className="border-b border-sand">
-                          <Link href={`/notes/${n.id}`} className="flex items-center gap-3 py-4 hover:text-clay">
-                            <PdfBadge size={36} />
-                            <span className="flex-1 font-semibold">{n.title}</span>
-                            <span className="text-sm font-semibold">Read →</span>
-                          </Link>
+              ))
+            : NOTES_LIVE && notes.length
+              ? [...new Set(notes.map((x) => x.subject))].map((subject) => (
+                  <div key={subject}>
+                    <h2 className="ab-title border-b border-ab-ink pb-3 text-2xl">{subjectName(subject, locale)}</h2>
+                    <ul className="mt-2">
+                      {notes
+                        .filter((x) => x.subject === subject)
+                        .map((note) => (
+                          <li key={note.id} className="border-b border-ab-rule py-1">
+                            <Link href={`/notes/${note.id}`} className={row}>
+                              <PdfBadge size={30} />
+                              <span className="flex-1 font-medium">{note.title}</span>
+                              <Arrow className="text-ab-ink-3" />
+                            </Link>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                ))
+              : SUBJECTS.map((subject) => (
+                  <div key={subject}>
+                    <div className="flex items-center justify-between gap-4 border-b border-ab-ink pb-3">
+                      <h2 className="ab-title text-2xl">{t.common.subjects[subject]}</h2>
+                      <Pill>{t.common.comingSoon}</Pill>
+                    </div>
+                    <ol className="mt-1">
+                      {syllabus[subject].map((chapter, i) => (
+                        <li key={chapter} className="flex gap-3 border-b border-ab-rule px-1 py-3 text-[15px] text-ab-ink-2">
+                          <span className="ab-num w-6 shrink-0 text-[13px] text-ab-ink-3">{String(i + 1).padStart(2, "0")}</span>
+                          {chapter}
                         </li>
                       ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid gap-10 lg:grid-cols-3">
-              {SUBJECTS.map((subject) => (
-                <div key={subject}>
-                  <div className="flex items-baseline justify-between gap-4">
-                    <h2 className="font-serif text-4xl">{subject}</h2>
-                    <span className="rounded-full bg-primary-soft px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-clay">
-                      Coming soon
-                    </span>
+                    </ol>
                   </div>
-                  <ol className="mt-4 border-t-2 border-coal">
-                    {SYLLABUS[subject].map((chapter, i) => (
-                      <li key={chapter} className="flex gap-3 border-b border-sand py-3 text-[15px] text-taupe">
-                        <span className="w-6 shrink-0 font-semibold tabular-nums text-coal">{i + 1}.</span>
-                        {chapter}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
         </div>
       </section>
     </>

@@ -1,27 +1,34 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Arrow, btn } from "@/components/ui";
+import type { Locale } from "@/lib/i18n/config";
+import { courseTitle, subjectName } from "@/lib/i18n/content";
+import type { Dict } from "@/lib/i18n/dictionaries";
 import type { MyCourse } from "@/lib/portal/live";
 
-/** Cards for the student's enrolled courses; each opens its curriculum. */
-export function CourseCards({ courses }: { courses: MyCourse[] }) {
+/** The student's enrolled courses; each opens its curriculum. */
+export function CourseCards({ courses, t, locale }: { courses: MyCourse[]; t: Dict; locale: Locale }) {
   return (
-    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {courses.map((c) => (
         <Link
           key={c.id}
           href={`/my-courses/${c.id}`}
-          className="group flex flex-col overflow-hidden rounded-[22px] border border-sand bg-cream transition hover:-translate-y-0.5 hover:border-coal hover:shadow-[0_18px_40px_rgba(28,24,20,0.1)]"
+          className="group flex flex-col overflow-hidden rounded-2xl border border-ab-rule bg-ab-panel transition-colors hover:border-ab-rule-strong"
         >
-          <div className="relative aspect-[16/8] bg-[linear-gradient(145deg,#e8742a,#b4521a)]">
+          <div className="relative aspect-[16/7] bg-ab-tray">
             {c.art ? <Image src={c.art} alt="" fill sizes="(min-width: 1280px) 380px, 50vw" className="object-cover" /> : null}
           </div>
           <div className="flex flex-1 flex-col p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-clay">{c.subjects.join(" · ") || "Course"}</p>
-            <h3 className="mt-1.5 text-lg font-semibold leading-snug text-coal">{c.title}</h3>
-            <p className="mt-1 text-sm text-taupe">
-              {c.chapters} chapters · {c.lectures ? `${c.lectures} lectures ready` : "lectures coming soon"}
+            <p className="text-[13px] text-ab-ink-3">{c.subjects.map((s) => subjectName(s, locale)).join(" · ") || t.nav.courses}</p>
+            <h3 className="ab-title mt-1 text-lg">{courseTitle(c, locale)}</h3>
+            <p className="ab-num mt-1.5 text-[13px] text-ab-ink-2">
+              {t.common.chapters(c.chapters)} · {c.lectures ? t.portal.lecturesReady(c.lectures) : t.portal.lecturesSoon}
             </p>
-            <span className="mt-auto pt-5 text-sm font-bold text-clay group-hover:underline">Open course →</span>
+            <span className="mt-auto flex items-center gap-1.5 pt-5 text-sm font-medium text-ab-ink">
+              {t.portal.openCourse}
+              <Arrow className="transition-transform group-hover:translate-x-0.5" />
+            </span>
           </div>
         </Link>
       ))}
@@ -30,18 +37,13 @@ export function CourseCards({ courses }: { courses: MyCourse[] }) {
 }
 
 /** Shown when the student has no courses yet. */
-export function NoCourses() {
+export function NoCourses({ t }: { t: Dict }) {
   return (
-    <div className="rounded-[24px] border border-dashed border-sand bg-cream px-6 py-12 text-center">
-      <p className="font-serif text-[34px] leading-none text-coal">No courses yet</p>
-      <p className="mx-auto mt-3 max-w-[420px] text-taupe">
-        Join a Class 12 crash course — Physics, Chemistry or Maths — and it appears here with every lecture.
-      </p>
-      <Link
-        href="/#courses"
-        className="mt-6 inline-flex h-12 items-center rounded-full bg-saffron px-7 text-[15px] font-bold text-coal hover:bg-coal hover:text-cream"
-      >
-        Explore courses
+    <div className="rounded-2xl border border-dashed border-ab-rule-strong px-6 py-12 text-center">
+      <p className="ab-title text-2xl">{t.portal.noCoursesTitle}</p>
+      <p className="mx-auto mt-2 max-w-[420px] text-[15px] text-ab-ink-2">{t.portal.noCoursesBody}</p>
+      <Link href="/courses" className={`${btn.primary} mt-6`}>
+        {t.portal.explore}
       </Link>
     </div>
   );

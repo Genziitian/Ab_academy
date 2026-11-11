@@ -18,9 +18,9 @@ export default async function AccessPage({
   const safe = next && next.startsWith("/admin") ? next : "/admin";
 
   return (
-    <div className="theme-saffron flex min-h-screen flex-1 items-center justify-center px-6 py-10">
+    <div className="ab flex min-h-screen flex-1 items-center justify-center px-6 py-10">
       <div className="w-full max-w-[400px]">
-        <Link href="/" className="mb-10 flex items-center gap-3 text-navy">
+        <Link href="/" className="mb-10 flex items-center gap-3">
           <BrandMark />
           <Wordmark />
         </Link>

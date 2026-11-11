@@ -1,77 +1,78 @@
 import Link from "next/link";
 import { PortalTopbar } from "@/components/portal/PortalTopbar";
+import { Arrow, Pill, btn, field, label } from "@/components/ui";
+import { formatDate } from "@/lib/i18n/config";
+import { getT } from "@/lib/i18n/server";
 import { CONTACT } from "@/lib/landing";
 import { getMyTickets } from "@/lib/portal/live";
 import { createTicketAction } from "./actions";
 
 export const metadata = { title: "Help & support" };
 
-const field =
-  "mt-1.5 w-full rounded-xl border border-sand bg-white px-3.5 text-[15px] text-coal outline-none focus:border-clay focus:ring-2 focus:ring-clay/15";
-const STATUS: Record<string, string> = {
-  open: "bg-[#fff1df] text-[#8a4b0f]",
-  in_progress: "bg-primary-soft text-clay",
-  resolved: "bg-[#e9f6ee] text-[#1d6b3d]",
-  closed: "bg-paper text-taupe",
+const TONE: Record<string, "accent" | "neutral" | "live"> = {
+  open: "accent",
+  in_progress: "accent",
+  resolved: "live",
+  closed: "neutral",
 };
 
 export default async function SupportPage() {
-  const tickets = await getMyTickets();
+  const [tickets, { t, locale }] = await Promise.all([getMyTickets(), getT()]);
+  const p = t.portal;
   return (
     <>
-      <PortalTopbar crumb={`We reply within 2 working days · ${CONTACT.email}`} title="Help & support" />
-      <div className="grid gap-6 px-4 pb-16 pt-6 sm:px-8 lg:grid-cols-[1fr_400px]">
+      <PortalTopbar title={p.support} lead={p.supportLead(CONTACT.email)} />
+      <div className="grid gap-5 px-4 pb-16 pt-5 sm:px-8 lg:grid-cols-[1fr_400px]">
         <section>
-          <h2 className="font-serif text-[30px] leading-none text-coal">Your tickets</h2>
+          <h2 className="mb-3 text-sm text-ab-ink-2">{p.yourTickets}</h2>
           {tickets.length ? (
-            <ul className="mt-4 divide-y divide-sand overflow-hidden rounded-[22px] border border-sand bg-cream">
-              {tickets.map((t) => (
-                <li key={t.id}>
-                  <Link href={`/support/${t.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-paper">
+            <ul className="overflow-hidden rounded-2xl border border-ab-rule">
+              {tickets.map((tk) => (
+                <li key={tk.id} className="border-b border-ab-rule last:border-b-0">
+                  <Link href={`/support/${tk.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-ab-canvas">
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-semibold text-coal">{t.subject}</span>
-                      <span className="text-sm text-taupe">
-                        {t.reference} · {new Date(t.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                      <span className="block truncate font-medium text-ab-ink">{tk.subject}</span>
+                      <span className="ab-num text-[13px] text-ab-ink-3">
+                        {tk.reference} · {formatDate(tk.updatedAt, locale, { day: "numeric", month: "short" })}
                       </span>
                     </span>
-                    <span className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${STATUS[t.status] ?? STATUS.closed}`}>
-                      {t.status.replace("_", " ")}
-                    </span>
+                    <Pill tone={TONE[tk.status] ?? "neutral"}>{p.status[tk.status] ?? tk.status}</Pill>
+                    <Arrow className="hidden text-ab-ink-3 sm:block" />
                   </Link>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-4 rounded-[22px] border border-dashed border-sand bg-cream px-5 py-8 text-center text-taupe">
-              No tickets yet. Ask anything about a course, a payment or your account.
-            </p>
+            <p className="rounded-2xl border border-dashed border-ab-rule-strong px-5 py-10 text-center text-[15px] text-ab-ink-2">{p.noTickets}</p>
           )}
         </section>
 
-        <form action={createTicketAction} className="h-fit space-y-4 rounded-[22px] border border-sand bg-cream p-5">
-          <h2 className="font-serif text-[30px] leading-none text-coal">New ticket</h2>
-          <label className="block text-[13px] font-semibold text-coal">
-            Topic
-            <select name="category" className={`${field} h-11`} defaultValue="content">
-              <option value="content">Lectures or notes</option>
-              <option value="payment">Payment or refund</option>
-              <option value="technical">App or website problem</option>
-              <option value="account">My account</option>
-              <option value="other">Something else</option>
-            </select>
-          </label>
-          <label className="block text-[13px] font-semibold text-coal">
-            Subject
-            <input name="subject" required maxLength={140} placeholder="Video not playing in Chapter 3" className={`${field} h-11`} />
-          </label>
-          <label className="block text-[13px] font-semibold text-coal">
-            Message
-            <textarea name="body" required rows={5} maxLength={4000} placeholder="Tell us what happened." className={`${field} py-2.5`} />
-          </label>
-          <button type="submit" className="h-12 w-full rounded-full bg-clay text-[15px] font-semibold text-white hover:bg-coal">
-            Send ticket
-          </button>
-        </form>
+        <div className="h-fit rounded-[20px] bg-ab-tray p-1.5">
+          <h2 className="px-3 pb-2 pt-1.5 text-sm text-ab-ink-2">{p.newTicket}</h2>
+          <form action={createTicketAction} className="flex flex-col gap-4 rounded-[14px] border border-ab-rule bg-ab-panel p-5">
+            <label className={label}>
+              {p.topic}
+              <select name="category" className={field} defaultValue="content">
+                {Object.entries(p.topics).map(([value, text]) => (
+                  <option key={value} value={value}>
+                    {text}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={label}>
+              {p.subject}
+              <input name="subject" required maxLength={140} placeholder={p.subjectPh} className={field} />
+            </label>
+            <label className={label}>
+              {p.message}
+              <textarea name="body" required rows={5} maxLength={4000} placeholder={p.messagePh} className={`${field} h-auto py-2.5`} />
+            </label>
+            <button type="submit" className={`${btn.primary} w-full`}>
+              {p.sendTicket}
+            </button>
+          </form>
+        </div>
       </div>
     </>
   );

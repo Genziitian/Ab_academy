@@ -3,89 +3,99 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PlayIcon } from "@/components/icons";
 import { PortalTopbar } from "@/components/portal/PortalTopbar";
-import { BATCH_START_LABEL } from "@/lib/landing";
+import { Arrow } from "@/components/ui";
+import { formatDate } from "@/lib/i18n/config";
+import { courseTitle, subjectName } from "@/lib/i18n/content";
+import { getT } from "@/lib/i18n/server";
+import { BATCH_START } from "@/lib/landing";
 import { getCourseCurriculum } from "@/lib/portal/live";
 
 export default async function CourseCurriculumPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;
-  const data = await getCourseCurriculum(courseId);
+  const [data, { t, locale }] = await Promise.all([getCourseCurriculum(courseId), getT()]);
   if (!data) notFound();
+  const p = t.portal;
   const { course, chapters } = data;
   const subjects = [...new Set(chapters.map((c) => c.subject))];
 
   return (
     <>
-      <PortalTopbar crumb={<Link href="/my-courses" className="hover:underline">← My courses</Link>} title={course.title} />
-      <div className="px-4 pb-16 pt-6 sm:px-8">
-        <section className="flex flex-wrap items-center gap-5 rounded-[22px] border border-sand bg-cream p-5">
-          <div className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[linear-gradient(145deg,#e8742a,#b4521a)]">
-            {course.art ? <Image src={course.art} alt="" fill sizes="80px" className="object-cover" /> : null}
+      <PortalTopbar
+        crumb={
+          <Link href="/my-courses" className="hover:text-ab-ink">
+            ← {p.myCourses}
+          </Link>
+        }
+        title={courseTitle(course, locale)}
+      />
+      <div className="px-4 pb-16 pt-5 sm:px-8">
+        <section className="flex flex-wrap items-center gap-5 rounded-[20px] bg-ab-tray p-1.5 pr-5">
+          <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-[14px] bg-ab-panel">
+            {course.art ? <Image src={course.art} alt="" fill sizes="128px" className="object-cover" /> : null}
           </div>
           <dl className="flex flex-wrap gap-x-10 gap-y-3">
             {[
-              [course.chapters, "chapters"],
-              [course.lectures, "lectures ready"],
+              [course.chapters, p.chaptersLabel],
+              [course.lectures, p.lecturesReadyLabel],
             ].map(([v, l]) => (
               <div key={String(l)}>
-                <dd className="font-serif text-[36px] leading-none text-coal">{v}</dd>
-                <dt className="text-sm text-taupe">{l}</dt>
+                <dd className="ab-fig text-[28px] font-medium leading-none text-ab-ink">{v}</dd>
+                <dt className="mt-1 text-sm text-ab-ink-2">{l}</dt>
               </div>
             ))}
           </dl>
           {course.lectures === 0 ? (
-            <p className="w-full rounded-xl bg-paper px-4 py-3 text-sm text-taupe sm:ml-auto sm:w-auto">
-              Lectures appear here from {BATCH_START_LABEL} as they are uploaded.
+            <p className="w-full rounded-[12px] bg-ab-panel px-4 py-3 text-sm text-ab-ink-2 sm:ml-auto sm:w-auto">
+              {p.appearFrom(formatDate(BATCH_START, locale, { day: "numeric", month: "long" }))}
             </p>
           ) : null}
         </section>
 
         {chapters.length === 0 ? (
-          <p className="mt-8 text-taupe">The chapter list for this course is being prepared.</p>
+          <p className="mt-8 text-ab-ink-2">{p.preparing}</p>
         ) : (
-          <div className="mt-8 flex flex-col gap-3">
+          <div className="mt-6 overflow-hidden rounded-2xl border border-ab-rule">
             {chapters.map((chapter, i) => (
-              <details
-                key={chapter.id}
-                open={i === 0}
-                className="group overflow-hidden rounded-[20px] border border-sand bg-cream [&_summary::-webkit-details-marker]:hidden"
-              >
-                <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft font-semibold tabular-nums text-clay">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
+              <details key={chapter.id} open={i === 0} className="group border-b border-ab-rule last:border-b-0">
+                <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 hover:bg-ab-canvas/60">
+                  <span className="ab-num w-7 shrink-0 text-[13px] text-ab-ink-3">{String(i + 1).padStart(2, "0")}</span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold text-coal">{chapter.title}</span>
-                    <span className="text-sm text-taupe">
-                      {subjects.length > 1 ? `${chapter.subject} · ` : ""}
-                      {chapter.lessons.length ? `${chapter.lessons.length} ready` : "Coming soon"}
+                    <span className="block truncate font-medium text-ab-ink">{chapter.title}</span>
+                    <span className="text-sm text-ab-ink-3">
+                      {subjects.length > 1 ? `${subjectName(chapter.subject, locale)} · ` : ""}
+                      {chapter.lessons.length ? p.nReady(chapter.lessons.length) : t.common.comingSoon}
                     </span>
                   </span>
-                  <span className="text-xl text-taupe transition-transform group-open:rotate-45">+</span>
+                  <span className="relative size-3.5 shrink-0 text-ab-ink-3" aria-hidden>
+                    <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-current" />
+                    <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-current transition-transform group-open:scale-y-0" />
+                  </span>
                 </summary>
                 {chapter.lessons.length ? (
-                  <ul className="divide-y divide-sand border-t border-sand">
+                  <ul className="flex flex-col gap-1 px-3 pb-3 sm:pl-14">
                     {chapter.lessons.map((l) => (
                       <li key={l.id}>
-                        <Link href={`/lecture/${l.id}`} className="flex items-center gap-3 px-5 py-3.5 hover:bg-paper">
-                          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-coal text-cream">
-                            <PlayIcon size={13} />
+                        <Link href={`/lecture/${l.id}`} className="group/l flex items-center gap-3 rounded-[12px] bg-ab-canvas px-3 py-3 hover:bg-ab-tray">
+                          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-ab-ink text-white">
+                            <PlayIcon size={12} />
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block truncate font-medium text-coal">{l.title}</span>
-                            <span className="text-sm text-taupe">
-                              {l.minutes ? `${l.minutes} min` : "Video"}
-                              {l.notes ? " · notes" : ""}
+                            <span className="block truncate text-[15px] font-medium text-ab-ink">{l.title}</span>
+                            <span className="ab-num text-[13px] text-ab-ink-3">
+                              {l.minutes ? p.minutes(l.minutes) : p.video}
+                              {l.notes ? ` · ${p.withNotes}` : ""}
                             </span>
                           </span>
-                          <span className="text-sm font-bold text-clay">Watch →</span>
+                          <span className="hidden items-center gap-1 text-sm font-medium text-ab-ink sm:flex">
+                            {t.common.watch}
+                            <Arrow size={12} />
+                          </span>
                         </Link>
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="border-t border-sand px-5 py-4 text-sm text-taupe">
-                    The lecture and practice session for this chapter are coming soon.
-                  </p>
+                  <p className="px-5 pb-4 text-sm text-ab-ink-3 sm:pl-16">{p.chapterSoon}</p>
                 )}
               </details>
             ))}

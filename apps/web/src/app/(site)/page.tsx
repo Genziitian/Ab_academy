@@ -1,32 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Countdown, DaysLeft } from "@/components/landing/Countdown";
 import { PlayBadge } from "@/components/landing/PlayBadge";
 import { ShareButton } from "@/components/landing/ShareButton";
-import { TargetPanel } from "@/components/landing/TargetPanel";
 import { SyllabusExplorer } from "@/components/landing/SyllabusExplorer";
+import { PlanRegister, daysUntil } from "@/components/plan/PlanRegister";
+import { Arrow, Check, Eyebrow, Panel, Pill, SectionHead, btn } from "@/components/ui";
 import { listCourses } from "@/lib/catalog";
-import { type Course, formatInr } from "@/lib/courses";
-import {
-  APP_SCREENSHOT,
-  BATCH_START,
-  BATCH_START_LABEL,
-  EXAM_DATE,
-  FAQS,
-  FEATURES,
-  FOUNDERS,
-  QUOTES,
-  RESULTS,
-  SYLLABUS,
-  TEACHER,
-  TOTAL_CHAPTERS,
-  subjectKey,
-} from "@/lib/landing";
+import { type Course, courseArt, formatInr } from "@/lib/courses";
+import { formatDate } from "@/lib/i18n/config";
+import { courseTitle, subjectName } from "@/lib/i18n/content";
+import { getT } from "@/lib/i18n/server";
+import { requestNow } from "@/lib/now";
+import { APP_SCREENSHOT, BATCH_START, EXAM_DATE, FOUNDERS, QUOTES, RESULTS, SYLLABUS, TEACHER, TOTAL_CHAPTERS, subjectKey } from "@/lib/landing";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const ORDER = ["Physics", "Chemistry", "Maths"];
 
-/** The Class 12 single-subject PCM courses; any Class 12 course until those exist. */
+/** The Class 12 single-subject PCM courses; any paid Class 12 course until those exist. */
 function crashCourses(all: Course[]) {
   const paid = all.filter((c) => c.price > 0 && c.classLevel === 12);
   const pcm = paid
@@ -35,482 +25,341 @@ function crashCourses(all: Course[]) {
   return (pcm.length ? pcm : paid).map((c) => {
     const key = c.subjects.length === 1 ? subjectKey(c.subjects[0]) : null;
     return {
-      slug: c.slug,
-      name: key ?? c.stream ?? c.title,
-      chapters: key ? SYLLABUS[key].length : c.chapters,
-      price: c.price,
+      course: c,
+      key,
+      chapters: key ? SYLLABUS[key].length : (c.chapters ?? 0),
       originalPrice: c.originalPrice && c.originalPrice > c.price ? c.originalPrice : null,
-      title: c.title,
     };
   });
 }
 
-function Initials({ name, className = "" }: { name: string; className?: string }) {
-  const letters = name
+function initialsOf(name: string) {
+  return name
     .replace(/\b(Sir|Ma'am)\b/g, "")
     .trim()
     .split(/\s+/)
     .map((w) => w[0])
     .join("")
     .slice(0, 2);
-  return (
-    <div
-      className={`flex items-center justify-center bg-[repeating-linear-gradient(135deg,#ece4d6_0_10px,#f3ede3_10px_20px)] font-serif text-coal ${className}`}
-      aria-hidden
-    >
-      {letters}
-    </div>
-  );
 }
 
 export default async function HomePage() {
-  const all = await listCourses();
+  const [{ t, locale }, all] = await Promise.all([getT(), listCourses()]);
+  const h = t.home;
+  const now = requestNow();
   const courses = crashCourses(all);
   const demo = all.find((c) => c.price === 0);
-  const from = courses.length ? formatInr(Math.min(...courses.map((c) => c.price))) : null;
-  const exam = EXAM_DATE.toISOString();
-
-  const joinBtn =
-    "flex h-[58px] items-center justify-center whitespace-nowrap rounded-full bg-saffron px-8 text-[17px] font-bold text-coal hover:bg-coal hover:text-cream";
+  const from = courses.length ? formatInr(Math.min(...courses.map((c) => c.course.price))) : null;
+  const startLong = formatDate(BATCH_START, locale, { day: "numeric", month: "long" });
+  const startShort = formatDate(BATCH_START, locale);
+  const teacher = t.common.teacherName;
+  const container = "mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-10";
 
   return (
     <div className="overflow-x-clip">
-      {/* Hero */}
-      <section className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 pb-14 pt-10 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-14 lg:px-16 lg:py-[72px]">
+      {/* Hero: one line of promise on the left, the 60-day plan on the right. */}
+      <section className={`${container} grid items-center gap-12 pb-16 pt-12 sm:pt-16 lg:grid-cols-[1fr_1fr] lg:gap-16 lg:pb-24 lg:pt-24`}>
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-clay sm:text-[13px]">
-            Bihar Board · Class 12 Crash Course
-          </p>
-          <h1 className="mt-5 font-serif text-[56px] leading-[0.94] tracking-[-0.02em] text-balance sm:text-[84px] xl:text-[112px]">
-            The <em className="text-saffron">last 90 days</em> before your boards.
-          </h1>
-          <p className="mt-6 max-w-[540px] text-lg leading-[1.55] text-pretty text-taupe sm:text-xl">
-            Classes start {BATCH_START_LABEL}. Recorded classes you can watch anytime, live doubt sessions with{" "}
-            {TEACHER.name}, chapter notes and board-pattern tests. Physics, Chemistry and Maths
-            {from ? `, from ${from} per subject` : ""}. Taught in Hindi or Hinglish — you choose.
-          </p>
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
-            <Link href="#courses" className={joinBtn}>
-              Join Class 12 Crash Course
+          <Eyebrow>{h.eyebrow}</Eyebrow>
+          <h1 className="ab-display mt-5 max-w-[560px] text-[44px] sm:text-[60px] xl:text-[72px]">{h.title}</h1>
+          <p className="mt-5 max-w-[500px] text-[17px] leading-[1.65] text-ab-ink-2">{h.lead}</p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link href="#courses" className={`${btn.primary} ${btn.lg}`}>
+              {h.ctaCourses}
+              <Arrow />
             </Link>
-            <PlayBadge />
             {demo ? (
-              <Link href={`/course/${demo.slug}`} className="text-center text-[15px] font-semibold text-coal underline decoration-saffron decoration-2 underline-offset-4 hover:text-clay">
-                Watch the free demo
+              <Link href={`/course/${demo.slug}`} className={`${btn.ghost} ${btn.lg}`}>
+                {h.ctaDemo}
               </Link>
             ) : null}
           </div>
+          <ul className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ab-ink-3">
+            {h.meta(startLong, from).map((item, i) => (
+              <li key={item} className="flex items-center gap-3">
+                {i ? <span className="size-1 rounded-full bg-ab-rule-strong" aria-hidden /> : null}
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
-        <div className="min-h-[560px] lg:h-[600px]">
-          <TargetPanel />
+        <PlanRegister start={BATCH_START} exam={EXAM_DATE} now={now} t={t} locale={locale} variant="hero" />
+      </section>
+
+      {/* How it works */}
+      <section id="how" className="scroll-mt-24 border-y border-ab-rule bg-ab-panel">
+        <div className={`${container} grid gap-10 py-20 lg:grid-cols-[1fr_1.35fr] lg:gap-16 lg:py-28`}>
+          <SectionHead eyebrow={`01 · ${h.howEyebrow}`} title={h.howTitle} lead={h.howLead} className="lg:sticky lg:top-28 lg:self-start" />
+          <ol className="border-t border-ab-ink">
+            {h.features.map(([title, text], i) => (
+              <li key={title} className="grid grid-cols-[48px_1fr] gap-x-4 border-b border-ab-rule py-7 sm:grid-cols-[64px_1fr]">
+                <span className="ab-num pt-1 text-sm text-ab-ink-3">{pad(i + 1)}</span>
+                <div>
+                  <h3 className="ab-title text-[22px] sm:text-2xl">{title}</h3>
+                  <p className="mt-2 max-w-[520px] text-base leading-[1.6] text-ab-ink-2">{text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
-      {/* Countdown */}
-      <section className="bg-coal text-cream">
-        <div className="mx-auto grid max-w-[1280px] items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:gap-12 lg:px-16">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-saffron sm:text-[13px]">Board exams begin in</p>
-            <p className="mt-2 text-base leading-[1.5] text-mist">
-              Bihar Board Class 12, expected in the first week of February 2027.
-            </p>
-          </div>
-          <Countdown target={exam} />
-          <div className="lg:flex lg:justify-end">
-            <Link
-              href="#courses"
-              className="flex h-[52px] w-full items-center justify-center rounded-full bg-saffron px-7 text-base font-bold text-coal hover:bg-cream sm:w-fit"
-            >
-              Join before {BATCH_START_LABEL.replace("November", "Nov")}
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 01 How it works */}
-      <section id="how" className="mx-auto max-w-[1280px] scroll-mt-24 px-4 py-20 sm:px-6 lg:px-16 lg:pb-28 lg:pt-32">
-        <div className="grid items-end gap-6 lg:grid-cols-2 lg:gap-14">
-          <div>
-            <p className="kicker text-clay">01. How it works</p>
-            <h2 className="mt-3 font-serif text-[48px] leading-[0.98] tracking-[-0.02em] text-balance sm:text-[64px] lg:text-[84px]">
-              Watch anytime. Ask live.
-            </h2>
-          </div>
-          <p className="max-w-[520px] text-lg leading-[1.6] text-pretty text-taupe sm:text-[19px]">
-            Every chapter is a recorded class you can pause, rewind and rewatch. When you’re stuck, bring the
-            question to a live doubt session and get it solved on the spot.
-          </p>
-        </div>
-        <div className="mt-12 grid border-t-2 border-coal sm:grid-cols-2 lg:mt-14 lg:grid-cols-4">
-          {FEATURES.map(([title, text], i) => (
-            <div key={title} className="border-b border-sand py-7 pr-7 lg:border-b-0">
-              <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-clay">{pad(i + 1)}</p>
-              <h3 className="mt-2.5 font-serif text-[34px] leading-[1.05] sm:text-[40px]">{title}</h3>
-              <p className="mt-2.5 text-base leading-[1.6] text-taupe">{text}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-14 lg:mt-[72px]">
+      {/* Syllabus */}
+      <section className={`${container} py-20 lg:py-28`}>
+        <SectionHead eyebrow={`02 · ${h.syllabusEyebrow}`} title={h.syllabusTitle} lead={h.syllabusHint} />
+        <div className="mt-10">
           <SyllabusExplorer />
         </div>
       </section>
 
-      {/* 02 Courses */}
-      <section id="courses" className="scroll-mt-20 bg-coal text-cream">
-        <div className="mx-auto max-w-[1280px] px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
-          <div className="grid items-end gap-6 lg:grid-cols-[1.3fr_1fr] lg:gap-14">
-            <div>
-              <p className="kicker text-saffron">02. Courses</p>
-              <h2 className="mt-3 font-serif text-[48px] leading-[0.98] tracking-[-0.02em] text-balance sm:text-[64px] lg:text-[84px]">
-                One subject. One crash course.
-              </h2>
-            </div>
-            <p className="text-lg leading-[1.6] text-mist">
-              Take only what you need. Every subject is its own Class 12 crash course
-              {from ? `, starting at ${from}` : ""}.
-            </p>
+      {/* Courses */}
+      <section id="courses" className="scroll-mt-20 border-t border-ab-rule">
+        <div className={`${container} py-20 lg:py-28`}>
+          <div className="grid items-end gap-6 lg:grid-cols-[1.2fr_1fr]">
+            <SectionHead eyebrow={`03 · ${h.coursesEyebrow}`} title={h.coursesTitle} />
+            <p className="max-w-[460px] text-[17px] leading-[1.6] text-ab-ink-2 lg:justify-self-end">{h.coursesLead(from)}</p>
           </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:mt-14 lg:grid-cols-3">
-            {courses.map((c) => (
-              <article
-                key={c.slug}
-                className="flex flex-col rounded-[24px] border-2 border-coal bg-cream p-6 text-coal shadow-[6px_6px_0_#e8742a] transition-transform hover:-translate-y-1 sm:p-7"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="rounded-lg border border-[#c9dcf7] bg-[#eef4fd] px-2.5 py-1 text-xs font-bold uppercase tracking-[0.06em] text-[#1f4f8f]">
-                      Class 12
-                    </span>
-                    <span className="rounded-lg border border-sand bg-paper px-2.5 py-1 text-xs font-bold uppercase tracking-[0.06em] text-coal">
-                      Bihar Board
-                    </span>
+          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {courses.map(({ course: c, key, chapters, originalPrice }) => {
+              const name = key ? subjectName(key, locale) : courseTitle(c, locale);
+              const art = courseArt(c);
+              return (
+                <Panel as="article" key={c.slug} className="group flex flex-col overflow-hidden transition-colors hover:border-ab-rule-strong">
+                  <div className="relative aspect-[16/7] bg-ab-tray">
+                    {art ? <Image src={art} alt="" fill sizes="(min-width: 1024px) 400px, 100vw" className="object-cover" /> : null}
+                    <div className="absolute inset-x-4 top-4 flex items-start justify-between">
+                      <Pill tone="ink" className="!h-6 !text-xs">{h.batch}</Pill>
+                      <ShareButton path={`/course/${c.slug}`} title={courseTitle(c, locale)} />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="hidden rounded-md bg-[#c8321e] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] text-white sm:inline">
-                      Batch 2027
-                    </span>
-                    <ShareButton path={`/course/${c.slug}`} title={c.title} />
-                  </div>
-                </div>
-                <h3 className="mt-5 text-[26px] font-bold leading-tight tracking-[-0.01em]">{c.name} Crash Course</h3>
-                <p className="mt-2 text-[15px] leading-[1.55] text-taupe">
-                  Every Class 12 {c.name} chapter: one recorded lecture and one practice session, with live doubt
-                  sessions.
-                </p>
-                <div className="mb-6 mt-4 flex flex-wrap gap-1.5">
-                  {[c.chapters ? `${c.chapters} chapters` : null, "Lecture + practice", `Live doubts with ${TEACHER.name}`]
-                    .filter(Boolean)
-                    .map((t) => (
-                      <span key={t} className="rounded-lg border border-sand px-2.5 py-1 text-[13px] font-semibold text-coal">
-                        {t}
-                      </span>
-                    ))}
-                </div>
-                <div className="mt-auto flex items-end justify-between gap-4 border-t border-sand pt-5">
-                  <div className="text-[12px] font-bold uppercase tracking-[0.1em]">
-                    <p className="text-taupe">
-                      Starts{" "}
-                      {BATCH_START.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                  <div className="flex flex-1 flex-col p-6">
+                    <p className="text-[13px] text-ab-ink-3">
+                      {t.common.classN(12)} · {t.common.board}
                     </p>
-                    <p className="mt-1.5 text-clay">Language: Hindi / Hinglish</p>
+                    <h3 className="ab-title mt-1.5 text-2xl">{key ? t.common.crashCourse(name) : name}</h3>
+                    <p className="mt-2.5 text-[15px] leading-[1.6] text-ab-ink-2">{h.cardBody(name)}</p>
+                    <ul className="mt-5 flex flex-col gap-2 text-[15px] text-ab-ink">
+                      {[chapters ? t.common.chapters(chapters) : null, h.lecturePractice, `${h.liveDoubts} · ${teacher}`]
+                        .filter(Boolean)
+                        .map((line) => (
+                          <li key={line} className="flex items-center gap-2.5">
+                            <Check className="text-ab-accent" />
+                            {line}
+                          </li>
+                        ))}
+                    </ul>
+                    <div className="min-h-6 flex-1" />
+                    <div className="flex items-end justify-between gap-4 border-t border-ab-rule pt-5">
+                      <div className="text-[13px] leading-[1.5] text-ab-ink-3">
+                        <p>{h.starts(startShort)}</p>
+                        <p>{t.common.hindiOrHinglish}</p>
+                      </div>
+                      <div className="text-right">
+                        {originalPrice ? <p className="ab-num text-sm text-ab-ink-3 line-through">{formatInr(originalPrice)}</p> : null}
+                        <p className="ab-fig text-[32px] font-medium leading-none text-ab-ink">{formatInr(c.price)}</p>
+                      </div>
+                    </div>
+                    <div className="mt-5 grid grid-cols-2 gap-2">
+                      <Link href={`/course/${c.slug}`} className={btn.secondary}>
+                        {t.common.details}
+                      </Link>
+                      <Link href={`/checkout/${c.slug}`} className={btn.primary}>
+                        {t.common.enroll}
+                      </Link>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-taupe">Only</p>
-                    <p className="font-serif text-[44px] leading-none">{formatInr(c.price)}</p>
-                    {c.originalPrice ? (
-                      <p className="text-sm font-semibold text-taupe line-through">{formatInr(c.originalPrice)}</p>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="mt-5 grid grid-cols-[auto_1fr] gap-2.5">
-                  <Link
-                    href={`/course/${c.slug}`}
-                    className="flex h-12 items-center justify-center rounded-xl border-2 border-sand px-5 text-[15px] font-bold hover:border-coal"
-                  >
-                    Details
-                  </Link>
-                  <Link
-                    href={`/checkout/${c.slug}`}
-                    className="flex h-12 items-center justify-center rounded-xl bg-coal text-[16px] font-bold text-cream hover:bg-clay"
-                  >
-                    Enroll now
-                  </Link>
-                </div>
-              </article>
-            ))}
+                </Panel>
+              );
+            })}
+          </div>
+
+          {/* Everything included */}
+          <div className="mt-6 grid gap-8 rounded-2xl border border-ab-rule bg-ab-panel p-6 sm:p-8 lg:grid-cols-[1fr_1.4fr] lg:items-center">
+            <div>
+              <h3 className="ab-title text-2xl sm:text-[28px]">{h.includedTitle}</h3>
+              <p className="mt-2 text-[15px] leading-[1.6] text-ab-ink-2">{h.includedLead}</p>
+            </div>
+            <ul className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+              {h.includedItems.map((item) => (
+                <li key={item} className="flex items-center gap-2.5 border-b border-ab-rule pb-3 text-[15px] text-ab-ink">
+                  <Check className="text-ab-accent" />
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
 
-      {/* Everything included */}
-      <section className="mx-auto grid max-w-[1280px] gap-6 px-4 pt-20 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-16 lg:pt-28">
-        <div className="relative overflow-hidden rounded-[30px] border-2 border-coal bg-saffron p-8 text-coal shadow-[8px_8px_0_#1c1814] sm:p-12">
-          <div aria-hidden className="absolute -right-16 -top-16 size-56 rounded-full border-[18px] border-white/25" />
-          <h2 className="relative font-serif text-[44px] leading-[0.98] tracking-[-0.02em] sm:text-[60px]">
-            Everything you need for the boards.
-          </h2>
-          <p className="relative mt-5 max-w-[460px] text-lg font-semibold leading-[1.5] text-coal/80">
-            One course per subject, built around the Bihar Board pattern — so the exam holds no surprises.
-          </p>
-          <div className="relative mt-8 flex flex-wrap gap-3">
-            {[
-              "Recorded classes",
-              "Live doubts",
-              "Practice every chapter",
-              "Chapter notes",
-              "Board-pattern tests",
-              "Hindi or Hinglish",
-              "App + website",
-              "Exam revision",
-            ].map((t) => (
-              <span key={t} className="rounded-full border-2 border-coal bg-cream px-4 py-2 text-[15px] font-bold shadow-[3px_3px_0_#1c1814]">
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-        <div className="relative flex flex-col justify-between overflow-hidden rounded-[30px] border-2 border-coal bg-coal p-8 text-cream shadow-[8px_8px_0_#e8742a] sm:p-12">
-          <div
-            aria-hidden
-            className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(#f7f3ec_1px,transparent_1px),linear-gradient(90deg,#f7f3ec_1px,transparent_1px)] [background-size:44px_44px]"
-          />
-          <h2 className="relative max-w-[440px] font-serif text-[44px] leading-[0.98] tracking-[-0.02em] sm:text-[60px]">
-            Taught personally by {TEACHER.name}.
-          </h2>
-          <p className="relative mt-5 max-w-[440px] text-lg leading-[1.5] text-mist">
-            From basics to board-ready, in the language you think in. Every class recorded and every doubt answered by
-            him.
-          </p>
-          <dl className="relative mt-10 grid grid-cols-3 gap-3 border-t border-white/15 pt-6">
-            {[
-              [`${TEACHER.years}`, "years teaching"],
-              [`${TOTAL_CHAPTERS}`, "chapters covered"],
-              ["2", "languages to choose"],
-            ].map(([v, l]) => (
-              <div key={l}>
-                <dd className="font-serif text-[48px] leading-none text-saffron sm:text-[60px]">{v}</dd>
-                <dt className="mt-1 text-sm text-mist">{l}</dt>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </section>
-
-      {/* 03 Teacher */}
-      <section className="mx-auto grid max-w-[1280px] gap-10 px-4 py-20 sm:px-6 lg:grid-cols-[440px_1fr] lg:gap-16 lg:px-16 lg:py-28">
-        {TEACHER.photo ? (
-          <div className="relative h-[420px] overflow-hidden rounded-3xl lg:h-[560px]">
-            <Image src={TEACHER.photo} alt={TEACHER.name} fill sizes="440px" className="object-cover" />
-          </div>
-        ) : (
-          <Initials name={TEACHER.name} className="h-[360px] rounded-3xl text-[140px] lg:h-[560px]" />
-        )}
-        <div className="flex flex-col">
-          <p className="kicker text-clay">03. Your teacher</p>
-          <h2 className="mt-3 font-serif text-[80px] leading-[0.9] tracking-[-0.02em] sm:text-[104px] lg:text-[128px]">
-            {TEACHER.name}
-          </h2>
-          <p className="mt-4 text-[15px] font-bold uppercase tracking-[0.14em] text-clay">{TEACHER.subjects}</p>
-          <p className="mt-6 max-w-[560px] text-lg leading-[1.6] text-pretty text-taupe sm:text-[19px]">{TEACHER.bio}</p>
-          <div className="mt-10 grid grid-cols-3 border-t-2 border-coal lg:mt-auto">
-            {[
-              [String(TEACHER.years), "years of teaching experience", true],
-              ["3", "subjects, one teacher", false],
-              [String(TOTAL_CHAPTERS), "Class 12 chapters covered", false],
-            ].map(([n, label, accent], i) => (
-              <div key={label as string} className={`pt-6 ${i ? "border-l border-sand pl-4 sm:pl-6" : "pr-4 sm:pr-6"}`}>
-                <p className={`font-serif text-[48px] leading-none sm:text-[72px] ${accent ? "text-saffron" : ""}`}>{n}</p>
-                <p className="mt-1.5 text-sm text-taupe sm:text-[15px]">{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 04 Results — shown only with real entries */}
-      {RESULTS.length ? (
-        <section id="results" className="bg-saffron text-coal">
-          <div className="mx-auto max-w-[1280px] px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
-            <p className="kicker">04. Results</p>
-            <h2 className="mt-3 font-serif text-[56px] leading-[0.95] tracking-[-0.02em] sm:text-[96px]">The result wall.</h2>
-            <div className="mt-12 grid grid-cols-2 gap-3 lg:grid-cols-4">
-              {RESULTS.map((r) => (
-                <div key={r.name + r.score} className="rounded-[18px] bg-cream p-6">
-                  <p className="font-serif text-[48px] leading-none sm:text-[64px]">{r.score}</p>
-                  <p className="mt-3.5 text-base font-bold">{r.name}</p>
-                  <p className="mt-0.5 text-sm opacity-75">{r.meta}</p>
+      {/* Teacher */}
+      <section className="border-y border-ab-rule bg-ab-panel">
+        <div className={`${container} grid gap-10 py-20 lg:grid-cols-[420px_1fr] lg:gap-16 lg:py-28`}>
+          {TEACHER.photo ? (
+            <div className="relative aspect-[888/931] overflow-hidden rounded-2xl bg-ab-tray">
+              <Image src={TEACHER.photo} alt={teacher} fill sizes="(min-width: 1024px) 420px, 100vw" className="object-cover" />
+            </div>
+          ) : (
+            <div className="ab-fig flex aspect-square items-center justify-center rounded-2xl bg-ab-tray text-[120px] text-ab-ink-3">
+              {initialsOf(TEACHER.name)}
+            </div>
+          )}
+          <div className="flex flex-col">
+            <Eyebrow>04 · {h.teacherEyebrow}</Eyebrow>
+            <h2 className="ab-display mt-3 text-[52px] sm:text-[72px] lg:text-[88px]">{teacher}</h2>
+            <p className="mt-3 text-[15px] font-medium text-ab-accent-ink">{h.teacherSubjects}</p>
+            <p className="mt-6 max-w-[560px] text-lg leading-[1.65] text-ab-ink-2">{h.teacherBio}</p>
+            <dl className="mt-10 grid grid-cols-3 border-t border-ab-ink lg:mt-auto">
+              {[
+                [String(TEACHER.years), h.teacherYears],
+                ["3", h.teacherSubjectsLabel],
+                [String(TOTAL_CHAPTERS), h.teacherChapters],
+              ].map(([n, l], i) => (
+                <div key={l} className={`pt-5 ${i ? "border-l border-ab-rule pl-4 sm:pl-6" : "pr-4"}`}>
+                  <dd className="ab-fig text-[40px] font-medium leading-none sm:text-[56px]">{n}</dd>
+                  <dt className="mt-2 text-sm text-ab-ink-3">{l}</dt>
                 </div>
               ))}
-            </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      {/* Results and reviews — shown only with real entries (lib/landing.ts). */}
+      {RESULTS.length ? (
+        <section className={`${container} py-20`}>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {RESULTS.map((r) => (
+              <Panel key={r.name + r.score} className="p-6">
+                <p className="ab-fig text-5xl font-medium">{r.score}</p>
+                <p className="mt-3 font-medium">{r.name}</p>
+                <p className="text-sm text-ab-ink-3">{r.meta}</p>
+              </Panel>
+            ))}
           </div>
         </section>
       ) : null}
-
-      {/* Student reviews — shown only with real quotes (lib/landing.ts) */}
       {QUOTES.length ? (
-        <section className="border-y-2 border-coal bg-paper py-20 lg:py-28">
-          <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-16">
-            <p className="kicker text-clay">Students</p>
-            <h2 className="mt-3 font-serif text-[44px] leading-[0.98] tracking-[-0.02em] sm:text-[72px]">
-              Reviews &amp; shared experiences.
-            </h2>
-          </div>
-          <div className="marquee no-scrollbar mt-12 overflow-hidden">
-            <div className="marquee-track flex w-max gap-6 px-3">
-              {[...QUOTES, ...QUOTES].map((q, i) => (
-                <figure
-                  key={`${q.name}-${i}`}
-                  aria-hidden={i >= QUOTES.length}
-                  className="m-0 flex w-[320px] shrink-0 flex-col rounded-[24px] border-2 border-coal bg-cream p-7 shadow-[6px_6px_0_#1c1814] sm:w-[420px]"
-                >
-                  <blockquote className="text-[18px] font-semibold leading-[1.5] text-coal">“{q.text}”</blockquote>
-                  <figcaption className="mt-auto flex items-center gap-3 border-t border-sand pt-5">
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-clay bg-primary-soft font-serif text-2xl text-clay">
-                      {q.name.charAt(0)}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <strong className="block truncate text-coal">{q.name}</strong>
-                      <span className="block truncate text-sm text-taupe">{q.meta}</span>
-                    </span>
-                    {q.rating ? (
-                      <span className="shrink-0 text-lg tracking-[0.05em] text-[#e8a61c]" aria-label={`${q.rating} out of 5`}>
-                        {"★".repeat(Math.round(q.rating))}
-                      </span>
-                    ) : null}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
+        <section className={`${container} grid gap-4 py-20 md:grid-cols-2 lg:grid-cols-3`}>
+          {QUOTES.map((q) => (
+            <Panel as="article" key={q.name} className="flex flex-col p-6">
+              <blockquote className="text-[17px] leading-[1.6] text-ab-ink">“{q.text}”</blockquote>
+              <p className="mt-auto pt-5 text-sm text-ab-ink-3">
+                <strong className="font-medium text-ab-ink">{q.name}</strong> · {q.meta}
+              </p>
+            </Panel>
+          ))}
         </section>
       ) : null}
 
       {/* The app */}
-      <section id="app" className="mx-auto max-w-[1280px] scroll-mt-24 px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
-        <div className="grid items-center gap-12 rounded-[28px] bg-coal p-8 text-cream sm:p-12 lg:grid-cols-[1.2fr_1fr] lg:p-16">
-          <div>
-            <p className="kicker text-saffron">{RESULTS.length ? "06" : "04"}. The app</p>
-            <h2 className="mt-3 font-serif text-[44px] leading-none tracking-[-0.02em] sm:text-[72px]">
-              Your classroom fits in your pocket.
-            </h2>
-            <p className="mt-4 max-w-[480px] text-lg leading-[1.6] text-mist">
-              Sign in with Google, watch recorded classes, join live doubt sessions and read notes, all on the same
-              account as the website.
-            </p>
+      <section id="app" className={`${container} scroll-mt-24 py-20 lg:py-28`}>
+        <div className="grid items-center gap-10 rounded-[24px] bg-ab-tray p-1.5 lg:grid-cols-[1.25fr_1fr]">
+          <div className="p-6 sm:p-10 lg:p-12">
+            <Eyebrow>05 · {h.appEyebrow}</Eyebrow>
+            <h2 className="ab-display mt-3 text-[34px] sm:text-[44px]">{h.appTitle}</h2>
+            <p className="mt-4 max-w-[480px] text-[17px] leading-[1.6] text-ab-ink-2">{h.appLead}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <PlayBadge tone="light" />
-              <Link href="#courses" className="flex h-[58px] items-center justify-center rounded-full bg-saffron px-7 text-base font-bold text-coal hover:bg-cream">
-                Join Class 12 Crash Course
+              <PlayBadge />
+              <Link href="#courses" className={`${btn.secondary} !h-12`}>
+                {t.nav.join}
               </Link>
             </div>
           </div>
-          <div className="relative mx-auto aspect-[9/19] w-[250px] overflow-hidden rounded-[40px] border-[6px] border-coal-line bg-coal-soft sm:w-[280px]">
-            <Image src={APP_SCREENSHOT} alt="The AB Academy app home screen" fill sizes="280px" className="object-cover object-top" />
+          <div className="flex justify-center rounded-[18px] border border-ab-rule bg-ab-panel px-6 pt-10">
+            <div className="relative aspect-[540/1000] w-[240px] overflow-hidden rounded-t-[32px] border-x-[6px] border-t-[6px] border-ab-ink bg-ab-ink sm:w-[260px]">
+              <Image src={APP_SCREENSHOT} alt={h.appAlt} fill sizes="260px" className="object-cover object-top" />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 08 About */}
-      <section id="about" className="mx-auto max-w-[1280px] scroll-mt-24 px-4 pb-20 sm:px-6 lg:px-16 lg:pb-28">
-        <div className="grid gap-10 border-t-2 border-coal pt-8 lg:grid-cols-[1fr_1.3fr] lg:gap-16">
-          <div>
-            <p className="kicker text-clay">{RESULTS.length ? "07" : "05"}. About us</p>
-            <h2 className="mt-3 font-serif text-[48px] leading-none tracking-[-0.02em] sm:text-[72px]">Built in Bihar, for Bihar Board.</h2>
-            <p className="mt-4 max-w-[460px] text-lg leading-[1.6] text-taupe">
-              A teacher with {TEACHER.years} years in the classroom and a developer, building the crash course they wish
-              students had: affordable, focused and in your language.
-            </p>
-          </div>
+      {/* About */}
+      <section id="about" className={`${container} scroll-mt-24 pb-20 lg:pb-28`}>
+        <div className="grid gap-10 border-t border-ab-ink pt-10 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
+          <SectionHead eyebrow={`06 · ${h.aboutEyebrow}`} title={h.aboutTitle} lead={h.aboutLead(TEACHER.years)} />
           <div className="grid grid-cols-2 gap-4 sm:gap-5">
-            {FOUNDERS.map((f) => (
-              <div key={f.name}>
-                {f.photo ? (
-                  <div className="relative aspect-square overflow-hidden rounded-[18px] bg-sand">
-                    <Image src={f.photo} alt={f.name} fill sizes="(min-width: 1024px) 320px, 45vw" className="object-cover object-top" />
-                  </div>
-                ) : (
-                  <Initials name={f.name} className="aspect-square rounded-[18px] text-[72px] sm:text-[96px]" />
-                )}
-                <p className="mt-4 font-serif text-[28px] leading-none sm:text-4xl">{f.name}</p>
-                <p className="mt-1.5 text-xs font-bold uppercase tracking-[0.12em] text-clay sm:text-[13px]">{f.role}</p>
-              </div>
+            {FOUNDERS.map((f) => {
+              const name = f.name === "Ajit Sir" ? teacher : f.name;
+              return (
+                <div key={f.name}>
+                  {f.photo ? (
+                    <div className="relative aspect-square overflow-hidden rounded-2xl bg-ab-tray">
+                      <Image src={f.photo} alt={name} fill sizes="(min-width: 1024px) 320px, 45vw" className="object-cover object-top" />
+                    </div>
+                  ) : (
+                    <div className="ab-fig flex aspect-square items-center justify-center rounded-2xl border border-ab-rule bg-ab-panel text-[64px] text-ab-ink-3 sm:text-[88px]" aria-hidden>
+                      {initialsOf(f.name)}
+                    </div>
+                  )}
+                  <p className="ab-title mt-4 text-xl sm:text-2xl">{name}</p>
+                  <p className="mt-1 text-sm text-ab-ink-3">{h.roles[f.role] ?? f.role}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="scroll-mt-24 border-t border-ab-rule bg-ab-panel">
+        <div className={`${container} grid gap-10 py-20 lg:grid-cols-[1fr_1.4fr] lg:gap-16 lg:py-28`}>
+          <SectionHead eyebrow={`07 · ${h.faqEyebrow}`} title={h.faqTitle} />
+          <div className="border-t border-ab-ink">
+            {h.faqs.map(([q, a], i) => (
+              <details key={q} open={i === 0} className="group border-b border-ab-rule">
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-5 text-[17px] font-medium text-ab-ink sm:text-lg">
+                  {q}
+                  <span className="relative mt-1.5 size-4 shrink-0 text-ab-ink-3" aria-hidden>
+                    <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-current" />
+                    <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-current transition-transform group-open:scale-y-0" />
+                  </span>
+                </summary>
+                <p className="max-w-[640px] pb-6 pr-10 text-base leading-[1.65] text-ab-ink-2">{a}</p>
+              </details>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 09 FAQ */}
-      <section id="faq" className="mx-auto grid max-w-[1280px] scroll-mt-24 gap-10 px-4 pb-20 sm:px-6 lg:grid-cols-[1fr_1.4fr] lg:gap-16 lg:px-16 lg:pb-28">
-        <div>
-          <p className="kicker text-clay">{RESULTS.length ? "08" : "06"}. Questions</p>
-          <h2 className="mt-3 font-serif text-[48px] leading-none tracking-[-0.02em] sm:text-[72px]">Asked often.</h2>
-        </div>
-        <div className="border-t-2 border-coal">
-          {FAQS.map(([q, a], i) => (
-            <details key={q} open={i === 0} className="group border-b border-sand">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-5 py-6 text-lg font-semibold sm:text-xl [&::-webkit-details-marker]:hidden">
-                {q}
-                <span className="font-serif text-[34px] leading-none text-clay group-open:hidden">+</span>
-                <span className="hidden font-serif text-[34px] leading-none text-clay group-open:inline">−</span>
-              </summary>
-              <p className="pb-6 pr-6 text-[17px] leading-[1.6] text-taupe sm:pr-16">{a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="overflow-hidden bg-saffron text-coal">
-        <div className="mx-auto max-w-[1280px] px-4 py-20 sm:px-6 lg:px-16 lg:py-28">
-          <div className="grid items-end gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] sm:text-[13px]">
-                Classes start Monday, {BATCH_START_LABEL}
-              </p>
-              <h2 className="mt-4 font-serif text-[60px] leading-[0.92] tracking-[-0.02em] text-balance sm:text-[96px] xl:text-[120px]">
-                Make the last <em>90 days</em> count.
-              </h2>
-              <div className="mt-9 flex items-end gap-7">
+      {/* Final call to action */}
+      <section className={`${container} py-16 lg:py-20`}>
+        <div className="grid gap-10 rounded-[28px] bg-ab-ink p-7 text-white sm:p-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:p-14">
+          <div className="flex flex-col">
+            <p className="ab-eyebrow !text-white/50">{h.finalEyebrow(startLong)}</p>
+            <h2 className="ab-display mt-4 text-[40px] sm:text-[56px]">{h.finalTitle}</h2>
+            <dl className="mt-10 flex gap-10 border-t border-white/15 pt-6 lg:mt-auto">
+              <div>
+                <dd className="ab-fig text-[44px] font-medium leading-none text-ab-accent">{daysUntil(EXAM_DATE, now)}</dd>
+                <dt className="mt-2 text-sm text-white/60">{h.daysToBoards}</dt>
+              </div>
+              {from ? (
                 <div>
-                  <p className="font-serif text-[52px] leading-[0.9] tabular-nums sm:text-[64px]">
-                    <DaysLeft target={exam} />
-                  </p>
-                  <p className="mt-3.5 text-xs font-bold uppercase tracking-[0.14em]">Days to boards</p>
+                  <dd className="ab-fig text-[44px] font-medium leading-none">{from}</dd>
+                  <dt className="mt-2 text-sm text-white/60">{h.perSubjectFrom}</dt>
                 </div>
-                {from ? (
-                  <>
-                    <div className="h-14 w-px bg-coal/30" />
-                    <div>
-                      <p className="font-serif text-[52px] leading-[0.9] sm:text-[64px]">{from}</p>
-                      <p className="mt-3.5 text-xs font-bold uppercase tracking-[0.14em]">Per subject, from</p>
-                    </div>
-                  </>
-                ) : null}
-              </div>
-            </div>
-            <div className="rounded-[28px] bg-coal p-6 text-cream sm:p-8">
-              <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-dust">Choose your crash course</p>
-              <div className="mt-3 flex flex-col">
-                {courses.map((c) => (
-                  <Link
-                    key={c.slug}
-                    href={`/course/${c.slug}`}
-                    className="flex items-center justify-between gap-4 border-b border-coal-line py-[18px] text-cream hover:text-saffron"
-                  >
-                    <span className="font-serif text-[30px] leading-none sm:text-4xl">{c.name}</span>
-                    <span className="shrink-0 text-base font-bold">from {formatInr(c.price)} →</span>
-                  </Link>
-                ))}
-              </div>
-              <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
-                <Link href="#courses" className="flex h-[58px] flex-1 items-center justify-center rounded-full bg-saffron px-6 text-base font-bold text-coal hover:bg-cream">
-                  Join Class 12 Crash Course
-                </Link>
-                <PlayBadge tone="light" />
-              </div>
-            </div>
+              ) : null}
+            </dl>
           </div>
-
+          <div className="rounded-[18px] border border-white/10 bg-white/[0.04] p-2">
+            <p className="px-4 pb-1 pt-3 text-sm text-white/55">{h.choose}</p>
+            {courses.map(({ course: c, key }) => (
+              <Link
+                key={c.slug}
+                href={`/course/${c.slug}`}
+                className="flex items-center justify-between gap-4 rounded-xl px-4 py-4 transition-colors hover:bg-white/[0.06]"
+              >
+                <span className="ab-title text-[22px] sm:text-2xl">{key ? subjectName(key, locale) : courseTitle(c, locale)}</span>
+                <span className="ab-num flex shrink-0 items-center gap-2 text-[15px] text-white/75">
+                  {h.from(formatInr(c.price))}
+                  <Arrow />
+                </span>
+              </Link>
+            ))}
+            <Link href="#courses" className="mt-2 flex h-12 items-center justify-center gap-2 rounded-[10px] bg-white text-[15px] font-medium text-ab-ink hover:bg-ab-canvas">
+              {t.nav.join}
+              <Arrow />
+            </Link>
+          </div>
         </div>
       </section>
     </div>
