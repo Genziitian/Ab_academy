@@ -134,7 +134,7 @@ export default async function HomePage() {
                   </div>
                   <div className="flex flex-1 flex-col p-6">
                     <p className="text-[13px] text-ab-ink-3">
-                      {t.common.classN(12)} · {t.common.board}
+                      {t.common.classN(12)} · {t.common.hindiOrHinglish}
                     </p>
                     <h3 className="ab-title mt-1.5 text-2xl">{key ? t.common.crashCourse(name) : name}</h3>
                     <p className="mt-2.5 text-[15px] leading-[1.6] text-ab-ink-2">{h.cardBody(name)}</p>

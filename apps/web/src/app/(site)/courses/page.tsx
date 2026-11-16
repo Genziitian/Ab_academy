@@ -4,7 +4,7 @@ import { getT } from "@/lib/i18n/server";
 
 export const metadata = {
   title: "Courses",
-  description: "Class 12 crash courses for Bihar Board — recorded lectures, live doubt sessions, notes and board-pattern practice.",
+  description: "Class 12 crash courses — recorded lectures, live doubt sessions, notes and exam-style practice.",
 };
 
 export default async function CoursesPage({ searchParams }: { searchParams: Promise<{ subject?: string }> }) {

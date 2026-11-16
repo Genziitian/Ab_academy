@@ -90,7 +90,7 @@ Website: https://abacademy.in
 Privacy policy: https://abacademy.in/privacy
 ```
 
-### Resubmission checklist (build 7)
+### Resubmission checklist (build 8)
 
 Files are in `apps/mobile/store/`.
 
@@ -98,7 +98,7 @@ Files are in `apps/mobile/store/`.
    "Start learning free" home slide now use `launch/feature-notes.jpg`
    instead of `launch/demo-yt.jpg`, which showed the IIT Madras emblem.
 2. **App bundle:** upload `apps/mobile/build/app/outputs/bundle/release/app-release.aab`
-   (version 1.0.0, build 7) to the production track, replacing earlier builds.
+   (version 1.0.0, build 8) to the production track, replacing earlier builds.
 3. **Store listing:** app icon `play-icon-512.png`; feature graphic
    `feature-graphic-1024x500.png`; delete every old screenshot and upload
    `screenshots/*.png`.
@@ -118,7 +118,9 @@ Files are in `apps/mobile/store/`.
 | Terms, refund policy | `/terms`, `/refund`, also in App → More |
 | Screenshots of paid content blocked | `FLAG_SECURE` on lecture and notes screens |
 | No backup of app data | `allowBackup="false"` + data extraction rules |
-| Minimal permissions | `INTERNET` and `POST_NOTIFICATIONS` only |
+| Minimal permissions | Build 8: `INTERNET`, `ACCESS_NETWORK_STATE`, `POST_NOTIFICATIONS`, `VIBRATE`, `WAKE_LOCK`, Firebase `RECEIVE`, plus `USE_BIOMETRIC`/`USE_FINGERPRINT` from `androidx.biometric` (normal permissions, no declaration). Razorpay SDK removed from the app (it added NFC and phone-state). |
+| Report objectionable posts (UGC policy) | Lecture → Discussion → **Report** under every post by someone else; opens a support ticket staff review |
+| No fake ratings | Course star ratings are hidden in the app until they come from real reviews |
 
 ## Play Console forms
 
@@ -138,9 +140,9 @@ in transit; users can request deletion):
 | Other user-generated content (doubts, comments, tickets) | Yes | App functionality |
 | App interactions (lectures and notes opened) | Yes | App functionality |
 | Device or other IDs (push token) | Yes | App functionality (notifications) |
-| Financial info (card / UPI) | **No** — handled by Razorpay, never reaches us |
+| Financial info (card / UPI) | **No** — the app takes no payments; the website's Razorpay checkout never sends card/UPI data to us |
 
-Shared with: none for advertising. Service providers (Supabase, Razorpay,
+Shared with: none for advertising. Service providers (Supabase,
 Google/Firebase, YouTube) process data on our behalf, which Play does not
 count as "sharing".
 
@@ -159,10 +161,11 @@ for users to report content or users — today that is Help & support; a
 **"Report" action on each comment** is recommended; (c) moderation — staff
 review doubts in Admin → Doubts and can remove posts.
 
-**App access for review:** reviewers cannot receive your OTP. Give them a test
-login in Play Console → App access: a Supabase test phone number with a fixed
-OTP (Authentication → Providers → Phone → Test phone numbers), enrolled in a
-course so the reviewer can open lectures and notes.
+**App access for review (required — the app needs a login):** Play Console →
+App content → App access → "All or some functionality is restricted" → add
+instructions: *On the login screen tap "Sign in with email" and use:* the
+`DEMO_EMAIL` / `DEMO_PASSWORD` from `.envv2` (verified working 16 Nov 2026).
+The account is enrolled in the Free Demo Course, so lectures and notes open.
 
 **Store listing:** app name, short and full description, 512 px icon, feature
 graphic 1024×500, at least 2 phone screenshots. The banners in

@@ -5,7 +5,7 @@ export const en = {
   common: {
     brand: "AB Academy",
     short: "AB Academy",
-    board: "Bihar Board",
+    board: "",
     classN: (n: number | string) => `Class ${n}`,
     subjects: { Physics: "Physics", Chemistry: "Chemistry", Maths: "Maths" } as Record<string, string>,
     chapters: (n: number) => `${n} chapters`,
@@ -55,7 +55,7 @@ export const en = {
   },
 
   footer: {
-    tagline: "Class 12 crash courses for Bihar Board. Recorded classes and live doubt sessions with Ajit Sir.",
+    tagline: "Class 12 crash courses. Recorded classes and live doubt sessions with Ajit Sir.",
     coursesTitle: "Crash courses",
     academyTitle: "Academy",
     visitTitle: "Visit & support",
@@ -63,7 +63,7 @@ export const en = {
     studentLogin: "Student login",
     rights: (year: number) => `© ${year} AB Academy. All rights reserved.`,
     disclaimer:
-      "AB Academy is a private coaching institute. It is not affiliated with, endorsed by or representing the Bihar School Examination Board (BSEB) or any government body. For the official syllabus, exam dates and results, visit",
+      "AB Academy is a private coaching institute.",
   },
 
   legalDocs: {
@@ -93,9 +93,9 @@ export const en = {
   },
 
   home: {
-    eyebrow: "Bihar Board · Class 12 · Board 2027",
+    eyebrow: "Class 12 · Physics · Chemistry · Maths",
     title: "Board-ready in 60 days.",
-    lead: "Class 12 Physics, Chemistry and Maths for Bihar Board — recorded classes, live doubt sessions with Ajit Sir and chapter notes, in Hindi or Hinglish.",
+    lead: "Class 12 Physics, Chemistry and Maths — recorded classes, live doubt sessions with Ajit Sir and chapter notes, in Hindi or Hinglish.",
     meta: (date: string, from: string | null) =>
       [`Classes start ${date}`, from ? `from ${from} a subject` : null, "Hindi or Hinglish"].filter(Boolean) as string[],
     ctaCourses: "See the courses",
@@ -109,7 +109,7 @@ export const en = {
       ["Recorded classes", "Every chapter as a recorded class. Pause, rewind and rewatch as often as you need."],
       ["Live doubt sessions", "Bring your questions to live sessions with Ajit Sir and get them solved on the spot."],
       ["Chapter notes", "A notes PDF for every chapter, readable on the website and in the app."],
-      ["Board-pattern questions", "Practice in the Bihar Board pattern, so the exam holds no surprises."],
+      ["Exam-style questions", "Practice in exam style, so the exam holds no surprises."],
     ] as [string, string][],
 
     syllabusEyebrow: "Syllabus",
@@ -131,7 +131,7 @@ export const en = {
     batch: "Batch 2027",
 
     includedTitle: "Everything you need for the boards.",
-    includedLead: "One course per subject, built around the Bihar Board pattern.",
+    includedLead: "One course per subject, chapter by chapter.",
     includedItems: [
       "Recorded classes",
       "Live doubts",
@@ -158,7 +158,7 @@ export const en = {
     appAlt: "The AB Academy app home screen",
 
     aboutEyebrow: "About us",
-    aboutTitle: "Built in Bihar, for Bihar Board.",
+    aboutTitle: "Built for Class 12 students.",
     aboutLead: (years: number) =>
       `A teacher with ${years} years in the classroom and a developer, building the crash course they wish students had: affordable, focused and in your language.`,
     roles: { Founder: "Founder", "Co-founder & Developer": "Co-founder & Developer" } as Record<string, string>,
@@ -210,8 +210,8 @@ export const en = {
     includedTitle: "What's included",
     deliverables: (n: number, subject: string) => [
       [`${n * 2} lessons`, `Every ${subject} chapter as a recorded lecture and a practice session.`],
-      ["60-day board plan", "Chapters in Bihar Board order, with revision built in before the exam."],
-      ["Practice in board pattern", "Questions in the Bihar Board pattern to build speed and accuracy."],
+      ["60-day study plan", "Chapters in syllabus order, with revision built in before the exam."],
+      ["Exam-style practice", "Exam-style questions to build speed and accuracy."],
       ["Chapter notes", "A notes PDF and important questions for quick revision."],
       ["Past paper walkthroughs", "How earlier papers were set, so you know what examiners expect."],
       ["Doubt support", "Ask under any lecture or bring it to a live doubt session."],
@@ -239,7 +239,7 @@ export const en = {
     eachChapterValue: "1 lecture + 1 practice",
     validity: "Validity",
     language: "Language",
-    trust: ["Built on the Bihar Board pattern", "On the website and the app", "Notes and recordings included"],
+    trust: ["Chapter-by-chapter plan", "On the website and the app", "Notes and recordings included"],
     questions: "Questions before you buy?",
     chooseLanguage: "Choose your language",
     enrollIn: (lang: string) => `Enroll in ${lang}`,
@@ -257,7 +257,7 @@ export const en = {
     eyebrow: "About us",
     title: "A small academy with one job: get you ready for the boards.",
     lead:
-      "AB Academy teaches Class 12 Bihar Board students through recorded lectures, live doubt sessions and chapter notes, so every student knows what to study next.",
+      "AB Academy teaches Class 12 students through recorded lectures, live doubt sessions and chapter notes, so every student knows what to study next.",
     p1: "Right now we focus on Class 12 crash courses in Physics, Chemistry and Maths. More classes and boards will follow under the same academy.",
     quote: "हमारा लक्ष्य है कि हर छात्र को साफ़ पता हो कि आगे क्या पढ़ना है — बिना उलझन के।",
     p2: "Hindi-medium and Hinglish learners get the same simple path: pick your subject, watch the lectures, revise with notes, and ask when you're stuck.",
@@ -405,7 +405,7 @@ export const en = {
     back: "Back to course",
     eyebrow: "Checkout",
     title: "Complete your enrolment.",
-    meta: "Class 12 · Bihar Board",
+    meta: "Class 12",
     withIn: (teacher: string, lang: string) => `with ${teacher} · in ${lang}`,
     studyLanguage: "Study language",
     includes: (teacher: string, validity: string) => [

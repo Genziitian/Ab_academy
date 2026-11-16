@@ -111,7 +111,7 @@ const en: Record<LegalKey, LegalDoc> = {
         heading: "Courses and access",
         body: [
           "Each course gives you access to its recorded classes, live doubt sessions, notes and practice questions for the period shown on the course page. Class dates, lectures and teachers may change; we will tell you in the app when they do.",
-          "We teach to the Bihar Board syllabus and pattern, but we cannot promise any particular marks or result.",
+          "We teach to the Class 12 syllabus, but we cannot promise any particular marks or result.",
         ],
       },
       {
@@ -336,7 +336,7 @@ const hi: Record<LegalKey, LegalDoc> = {
         heading: "कोर्स और एक्सेस",
         body: [
           "हर कोर्स में, कोर्स पेज पर बताई गई अवधि तक, उसकी रिकॉर्डेड क्लास, लाइव डाउट सेशन, नोट्स और अभ्यास के सवाल मिलते हैं। क्लास की तारीख़, लेक्चर और शिक्षक बदल सकते हैं; बदलने पर हम ऐप में बताएँगे।",
-          "हम बिहार बोर्ड के सिलेबस और पैटर्न के अनुसार पढ़ाते हैं, लेकिन किसी ख़ास अंक या रिज़ल्ट का वादा नहीं कर सकते।",
+          "हम कक्षा 12 के सिलेबस के अनुसार पढ़ाते हैं, लेकिन किसी ख़ास अंक या रिज़ल्ट का वादा नहीं कर सकते।",
         ],
       },
       {

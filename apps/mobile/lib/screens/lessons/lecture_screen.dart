@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../data/mock/mock_data.dart';
 import '../../data/models/lesson_extras.dart';
+import '../../data/models/ticket.dart';
 import '../../data/providers/app_providers.dart';
 import '../../data/providers/feature_providers.dart';
 import '../../data/providers/remote_providers.dart';
@@ -159,7 +160,9 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
                       selected: _tabLabel(_tab),
                       gap: 20,
                       onSelected: (label) => setState(
-                        () => _tab = _tabs.firstWhere((t) => _tabLabel(t) == label),
+                        () => _tab = _tabs.firstWhere(
+                          (t) => _tabLabel(t) == label,
+                        ),
                       ),
                     ),
                   ),
@@ -214,19 +217,14 @@ class _LecturePlayerArea extends ConsumerWidget {
       error: (error, _) => _PlayerMessage(
         onBack: onBack,
         child: _MessageText(
-          error is PlaybackDenied
-              ? tx.enrollToWatch
-              : tx.couldNotLoadLecture,
+          error is PlaybackDenied ? tx.enrollToWatch : tx.couldNotLoadLecture,
           action: error is PlaybackDenied
               ? null
               : () => ref.invalidate(lessonYoutubeIdProvider(lessonId)),
         ),
       ),
       data: (id) => id == null
-          ? _PlayerMessage(
-              onBack: onBack,
-              child: _MessageText(tx.noVideoYet),
-            )
+          ? _PlayerMessage(onBack: onBack, child: _MessageText(tx.noVideoYet))
           : SecureYouTubePlayer(
               videoId: id,
               watermark: student.phone,
@@ -502,10 +500,7 @@ class _DiscussionTab extends ConsumerWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
             children: [
-              Text(
-                tx.doubtQueueNote,
-                style: AppText.meta,
-              ),
+              Text(tx.doubtQueueNote, style: AppText.meta),
               const SizedBox(height: 16),
               for (final comment in comments) ...[
                 _CommentTile(comment: comment),
@@ -569,6 +564,7 @@ class _CommentTile extends StatelessWidget {
                   color: AppColors.textBody,
                 ).copyWith(height: 1.55),
               ),
+              if (!comment.isMe) _ReportLink(comment: comment),
               for (final reply in comment.replies) ...[
                 const SizedBox(height: 10),
                 Container(
@@ -616,6 +612,8 @@ class _CommentTile extends StatelessWidget {
                                 color: AppColors.textBody,
                               ).copyWith(height: 1.5),
                             ),
+                            if (!reply.isMe && !reply.isTeacher)
+                              _ReportLink(comment: reply),
                           ],
                         ),
                       ),
@@ -627,6 +625,83 @@ class _CommentTile extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Google Play's User Generated Content policy: students can see each other's
+/// doubts, so every post by someone else can be reported. The report opens a
+/// support ticket, which staff review in the admin console and act on.
+class _ReportLink extends ConsumerWidget {
+  const _ReportLink({required this.comment});
+
+  final LessonComment comment;
+
+  Future<void> _report(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tx.reportTitle),
+        content: Text(tx.reportBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(tx.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(tx.reportConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref
+          .read(ticketsProvider.notifier)
+          .open(
+            subject: 'Reported comment by ${comment.author}',
+            category: TicketCategory.content,
+            body:
+                'Reported comment (id ${comment.id}) by ${comment.author}:\n\n'
+                '"${comment.body}"',
+          );
+      messenger.showSnackBar(SnackBar(content: Text(tx.reportSent)));
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(tx.reportFailed)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: InkWell(
+        onTap: () => _report(context, ref),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 6, bottom: 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                LucideIcons.flag,
+                size: 13,
+                color: AppColors.textSubtle,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                tx.report,
+                style: AppText.tabular(
+                  12,
+                  FontWeight.w500,
+                  color: AppColors.textSubtle,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -10,7 +10,7 @@ import { createServerClient } from "@/lib/supabase/server";
 
 export const metadata = {
   title: "Notes",
-  description: "Chapter notes and solved PYQs for Bihar Board Class 12 Physics, Chemistry and Maths.",
+  description: "Chapter notes and solved practice questions for Class 12 Physics, Chemistry and Maths.",
 };
 
 const SUBJECTS: SubjectKey[] = ["Physics", "Chemistry", "Maths"];

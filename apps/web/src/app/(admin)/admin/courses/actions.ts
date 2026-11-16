@@ -33,7 +33,7 @@ export async function saveCourseAction(formData: FormData) {
     thumbnailUrl,
     title: String(formData.get("title") ?? "").trim(),
     classLevel: Number(formData.get("classLevel") ?? 10),
-    board: String(formData.get("board") ?? "Bihar Board"),
+    board: String(formData.get("board") ?? ""),
     medium: String(formData.get("medium") ?? "Hindi"),
     priceInr: Number(formData.get("priceInr") ?? 0),
     originalPriceInr: Number(formData.get("originalPriceInr") ?? 0),

@@ -26,7 +26,7 @@ import '../../l10n/strings.dart';
 /// 25 · Checkout — the course, what it includes, how to pay, the total.
 ///
 /// With Supabase configured, "Pay" sells the course for real through
-/// [PaymentService] (Razorpay). On mock data it completes a test enrolment and
+/// [PaymentService]. On mock data it completes a test enrolment and
 /// the success screen says nothing was charged.
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key, required this.courseId});

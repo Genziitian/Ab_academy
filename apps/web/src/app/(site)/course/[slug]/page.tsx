@@ -58,7 +58,7 @@ export default async function CourseDetailPage({ params }: CoursePageProps) {
           </nav>
           <div className="mt-6 flex flex-wrap gap-2">
             <Pill tone="accent">{c.days(CRASH_COURSE_DAYS)}</Pill>
-            <Pill>{t.common.board}</Pill>
+            <Pill>{t.common.classN(12)}</Pill>
             <Pill>{t.common.hindiOrHinglish}</Pill>
           </div>
           <h1 className="ab-display mt-5 text-[36px] sm:text-[48px]">{title}</h1>

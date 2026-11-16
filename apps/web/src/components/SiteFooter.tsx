@@ -102,13 +102,6 @@ export async function SiteFooter() {
           ) : null}
           <p className="text-ab-ink-3">{t.footer.rights(new Date().getFullYear())}</p>
         </div>
-        <p className="max-w-[900px] pb-8 text-xs leading-relaxed text-ab-ink-3">
-          {t.footer.disclaimer}{" "}
-          <a href="https://biharboardonline.bihar.gov.in" target="_blank" rel="noopener noreferrer" className="underline hover:text-ab-ink">
-            biharboardonline.bihar.gov.in
-          </a>
-          .
-        </p>
       </div>
     </footer>
   );

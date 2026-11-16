@@ -24,7 +24,10 @@ say otherwise.
      official link failed review as broken.
   3. Never use government emblems, the national flag, Ashoka Chakra, maps of
      India or photos of public figures in the logo, icons or images.
-  4. **In-app purchase stays off.** Never pass `--dart-define=IN_APP_PURCHASE=true`
+  4. **No fake ratings, no result promises** ("guaranteed marks", "board-ready",
+     "topper"). Course star ratings stay hidden until real.
+  5. **Every post by another student keeps its Report button** (Play UGC policy).
+  6. **In-app purchase stays off and there is no payment SDK in the app.** Never pass `--dart-define=IN_APP_PURCHASE=true`
      for a Play build. Play requires Play Billing for digital courses; students
      buy on the website.
 - Package name `in.akhandbharatacademy.app` is permanent. Do not change it.
@@ -70,8 +73,15 @@ say otherwise.
      from the bundle and confirm `strings` finds `wjohjdeoitompidjvxgb.supabase.co`.
    - Contains none of the forbidden text:
      `strings libapp.so | grep -i -c "bihar board\|bseb\|biharboardonline"` must be `0`.
-   - Version code matches pubspec (check with `bundletool dump manifest` if
-     available, otherwise confirm pubspec and the build log).
+   - Version code matches pubspec: `grep -o 'versionCode="[0-9]*"'` in
+     `build/app/intermediates/merged_manifest/release/processReleaseMainManifest/AndroidManifest.xml`.
+   - Permissions in that merged manifest are only: INTERNET,
+     ACCESS_NETWORK_STATE, POST_NOTIFICATIONS, VIBRATE, WAKE_LOCK,
+     c2dm RECEIVE, DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION, USE_BIOMETRIC,
+     USE_FINGERPRINT. Any new permission (NFC, phone state, SMS, location,
+     contacts, storage, camera…) must be explained to me before release —
+     it changes the Data safety form and can cause rejection.
+   - No payment SDK in the bundle: `unzip -l <aab> | grep -ic razorpay` is `0`.
 7. **Copy for upload** to the Desktop folder
    `~/Desktop/AB Academy Play Release (build N)/`:
    - `AB-Academy-buildN.aab`

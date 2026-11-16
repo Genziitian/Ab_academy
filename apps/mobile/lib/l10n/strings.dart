@@ -160,8 +160,8 @@ class S {
   );
   String get introNotesTitle => _('Notes, practice & doubt support', 'नोट्स, अभ्यास और डाउट सहायता');
   String get introNotesBody => _(
-    'Chapter notes, board-pattern practice and answers to your doubts — all in one app.',
-    'अध्याय के नोट्स, बोर्ड पैटर्न का अभ्यास और आपके डाउट के जवाब — सब एक ऐप में।',
+    'Chapter notes, exam-style practice and answers to your doubts — all in one app.',
+    'अध्याय के नोट्स, परीक्षा जैसा अभ्यास और आपके डाउट के जवाब — सब एक ऐप में।',
   );
   String get skip => _('Skip', 'छोड़ें');
   String get tagline => _('LEARN  •  PRACTISE  •  REVISE', 'सीखें  •  अभ्यास  •  दोहराएँ');
@@ -171,7 +171,7 @@ class S {
   String get loginLead =>
       _('Sign in to watch lectures, ask doubts and read notes.', 'लेक्चर देखने, डाउट पूछने और नोट्स पढ़ने के लिए साइन इन करें।');
   String get loginPanelEyebrow => _('CLASS 12 CRASH COURSE', 'कक्षा 12 क्रैश कोर्स');
-  String get loginPanelTitle => _('Board-ready in 60 days.', '60 दिनों में बोर्ड की पूरी तैयारी।');
+  String get loginPanelTitle => _('Your 60-day study plan.', 'आपका 60 दिनों का पढ़ाई प्लान।');
   String get loginPanelPoint => _('Recorded classes + live doubts', 'रिकॉर्डेड क्लास + लाइव डाउट');
   String get loginPhotoAlt => _('Two students learning with AB Academy', 'AB अकादमी से पढ़ते दो छात्र');
   String get signInWithEmail => _('Sign in with email', 'ईमेल से साइन इन करें');
@@ -226,7 +226,7 @@ class S {
   String get step2of2 => _('Step 2 of 2', 'चरण 2 / 2');
   String get whichClass => _('Which class are you in?', 'आप किस कक्षा में हैं?');
   String get whichClassLead => _("We'll show crash courses for your class.", 'हम आपकी कक्षा के क्रैश कोर्स दिखाएँगे।');
-  String get class12Tagline => _('Board 2027 crash courses', 'बोर्ड 2027 क्रैश कोर्स');
+  String get class12Tagline => _('Class 12 crash courses', 'कक्षा 12 क्रैश कोर्स');
   String get class11Tagline => _('Build a strong base for Class 12', 'कक्षा 12 के लिए मज़बूत नींव');
   String get chooseStream => _('Choose your stream', 'अपनी स्ट्रीम चुनें');
   String get mediumOfStudy => _('Medium of study', 'पढ़ाई का माध्यम');
@@ -647,6 +647,15 @@ class S {
   );
   String get wwdPriced => _('Priced for every student', 'हर छात्र की पहुँच में');
   String get wwdPricedBody => _('₹249 a subject, with a free demo class to try first.', '₹249 प्रति विषय, पहले आज़माने के लिए मुफ़्त डेमो क्लास।');
+  String get report => _('Report', 'रिपोर्ट करें');
+  String get reportTitle => _('Report this post?', 'इस पोस्ट को रिपोर्ट करें?');
+  String get reportBody => _(
+    'Our team will review it and remove it if it breaks the rules. The person will not know you reported it.',
+    'हमारी टीम इसे देखेगी और नियम तोड़ने पर हटा देगी। जिस व्यक्ति ने लिखा है, उसे पता नहीं चलेगा कि आपने रिपोर्ट किया।',
+  );
+  String get reportConfirm => _('Report', 'रिपोर्ट करें');
+  String get reportSent => _('Thanks — our team will review it.', 'धन्यवाद — हमारी टीम इसे देखेगी।');
+  String get reportFailed => _('Could not send the report. Try again.', 'रिपोर्ट नहीं भेजी जा सकी। फिर कोशिश करें।');
   String get roleFounder => _('Founder', 'संस्थापक');
   String get roleCofounder => _('Co-founder & Developer', 'सह-संस्थापक और डेवलपर');
   String role(String r) => switch (r) {

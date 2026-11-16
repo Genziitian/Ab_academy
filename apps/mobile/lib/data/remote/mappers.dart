@@ -126,11 +126,10 @@ Course courseFromRow(Json row, {required bool isEnrolled}) {
     isEnrolled: isEnrolled,
     lessonsCount: (row['lessons_count'] as int?) ?? 0,
     highlights: ((row['highlights'] as List?) ?? const []).cast<String>(),
-    // 0 means "no ratings yet"; null hides the star everywhere.
-    rating: switch ((row['rating'] as num?)?.toDouble()) {
-      final r? when r > 0 => r,
-      _ => null,
-    },
+    // Hidden until ratings come from real student reviews: a star with no
+    // reviews behind it is a misleading claim under Play policy. The column
+    // was seeded by hand (the demo course showed 4.9).
+    rating: null,
     thumbnailHue: (row['thumbnail_hue'] as int?) ?? 214,
     thumbnailUrl: row['thumbnail_url'] as String?,
     language: (row['language'] as String?) ?? 'Hindi + English',

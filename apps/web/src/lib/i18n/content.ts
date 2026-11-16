@@ -1,5 +1,5 @@
 // Course content that changes with the language: chapter names in Hindi
-// (Bihar Board Hindi-medium wording) and course titles for the known courses.
+// (Hindi-medium wording) and course titles for the known courses.
 
 import { SYLLABUS, subjectKey, type SubjectKey } from "@/lib/landing";
 import type { Locale } from "./config";

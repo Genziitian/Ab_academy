@@ -102,8 +102,8 @@ export const courseFaqs = [
     a: "Anytime. Every lecture is recorded, so you can watch, pause and rewatch at your own pace on the website or the app.",
   },
   {
-    q: "Will this work for boards beyond Bihar Board?",
-    a: "We are launching with Bihar Board first. More boards and domain courses will be added under AB Academy soon.",
+    q: "Which classes and subjects do you teach?",
+    a: "We are launching with Class 12 Physics, Chemistry and Maths. More courses will be added under AB Academy soon.",
   },
   {
     q: "How do refunds work?",
@@ -122,7 +122,7 @@ const standardDeliverables = (lectures: number, subjects: string) => [
   },
   {
     title: "60-day board plan",
-    body: "Chapter flow mapped to the Bihar Board pattern with weekly revision checkpoints.",
+    body: "Chapter-by-chapter flow with weekly revision checkpoints.",
   },
   {
     title: "Practice & OMR-style drills",
@@ -168,7 +168,7 @@ export const courses: Course[] = [
     slug: "class-12-physics-crash-course",
     title: "Class 12 Physics Crash Course",
     classLevel: 12,
-    board: "Bihar Board",
+    board: "",
     subjects: ["Physics"],
     stream: "Physics",
     ...ajit,
@@ -196,7 +196,7 @@ export const courses: Course[] = [
     slug: "class-12-chemistry-crash-course",
     title: "Class 12 Chemistry Crash Course",
     classLevel: 12,
-    board: "Bihar Board",
+    board: "",
     subjects: ["Chemistry"],
     stream: "Chemistry",
     ...ajit,
@@ -224,7 +224,7 @@ export const courses: Course[] = [
     slug: "class-12-maths-crash-course",
     title: "Class 12 Maths Crash Course",
     classLevel: 12,
-    board: "Bihar Board",
+    board: "",
     subjects: ["Mathematics"],
     stream: "Maths",
     ...ajit,

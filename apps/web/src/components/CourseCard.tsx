@@ -20,7 +20,7 @@ export function CourseCard({ course, t, locale }: { course: Course; t: Dict; loc
       </Link>
       <div className="flex flex-1 flex-col p-5">
         <p className="text-[13px] text-ab-ink-3">
-          {t.common.classN(course.classLevel)} · {free ? t.catalog.demo : t.common.board}
+          {t.common.classN(course.classLevel)}{free ? ` · ${t.catalog.demo}` : ""}
         </p>
         <Link href={href} className="ab-title mt-1.5 text-lg hover:underline">
           {courseTitle(course, locale)}

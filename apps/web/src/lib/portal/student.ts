@@ -14,7 +14,7 @@ export type Student = {
   board: string;
   medium: string | null;
   stream: string | null;
-  /** "Class 12 · Bihar Board", used under the name in the top bar. */
+  /** "Class 12", used under the name in the top bar. */
   summary: string;
 };
 
@@ -24,13 +24,13 @@ const DEMO: Omit<Student, "summary" | "initials" | "firstName"> = {
   phone: "+91 98765 43210",
   email: null,
   classLevel: 12,
-  board: "Bihar Board",
+  board: "",
   medium: "Hindi",
   stream: "Science",
 };
 
 function finish(s: Omit<Student, "summary" | "initials" | "firstName">): Student {
-  const parts = [s.classLevel ? `Class ${s.classLevel}` : null, s.board].filter(Boolean);
+  const parts = [s.classLevel ? `Class ${s.classLevel}` : null].filter(Boolean);
   return {
     ...s,
     firstName: s.name.split(" ")[0] ?? s.name,
@@ -71,7 +71,7 @@ export const getStudent = cache(async (): Promise<Student> => {
     phone: profile?.phone ?? user.phone ?? null,
     email: user.email ?? null,
     classLevel: details?.class_level ?? null,
-    board: details?.board ?? "Bihar Board",
+    board: details?.board ?? "",
     medium: details?.medium ?? null,
     stream: details?.stream ?? null,
   });

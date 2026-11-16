@@ -37,11 +37,11 @@ const hanken = Hanken_Grotesk({ variable: "--font-hanken", subsets: ["latin"], w
 
 export const metadata: Metadata = {
   title: {
-    default: "AB Academy | Class 12 Crash Course for Bihar Board",
+    default: "AB Academy | Class 12 Crash Courses",
     template: "%s | AB Academy",
   },
   description:
-    "Class 12 crash courses for Bihar Board — recorded classes, live doubt sessions with Ajit Sir, chapter notes and board-pattern questions in Hindi & Hinglish.",
+    "Class 12 crash courses — recorded classes, live doubt sessions with Ajit Sir, chapter notes and exam-style questions in Hindi & Hinglish.",
 };
 
 // The single root layout. Each route group — (site), (portal), (focus) and

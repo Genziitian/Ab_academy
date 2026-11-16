@@ -5,7 +5,7 @@
 export const BATCH_START = new Date("2026-11-16T00:00:00+05:30");
 export const BATCH_START_LABEL = "16 November";
 
-/** Bihar Board Class 12 exams — expected first week of February 2027. */
+/** Course target date for the 60-day plan. */
 export const EXAM_DATE = new Date("2027-02-01T09:30:00+05:30");
 
 export const TEACHER = {
@@ -34,7 +34,7 @@ export const PLAY_STORE_URL = process.env.NEXT_PUBLIC_PLAY_STORE_URL ?? "";
 
 export type SubjectKey = "Physics" | "Chemistry" | "Maths";
 
-/** Class 12 Bihar Board chapters, in syllabus order. */
+/** Class 12 chapters, in syllabus order. */
 export const SYLLABUS: Record<SubjectKey, string[]> = {
   Physics: [
     "Electric Charges & Fields",
@@ -95,7 +95,7 @@ export const FEATURES = [
   ["Recorded classes", "Every chapter as a recorded class. Pause, rewind and rewatch as often as you need."],
   ["Live doubt sessions", "Bring your questions to live sessions with Ajit Sir and get them solved on the spot."],
   ["Chapter notes", "A notes PDF for every chapter, readable on the website and in the app."],
-  ["Board-pattern tests", "Practice questions in Bihar Board pattern so the exam has no surprises."],
+  ["Exam-style tests", "Practice questions in exam style so the exam has no surprises."],
 ] as const;
 
 export const FAQS = [
