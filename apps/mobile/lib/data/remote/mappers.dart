@@ -66,7 +66,7 @@ Student studentFromRows(Json profile, Json? studentProfile) {
         : 'Student',
     phone: (profile['phone'] as String?) ?? (profile['email'] as String?) ?? '',
     classLevel: (studentProfile?['class_level'] as int?) ?? 12,
-    board: (studentProfile?['board'] as String?) ?? 'Bihar Board',
+    board: (studentProfile?['board'] as String?) ?? '',
     medium: (studentProfile?['medium'] as String?) ?? 'Hindi',
     stream: studentProfile?['stream'] as String?,
     studentCode: profile['student_code'] as String?,
@@ -108,7 +108,7 @@ Course courseFromRow(Json row, {required bool isEnrolled}) {
       subjects.isEmpty ? tx.allSubjects : tx.subjectsCount(subjects.length),
       if (subtitleTeachers.isNotEmpty) subtitleTeachers,
     ].join(' • '),
-    board: (row['board'] as String?) ?? 'Bihar Board',
+    board: (row['board'] as String?) ?? '',
     classLevel: (row['class_level'] as int?) ?? 10,
     batchLabel:
         '${tx.classNCaps((row['class_level'] as int?) ?? 12)} • '
