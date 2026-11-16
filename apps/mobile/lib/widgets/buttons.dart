@@ -4,7 +4,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 
-/// Filled blue CTA. Scales down slightly while pressed.
+/// Filled ink CTA. Scales down slightly while pressed.
 class PrimaryButton extends StatefulWidget {
   const PrimaryButton({
     super.key,
@@ -81,7 +81,7 @@ class _PrimaryButtonState extends State<PrimaryButton> {
   }
 }
 
-/// Blue-outlined button used as the secondary action.
+/// White button with a hairline border, the secondary action.
 class SecondaryButton extends StatelessWidget {
   const SecondaryButton({
     super.key,
@@ -89,8 +89,8 @@ class SecondaryButton extends StatelessWidget {
     this.onPressed,
     this.height = 48,
     this.icon,
-    this.foreground = AppColors.primary,
-    this.borderColor = AppColors.primaryTintBorder,
+    this.foreground = AppColors.ink,
+    this.borderColor = AppColors.ruleStrong,
   });
 
   final String label;
@@ -103,7 +103,8 @@ class SecondaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.transparent,
+      color: AppColors.surface,
+      borderRadius: AppRadius.button,
       child: InkWell(
         onTap: onPressed,
         borderRadius: AppRadius.button,
@@ -123,7 +124,7 @@ class SecondaryButton extends StatelessWidget {
               Text(
                 label,
                 style: AppText.button.copyWith(
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w500,
                   color: foreground,
                 ),
               ),
@@ -200,7 +201,7 @@ class SquareIconButton extends StatelessWidget {
   }
 }
 
-/// Blue text link, e.g. "Continue →", "See all", "Calendar →".
+/// Ink text link, e.g. "Continue →", "See all", "Calendar →".
 class TextActionButton extends StatelessWidget {
   const TextActionButton({
     super.key,
@@ -222,7 +223,8 @@ class TextActionButton extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Text(
         label,
-        style: AppText.tabular(fontSize, FontWeight.w600, color: color),
+        style: AppText.tabular(fontSize, FontWeight.w500, color: color)
+            .copyWith(decoration: TextDecoration.underline, decorationColor: AppColors.ruleStrong),
       ),
     );
   }

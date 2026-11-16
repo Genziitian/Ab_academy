@@ -10,6 +10,7 @@ import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 /// 13 · Live lobby — countdown to the next class, with a reminder.
 class LiveLobbyScreen extends StatefulWidget {
@@ -60,7 +61,7 @@ class _LiveLobbyScreenState extends State<LiveLobbyScreen> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: IconButton(
-                  tooltip: 'Back',
+                  tooltip: tx.back,
                   onPressed: () => context.pop(),
                   icon: const Icon(
                     Icons.arrow_back,
@@ -82,7 +83,7 @@ class _LiveLobbyScreenState extends State<LiveLobbyScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        '${session.subject.toUpperCase()}${chapter.isEmpty ? '' : ' · $chapter'}',
+                        '${tx.hindi ? tx.subject(session.subject) : session.subject.toUpperCase()}${chapter.isEmpty ? '' : ' · $chapter'}',
                         style: AppText.eyebrow(
                           color: AppColors.primary,
                           size: 12,
@@ -101,7 +102,7 @@ class _LiveLobbyScreenState extends State<LiveLobbyScreen> {
                       ),
                       const SizedBox(height: 36),
                       Text(
-                        started ? 'Class has started' : 'Class starts in',
+                        started ? tx.classStarted : tx.classStartsIn,
                         style: AppText.label,
                       ),
                       const SizedBox(height: 10),
@@ -110,10 +111,10 @@ class _LiveLobbyScreenState extends State<LiveLobbyScreen> {
                         children: [
                           _CountdownBox(
                             value: _secondsLeft ~/ 60,
-                            label: 'MIN',
+                            label: tx.minCaps,
                           ),
                           const SizedBox(width: 10),
-                          _CountdownBox(value: _secondsLeft % 60, label: 'SEC'),
+                          _CountdownBox(value: _secondsLeft % 60, label: tx.secCaps),
                         ],
                       ),
                       const SizedBox(height: 32),
@@ -127,12 +128,12 @@ class _LiveLobbyScreenState extends State<LiveLobbyScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Before class', style: AppText.rowTitle),
+                            Text(tx.beforeClass, style: AppText.rowTitle),
                             const SizedBox(height: 6),
                             for (final line in [
-                              'Revise the ${session.chapterLabel?.split(' · ').first ?? 'chapter'} formula sheet',
-                              'Keep a notebook ready for practice questions',
-                              '${session.studentsEnrolled} students enrolled',
+                              tx.reviseFormula(session.chapterLabel?.split(' · ').first ?? tx.chapter),
+                              tx.keepNotebook,
+                              tx.studentsEnrolled(session.studentsEnrolled),
                             ])
                               Padding(
                                 padding: const EdgeInsets.only(top: 2),
@@ -158,26 +159,26 @@ class _LiveLobbyScreenState extends State<LiveLobbyScreen> {
                   children: [
                     if (started)
                       PrimaryButton(
-                        label: 'Join Live Class',
+                        label: tx.joinLive,
                         onPressed: () =>
                             context.pushReplacement(Routes.liveRoom),
                       )
                     else
                       PrimaryButton(
-                        label: _reminderSet ? '✓ Reminder set' : 'Remind me',
+                        label: _reminderSet ? tx.reminderSet : tx.remindMe,
                         onPressed: () {
                           setState(() => _reminderSet = !_reminderSet);
                           if (_reminderSet) {
                             showDemoSnack(
                               context,
-                              "We'll notify you 5 minutes before class.",
+                              tx.notifyBefore,
                             );
                           }
                         },
                       ),
                     const SizedBox(height: 10),
                     SecondaryButton(
-                      label: 'Add to calendar',
+                      label: tx.addToCalendar,
                       onPressed: () => context.push(Routes.calendar),
                     ),
                   ],

@@ -71,7 +71,7 @@ void main() {
     UncontrolledProviderScope(
       container: container,
       child: MaterialApp.router(
-        title: 'Akhand Bharat Academy',
+        title: 'AB Academy',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         routerConfig: router,

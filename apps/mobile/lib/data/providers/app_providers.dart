@@ -7,6 +7,7 @@ import '../models/user.dart';
 import '../remote/auth_repository.dart';
 import '../remote/push_service.dart';
 import '../remote/repositories.dart';
+import '../../l10n/strings.dart';
 
 // ---------------------------------------------------------------- session
 
@@ -311,12 +312,12 @@ class NotificationsNotifier extends Notifier<List<AppNotification>> {
           ? NotificationGroup.yesterday
           : NotificationGroup.earlier,
       timeAgo: diff.inMinutes < 1
-          ? 'now'
+          ? tx.justNow
           : diff.inMinutes < 60
-          ? '${diff.inMinutes}m ago'
+          ? tx.minutesAgo(diff.inMinutes)
           : diff.inHours < 24
-          ? '${diff.inHours}h ago'
-          : '${diff.inDays}d ago',
+          ? tx.hoursAgo(diff.inHours)
+          : tx.daysAgo(diff.inDays),
       isUnread: !read.contains(r['id']),
       deepLink: r['deep_link'] as String?,
     );

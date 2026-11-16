@@ -17,6 +17,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
 import '../../widgets/secure_youtube_player.dart';
+import '../../l10n/strings.dart';
 
 /// 09 / 10 · Lecture — player, then About / Discussion / Notes.
 /// Discussion is the doubt thread: questions land in the teacher's queue.
@@ -30,9 +31,16 @@ class LectureScreen extends ConsumerStatefulWidget {
 }
 
 class _LectureScreenState extends ConsumerState<LectureScreen> {
-  static const _tabs = ['About', 'Discussion', 'Notes'];
+  static final _tabs = ['About', 'Discussion', 'Notes'];
 
   String _tab = 'About';
+
+  /// Tabs are keyed in English; this is what each one shows.
+  static String _tabLabel(String t) => switch (t) {
+    'Discussion' => tx.discussion,
+    'Notes' => tx.notes,
+    _ => tx.about,
+  };
   bool _fullscreen = false;
 
   /// True after the full-screen button was used: the orientation is then
@@ -41,11 +49,11 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
   /// like YouTube: landscape is full screen, portrait is not.
   bool _pinned = false;
 
-  static const _portrait = [
+  static final _portrait = [
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ];
-  static const _landscape = [
+  static final _landscape = [
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ];
@@ -147,10 +155,12 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: UnderlineTabs(
-                      tabs: _tabs,
-                      selected: _tab,
+                      tabs: [for (final t in _tabs) _tabLabel(t)],
+                      selected: _tabLabel(_tab),
                       gap: 20,
-                      onSelected: (value) => setState(() => _tab = value),
+                      onSelected: (label) => setState(
+                        () => _tab = _tabs.firstWhere((t) => _tabLabel(t) == label),
+                      ),
                     ),
                   ),
                 ),
@@ -205,8 +215,8 @@ class _LecturePlayerArea extends ConsumerWidget {
         onBack: onBack,
         child: _MessageText(
           error is PlaybackDenied
-              ? 'Enroll in this course to watch the lecture.'
-              : 'Could not load the lecture. Check your connection and try again.',
+              ? tx.enrollToWatch
+              : tx.couldNotLoadLecture,
           action: error is PlaybackDenied
               ? null
               : () => ref.invalidate(lessonYoutubeIdProvider(lessonId)),
@@ -215,7 +225,7 @@ class _LecturePlayerArea extends ConsumerWidget {
       data: (id) => id == null
           ? _PlayerMessage(
               onBack: onBack,
-              child: const _MessageText('This lecture has no video yet.'),
+              child: _MessageText(tx.noVideoYet),
             )
           : SecureYouTubePlayer(
               videoId: id,
@@ -243,7 +253,7 @@ class _PlayerMessage extends StatelessWidget {
           left: 4,
           top: 4,
           child: IconButton(
-            tooltip: 'Back',
+            tooltip: tx.back,
             onPressed: onBack,
             icon: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
           ),
@@ -275,7 +285,7 @@ class _MessageText extends StatelessWidget {
             TextButton(
               onPressed: action,
               child: Text(
-                'Retry',
+                tx.retry,
                 style: AppText.tabular(
                   13,
                   FontWeight.w600,
@@ -309,7 +319,7 @@ class _AboutTab extends ConsumerWidget {
             if (info.subject.isNotEmpty) info.subject,
             if (info.chapter.isNotEmpty) info.chapter,
           ].join('  ·  ').toUpperCase();
-    final teacher = info?.teacher ?? 'Amit Sir';
+    final teacher = info?.teacher ?? tx.teacherName;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
@@ -331,7 +341,7 @@ class _AboutTab extends ConsumerWidget {
                 [
                   teacher,
                   if ((info?.durationMinutes ?? 0) > 0)
-                    '${info!.durationMinutes} min',
+                    tx.minutes(info!.durationMinutes),
                 ].join('  ·  '),
                 style: AppText.tabular(
                   14,
@@ -371,7 +381,7 @@ class _AboutTab extends ConsumerWidget {
         ],
         if (info != null && info.chapterLessons.length > 1) ...[
           const SizedBox(height: 26),
-          Text('In this chapter', style: AppText.sectionTitle),
+          Text(tx.inThisChapter, style: AppText.sectionTitle),
           const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
@@ -397,7 +407,7 @@ class _AboutTab extends ConsumerWidget {
         ],
         if (info == null) ...[
           const SizedBox(height: 20),
-          Text('About this lesson', style: AppText.sectionTitle),
+          Text(tx.aboutThisLesson, style: AppText.sectionTitle),
           const SizedBox(height: 6),
           Text(MockData.lectureAbout, style: AppText.body),
         ],
@@ -457,10 +467,10 @@ class _ChapterLessonRow extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     playing
-                        ? 'Now playing'
+                        ? tx.nowPlaying
                         : lesson.isNotes
-                        ? 'Notes  ·  PDF'
-                        : 'Lecture${lesson.minutes > 0 ? '  ·  ${lesson.minutes} min' : ''}',
+                        ? tx.notesPdf
+                        : tx.lectureMinutes(lesson.minutes),
                     style: AppText.tabular(
                       12,
                       playing ? FontWeight.w700 : FontWeight.w500,
@@ -493,7 +503,7 @@ class _DiscussionTab extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
             children: [
               Text(
-                "Questions about this lesson go to your teacher's doubt queue.",
+                tx.doubtQueueNote,
                 style: AppText.meta,
               ),
               const SizedBox(height: 16),
@@ -505,7 +515,7 @@ class _DiscussionTab extends ConsumerWidget {
           ),
         ),
         MessageComposer(
-          hint: 'Ask a question about this lesson…',
+          hint: tx.askQuestion,
           onSend: (body) {
             ref.read(lessonCommentsProvider(lessonId).notifier).post(body);
             FocusScope.of(context).unfocus();
@@ -536,7 +546,7 @@ class _CommentTile extends StatelessWidget {
                 TextSpan(
                   children: [
                     TextSpan(
-                      text: comment.isMe ? 'You' : comment.author,
+                      text: comment.isMe ? tx.you : comment.author,
                       style: AppText.tabular(13, FontWeight.w600),
                     ),
                     TextSpan(
@@ -593,7 +603,7 @@ class _CommentTile extends StatelessWidget {
                                 ),
                                 if (reply.isTeacher) ...[
                                   const SizedBox(width: 6),
-                                  const StatusBadge.teacher(),
+                                  StatusBadge.teacher(),
                                 ],
                               ],
                             ),
@@ -633,9 +643,9 @@ class _NotesTab extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text('Attached notes', style: AppText.sectionTitle),
+        Text(tx.attachedNotes, style: AppText.sectionTitle),
         const SizedBox(height: 4),
-        Text('Open them here — no download needed.', style: AppText.meta),
+        Text(tx.openHereNoDownload, style: AppText.meta),
         const SizedBox(height: 14),
         if (notes.isLoading)
           const Padding(
@@ -643,10 +653,10 @@ class _NotesTab extends ConsumerWidget {
             child: Center(child: CircularProgressIndicator()),
           )
         else if (attachments.isEmpty)
-          const EmptyState(
+          EmptyState(
             icon: LucideIcons.fileText,
-            title: 'No notes yet',
-            body: 'Your teacher has not attached notes to this lecture.',
+            title: tx.noNotesYet,
+            body: tx.noNotesAttached,
           ),
         for (final attachment in attachments) ...[
           AppCard(
@@ -670,7 +680,7 @@ class _NotesTab extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  'Open',
+                  tx.open,
                   style: AppText.tabular(
                     13,
                     FontWeight.w600,

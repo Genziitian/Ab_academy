@@ -15,6 +15,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/format.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 /// 26 · Payment success.
 class PaymentSuccessScreen extends ConsumerWidget {
@@ -31,13 +32,13 @@ class PaymentSuccessScreen extends ConsumerWidget {
     final testMode = receipt?.testMode ?? true;
 
     final rows = <(String, String, bool)>[
-      ('Order ID', receipt?.orderId ?? MockData.orderId, true),
+      (tx.orderId, receipt?.orderId ?? MockData.orderId, true),
       (
-        'Amount paid',
+        tx.amountPaid,
         formatRupees(receipt?.amountInr ?? course.priceInr),
         false,
       ),
-      ('Method', receipt?.method ?? ref.watch(paymentMethodProvider), false),
+      (tx.method, receipt?.method ?? ref.watch(paymentMethodProvider), false),
     ];
 
     return Scaffold(
@@ -76,10 +77,10 @@ class PaymentSuccessScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 22),
-                        Text('Payment successful', style: AppText.h3),
+                        Text(tx.paymentSuccessful, style: AppText.h3),
                         const SizedBox(height: 6),
                         Text(
-                          "You're enrolled in ${course.title}.",
+                          tx.enrolledIn(course.title),
                           textAlign: TextAlign.center,
                           style: AppText.tabular(
                             14,
@@ -151,7 +152,7 @@ class PaymentSuccessScreen extends ConsumerWidget {
                               borderRadius: AppRadius.xs,
                             ),
                             child: Text(
-                              'Test mode — nothing was charged.',
+                              tx.testModeNothingCharged,
                               textAlign: TextAlign.center,
                               style: AppText.meta.copyWith(
                                 color: AppColors.ink,
@@ -165,17 +166,17 @@ class PaymentSuccessScreen extends ConsumerWidget {
                 ),
               ),
               PrimaryButton(
-                label: 'Start learning',
+                label: tx.startLearning,
                 onPressed: () => context.go(Routes.myCourses),
               ),
               const SizedBox(height: 10),
               SecondaryButton(
-                label: 'Download receipt',
+                label: tx.downloadReceipt,
                 onPressed: () => showDemoSnack(
                   context,
                   testMode
-                      ? 'Receipts are issued for real payments only.'
-                      : 'Razorpay has emailed your receipt.',
+                      ? tx.receiptsRealOnly
+                      : tx.receiptEmailed,
                 ),
               ),
               const SizedBox(height: 28),

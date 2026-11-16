@@ -14,6 +14,7 @@ import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 /// 16 · Notes — every chapter PDF from the student's courses, searchable.
 /// Shown as the Notes section of the Academics tab.
@@ -54,7 +55,7 @@ class _NotesViewState extends ConsumerState<NotesView> {
             cursorColor: AppColors.primary,
             style: AppText.tabular(14, FontWeight.w400),
             decoration: InputDecoration(
-              hintText: 'Search notes',
+              hintText: tx.searchNotes,
               hintStyle: AppText.tabular(
                 14,
                 FontWeight.w400,
@@ -84,7 +85,7 @@ class _NotesViewState extends ConsumerState<NotesView> {
           children: [
             for (final label in ['All', ...MockData.scienceSubjects])
               FilterChipPill(
-                label: label == 'Mathematics' ? 'Maths' : label,
+                label: label == 'All' ? tx.all : tx.subject(label == 'Mathematics' ? 'Maths' : label),
                 selected: filter == label,
                 onTap: () =>
                     ref.read(materialsFilterProvider.notifier).select(label),
@@ -95,10 +96,10 @@ class _NotesViewState extends ConsumerState<NotesView> {
         if (materials.isEmpty)
           EmptyState(
             icon: LucideIcons.fileSearch,
-            title: 'No notes found',
+            title: tx.noNotesFound,
             body: q.isEmpty
-                ? 'Teachers have not uploaded $filter notes yet.'
-                : 'Nothing matches “$_query”.',
+                ? tx.noFilterNotes(tx.subject(filter))
+                : tx.nothingMatchesQuery(_query),
           )
         else
           ListCard(
@@ -151,7 +152,7 @@ class _NoteRow extends StatelessWidget {
             // Notes open only in the in-app viewer; they are never saved to
             // the phone, so there is no download or offline toggle.
             Text(
-              'Open',
+              tx.open,
               style: AppText.tabular(
                 12,
                 FontWeight.w600,
@@ -185,7 +186,7 @@ class _NotesComingSoon extends StatelessWidget {
           child: Image.asset(
             'assets/images/promo/notes.png',
             fit: BoxFit.cover,
-            semanticLabel: 'Free notes and solved PYQs',
+            semanticLabel: tx.freeNotesTitle,
           ),
         ),
         const SizedBox(height: 22),
@@ -196,16 +197,15 @@ class _NotesComingSoon extends StatelessWidget {
             borderRadius: AppRadius.pill,
           ),
           child: Text(
-            'COMING SOON',
+            tx.comingSoonCaps,
             style: AppText.eyebrow(color: AppColors.primary, size: 11),
           ),
         ),
         const SizedBox(height: 12),
-        Text('Chapter notes are on the way.', style: AppText.h2),
+        Text(tx.notesOnTheWay, style: AppText.h2),
         const SizedBox(height: 8),
         Text(
-          'A notes PDF and solved PYQs for every Class 12 chapter, in Hindi '
-          'and English. They will open right here in the secure viewer.',
+          tx.notesOnTheWayBody,
           style: AppText.bodyLg,
         ),
         const SizedBox(height: 22),
@@ -233,13 +233,13 @@ class _NotesComingSoon extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(name, style: AppText.serif(24)),
-                      Text('$chapters chapters', style: AppText.meta),
+                      Text(tx.subject(name), style: AppText.serif(24)),
+                      Text(tx.chapters(chapters), style: AppText.meta),
                     ],
                   ),
                 ),
                 Text(
-                  'Coming soon',
+                  tx.comingSoon,
                   style: AppText.tabular(
                     12.5,
                     FontWeight.w700,

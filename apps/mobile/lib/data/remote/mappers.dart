@@ -1,33 +1,19 @@
 import '../models/course.dart';
 import '../models/ticket.dart';
 import '../models/user.dart';
+import '../../l10n/strings.dart';
 
 typedef Json = Map<String, dynamic>;
 
-/// "2h ago" / "Yesterday" / "12 Sept" — the label shape the widgets expect.
+/// "2h ago" / "Yesterday" / "12 Sep" — in the student's language.
 String relativeLabel(DateTime when) {
   final diff = DateTime.now().difference(when);
-  if (diff.inMinutes < 1) return 'Just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-  if (diff.inHours < 24) return '${diff.inHours}h ago';
-  if (diff.inDays == 1) return 'Yesterday';
-  if (diff.inDays < 7) return '${diff.inDays}d ago';
-
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${when.day} ${months[when.month - 1]}';
+  if (diff.inMinutes < 1) return tx.justNow;
+  if (diff.inMinutes < 60) return tx.minutesAgo(diff.inMinutes);
+  if (diff.inHours < 24) return tx.hoursAgo(diff.inHours);
+  if (diff.inDays == 1) return tx.yesterday;
+  if (diff.inDays < 7) return tx.daysAgo(diff.inDays);
+  return '${when.day} ${tx.monthsShort[when.month - 1]}';
 }
 
 /// "Today · 6:00 PM", "Tomorrow · 5:00 PM", "Thu 16 Oct · 4:00 PM".
@@ -37,26 +23,11 @@ String sessionLabel(DateTime when) {
   final day = DateTime(when.year, when.month, when.day);
   final h = when.hour % 12 == 0 ? 12 : when.hour % 12;
   final time =
-      '$h:${when.minute.toString().padLeft(2, '0')} ${when.hour < 12 ? 'AM' : 'PM'}';
+      '$h:${when.minute.toString().padLeft(2, '0')} ${when.hour < 12 ? tx.am : tx.pm}';
   final diff = day.difference(today).inDays;
-  if (diff == 0) return 'Today · $time';
-  if (diff == 1) return 'Tomorrow · $time';
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${days[when.weekday - 1]} ${when.day} ${months[when.month - 1]} · $time';
+  if (diff == 0) return tx.todayAt(time);
+  if (diff == 1) return tx.tomorrowAt(time);
+  return '${tx.weekdaysShort[when.weekday - 1]} ${when.day} ${tx.monthsShort[when.month - 1]} · $time';
 }
 
 DateTime parseTs(Object? value) =>
@@ -75,7 +46,7 @@ String initialsOf(String name) {
 String _durationLabel(int? seconds) {
   if (seconds == null || seconds == 0) return '';
   final m = (seconds / 60).round();
-  return m < 60 ? '$m min' : '${m ~/ 60}h ${m % 60}m';
+  return m < 60 ? tx.minutes(m) : tx.hoursMinutes(m ~/ 60, m % 60);
 }
 
 String sizeLabel(int? bytes) {
@@ -134,13 +105,13 @@ Course courseFromRow(Json row, {required bool isEnrolled}) {
     id: row['id'] as String,
     title: (row['title'] as String?) ?? 'Course',
     subtitle: [
-      subjects.isEmpty ? 'All subjects' : '${subjects.length} subjects',
+      subjects.isEmpty ? tx.allSubjects : tx.subjectsCount(subjects.length),
       if (subtitleTeachers.isNotEmpty) subtitleTeachers,
     ].join(' • '),
     board: (row['board'] as String?) ?? 'Bihar Board',
     classLevel: (row['class_level'] as int?) ?? 10,
     batchLabel:
-        '${((row['board'] as String?) ?? 'Bihar Board').toUpperCase()} • '
+        '${tx.classNCaps((row['class_level'] as int?) ?? 12)} • '
         '${batchName.toUpperCase()}',
     // Progress needs lesson_progress, which is not modelled yet; show 0 rather
     // than inventing a number.
@@ -187,12 +158,12 @@ Lesson lessonFromRow(Json row, {required bool hasAccess}) {
     state: locked ? LessonState.locked : LessonState.current,
     durationLabel: switch (_kindOf(type)) {
       LessonKind.recorded => [
-        'Recorded',
+        tx.recorded,
         _durationLabel(row['duration_seconds'] as int?),
       ].where((s) => s.isNotEmpty).join(' • '),
-      LessonKind.live => 'Live class',
-      LessonKind.notes => 'Notes',
-      LessonKind.test => 'Test',
+      LessonKind.live => tx.liveClass,
+      LessonKind.notes => tx.notes,
+      LessonKind.test => tx.test,
     },
   );
 }
@@ -233,7 +204,7 @@ List<Chapter> chaptersFromLessons(List<Json> rows, {required bool hasAccess}) {
         .toList();
     return Chapter(
       number: number,
-      title: titles[entry.key] ?? 'Chapter',
+      title: titles[entry.key] ?? tx.chapter,
       subject: subjects[entry.key] ?? 'General',
       lessonsCompleted: 0,
       lessonsTotal: lessons.length,
@@ -290,7 +261,7 @@ Ticket ticketFromRow(Json row) {
     subject: (row['subject'] as String?) ?? '',
     category: ticketCategoryFrom(row['category'] as String?),
     status: ticketStatusFrom(row['status'] as String?),
-    openedLabel: 'Opened ${relativeLabel(parseTs(row['created_at']))}',
+    openedLabel: tx.openedAgo(relativeLabel(parseTs(row['created_at']))),
     messages: messageRows.map((m) {
       final fromSupport = (m['from_support'] as bool?) ?? false;
       return TicketMessage(

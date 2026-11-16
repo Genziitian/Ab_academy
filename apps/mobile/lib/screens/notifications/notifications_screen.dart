@@ -9,6 +9,7 @@ import '../../theme/app_text_styles.dart';
 import '../../widgets/common.dart';
 import '../../widgets/ui_kit.dart';
 import '../home/home_screen.dart';
+import '../../l10n/strings.dart';
 
 /// 18 · Updates — announcements and notifications sent from the admin
 /// console (Notifications), newest first. Also the Updates tab.
@@ -43,13 +44,13 @@ class NotificationsScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Notifications',
+                          tx.notifications,
                           style: AppText.h1.copyWith(letterSpacing: -0.6),
                         ),
                         Text(
                           unread > 0
-                              ? '$unread unread · alerts & announcements'
-                              : 'Recent alerts & updates',
+                              ? tx.unreadAlerts(unread)
+                              : tx.recentAlerts,
                           style: AppText.bodyLg,
                         ),
                       ],
@@ -61,7 +62,7 @@ class NotificationsScreen extends ConsumerWidget {
                           .read(notificationsProvider.notifier)
                           .markAllRead(),
                       child: Text(
-                        'Mark all read',
+                        tx.markAllRead,
                         style: AppText.tabular(
                           13,
                           FontWeight.w600,
@@ -80,13 +81,13 @@ class NotificationsScreen extends ConsumerWidget {
                 child: items.isEmpty
                     ? ListView(
                         padding: const EdgeInsets.all(20),
-                        children: const [
+                        children: [
                           SizedBox(height: 40),
                           EmptyState(
                             icon: LucideIcons.bellOff,
-                            title: 'No notifications yet',
+                            title: tx.noNotifications,
                             body:
-                                'Class updates, announcements and support replies show up here.',
+                                tx.noNotificationsBody,
                           ),
                         ],
                       )
@@ -109,9 +110,9 @@ class NotificationsScreen extends ConsumerWidget {
     final items = all.where((n) => n.group == group).toList();
     if (items.isEmpty) return const [];
     final label = switch (group) {
-      NotificationGroup.today => 'Today',
-      NotificationGroup.yesterday => 'Yesterday',
-      NotificationGroup.earlier => 'Earlier',
+      NotificationGroup.today => tx.today,
+      NotificationGroup.yesterday => tx.yesterday,
+      NotificationGroup.earlier => tx.earlier,
     };
     return [
       GroupHeading(label),

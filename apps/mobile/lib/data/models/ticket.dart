@@ -1,25 +1,34 @@
+import '../../l10n/strings.dart';
 /// Mirrors `public.ticket_status`.
 enum TicketStatus {
-  open('Open'),
-  inProgress('In progress'),
-  resolved('Resolved'),
-  closed('Closed');
+  open,
+  inProgress,
+  resolved,
+  closed;
 
-  const TicketStatus(this.label);
-
-  final String label;
+  /// Shown on badges, in the student's language.
+  String get label => switch (this) {
+    open => tx.statusOpen,
+    inProgress => tx.statusInProgress,
+    resolved => tx.statusResolved,
+    closed => tx.statusClosed,
+  };
 }
 
 enum TicketCategory {
-  payment('Payment'),
-  content('Course content'),
-  technical('Technical'),
-  account('Account'),
-  other('Other');
+  payment,
+  content,
+  technical,
+  account,
+  other;
 
-  const TicketCategory(this.label);
-
-  final String label;
+  String get label => switch (this) {
+    payment => tx.catPayment,
+    content => tx.catContent,
+    technical => tx.catTechnical,
+    account => tx.catAccount,
+    other => tx.catOther,
+  };
 }
 
 /// Mirrors `public.tickets`.

@@ -11,6 +11,7 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../utils/secure_screen.dart';
+import '../l10n/strings.dart';
 
 /// Origin the player page is served from. YouTube refuses embeds without a
 /// referrer, and checks it against the `origin` player variable.
@@ -88,10 +89,10 @@ class _SecureYouTubePlayerState extends State<SecureYouTubePlayer>
       (_) => _moveWatermark(),
     );
     if (WebViewPlatform.instance == null) {
-      _error = 'Video playback is not available on this device.';
+      _error = tx.playerUnavailable;
     } else if (!_idPattern.hasMatch(widget.videoId)) {
       // Never echo the bad value back; it may be a whole URL.
-      _error = 'This lecture is not set up correctly. Please tell support.';
+      _error = tx.playerMisconfigured;
     } else {
       _web = _createController()
         ..loadHtmlString(_page(widget.videoId), baseUrl: '$_origin/');
@@ -205,9 +206,9 @@ class _SecureYouTubePlayerState extends State<SecureYouTubePlayer>
         case 'error':
           _error = switch (m['c']) {
             101 || 150 || 152 || 153 =>
-              'This lecture cannot play right now. Our team has been notified — please try later.',
+              tx.playerBlocked,
             _ =>
-              'The video failed to load. Check your connection and try again.',
+              tx.playerLoadFailed,
           };
       }
     });
@@ -359,7 +360,7 @@ class _SecureYouTubePlayerState extends State<SecureYouTubePlayer>
                 opacity: showControls || _error != null ? 1 : 0,
                 duration: const Duration(milliseconds: 200),
                 child: IconButton(
-                  tooltip: 'Back',
+                  tooltip: tx.back,
                   onPressed: widget.onBack,
                   icon: const Icon(
                     Icons.arrow_back,
@@ -385,7 +386,7 @@ class _SecureYouTubePlayerState extends State<SecureYouTubePlayer>
             children: [
               _RoundButton(
                 icon: LucideIcons.rotateCcw,
-                tooltip: 'Back 10 seconds',
+                tooltip: tx.back10,
                 onTap: () => _seek(_position - 10),
               ),
               const SizedBox(width: 24),
@@ -395,14 +396,14 @@ class _SecureYouTubePlayerState extends State<SecureYouTubePlayer>
                     : (_playing
                           ? Icons.pause_rounded
                           : Icons.play_arrow_rounded),
-                tooltip: _playing ? 'Pause' : 'Play',
+                tooltip: _playing ? tx.pause : tx.play,
                 big: true,
                 onTap: _togglePlay,
               ),
               const SizedBox(width: 24),
               _RoundButton(
                 icon: LucideIcons.rotateCw,
-                tooltip: 'Forward 10 seconds',
+                tooltip: tx.forward10,
                 onTap: () => _seek(_position + 10),
               ),
             ],
@@ -476,8 +477,8 @@ class _SecureYouTubePlayerState extends State<SecureYouTubePlayer>
                   if (widget.onToggleFullscreen != null)
                     IconButton(
                       tooltip: widget.fullscreen
-                          ? 'Exit full screen'
-                          : 'Full screen',
+                          ? tx.exitFullScreen
+                          : tx.fullScreen,
                       visualDensity: VisualDensity.compact,
                       onPressed: widget.onToggleFullscreen,
                       icon: Icon(

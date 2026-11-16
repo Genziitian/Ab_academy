@@ -3,7 +3,7 @@
 
 export const en = {
   common: {
-    brand: "Akhand Bharat Academy",
+    brand: "AB Academy",
     short: "AB Academy",
     board: "Bihar Board",
     classN: (n: number | string) => `Class ${n}`,
@@ -257,7 +257,7 @@ export const en = {
     eyebrow: "About us",
     title: "A small academy with one job: get you ready for the boards.",
     lead:
-      "AB Academy (Akhand Bharat Academy) teaches Class 12 Bihar Board students through recorded lectures, live doubt sessions and chapter notes, so every student knows what to study next.",
+      "AB Academy teaches Class 12 Bihar Board students through recorded lectures, live doubt sessions and chapter notes, so every student knows what to study next.",
     p1: "Right now we focus on Class 12 crash courses in Physics, Chemistry and Maths. More classes and boards will follow under the same academy.",
     quote: "हमारा लक्ष्य है कि हर छात्र को साफ़ पता हो कि आगे क्या पढ़ना है — बिना उलझन के।",
     p2: "Hindi-medium and Hinglish learners get the same simple path: pick your subject, watch the lectures, revise with notes, and ask when you're stuck.",

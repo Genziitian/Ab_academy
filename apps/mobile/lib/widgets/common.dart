@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
+import '../l10n/strings.dart';
 
 /// Thin rounded progress track used across cards, chapters and storage meters.
 class ProgressBar extends StatelessWidget {
@@ -265,7 +266,7 @@ class UnderlineTabs extends StatelessWidget {
                 border: Border(
                   bottom: BorderSide(
                     color: tabs[i] == selected
-                        ? AppColors.primary
+                        ? AppColors.ink
                         : Colors.transparent,
                     width: 2,
                   ),
@@ -277,7 +278,7 @@ class UnderlineTabs extends StatelessWidget {
                   14,
                   tabs[i] == selected ? FontWeight.w600 : FontWeight.w400,
                   color: tabs[i] == selected
-                      ? AppColors.primary
+                      ? AppColors.ink
                       : AppColors.textMuted,
                 ),
               ),
@@ -312,13 +313,13 @@ class EmptyState extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: AppRadius.card,
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.ruleStrong, style: BorderStyle.solid),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 30, color: AppColors.textDisabled),
+          Icon(icon, size: 26, color: AppColors.textSubtle),
           const SizedBox(height: 12),
-          Text(title, style: AppText.tabular(13.5, FontWeight.w700)),
+          Text(title, style: AppText.tabular(15, FontWeight.w600)),
           const SizedBox(height: 8),
           Text(
             body,
@@ -437,7 +438,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).maybePop(),
-                    tooltip: closeIcon ? 'Close' : 'Back',
+                    tooltip: closeIcon ? tx.close : tx.back,
                     icon: Icon(
                       closeIcon ? Icons.close : Icons.arrow_back,
                       size: 22,
@@ -546,12 +547,12 @@ class SegmentedTabs extends StatelessWidget {
 /// Warm "Saffron & Ink" thumbnail colours. A course's stored hue picks one,
 /// so each course keeps a stable colour of its own (same mapping as the web).
 const _thumbnailPairs = <List<Color>>[
-  [Color(0xFFE8742A), Color(0xFFB4521A)], // saffron
-  [Color(0xFF6B7B3A), Color(0xFF4A5628)], // olive
-  [Color(0xFF1C7C70), Color(0xFF0F5A50)], // teal
-  [Color(0xFF3A342D), Color(0xFF1C1814)], // coal
-  [Color(0xFF7A3E8E), Color(0xFF55286A)], // plum
-  [Color(0xFFC8573A), Color(0xFF8F3A22)], // terracotta
+  [Color(0xFFD4622A), Color(0xFFA8481B)], // saffron
+  [Color(0xFF5E6B3A), Color(0xFF465028)], // olive
+  [Color(0xFF2C7A6B), Color(0xFF1F5C51)], // teal
+  [Color(0xFF2E2B25), Color(0xFF171511)], // ink
+  [Color(0xFF5B4A8A), Color(0xFF433669)], // plum
+  [Color(0xFFB0553A), Color(0xFF8A3F28)], // terracotta
 ];
 
 LinearGradient courseGradient(int hue) {

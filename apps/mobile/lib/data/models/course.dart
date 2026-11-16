@@ -1,4 +1,5 @@
 import 'user.dart';
+import '../../l10n/strings.dart';
 
 /// Mirrors `public.lesson_type` + the lesson row states in the design's component sheet.
 enum LessonState { completed, current, live, locked, notes }
@@ -72,10 +73,10 @@ class Chapter {
   final String? trailingNote;
 
   /// "CHAPTER 01"
-  String get label => 'CHAPTER ${number.toString().padLeft(2, '0')}';
+  String get label => tx.chapterN(number);
 
   String get progressLabel =>
-      trailingNote ?? '$lessonsCompleted / $lessonsTotal lessons';
+      trailingNote ?? tx.lessonsProgress(lessonsCompleted, lessonsTotal);
 
   double get progress =>
       lessonsTotal == 0 ? 0 : lessonsCompleted / lessonsTotal;
@@ -125,7 +126,7 @@ class Course {
   final String board;
   final int classLevel;
 
-  /// "BIHAR BOARD • 2027 BATCH"
+  /// "CLASS 12 • 2027 BATCH"
   final String batchLabel;
   final int progressPercent;
   final int chaptersCompleted;
@@ -165,7 +166,7 @@ class Course {
   /// gradient in [thumbnailHue].
   final String? thumbnailUrl;
 
-  /// Day of the 90-day plan the student is on, for enrolled crash courses.
+  /// Day of the 60-day plan the student is on, for enrolled crash courses.
   final int? planDay;
 
   int get discountPercent =>
@@ -177,9 +178,9 @@ class Course {
 
   /// "12 of 28 chapters completed"
   String get chaptersLabel =>
-      '$chaptersCompleted of $chaptersTotal chapters completed';
+      tx.chaptersCompleted(chaptersCompleted, chaptersTotal);
 
   /// "12 / 28 chapters"
   String get chaptersShortLabel =>
-      '$chaptersCompleted / $chaptersTotal chapters';
+      tx.chaptersProgress(chaptersCompleted, chaptersTotal);
 }

@@ -14,9 +14,10 @@ import '../../widgets/common.dart';
 import '../../widgets/ui_kit.dart';
 import '../profile/delete_account_screen.dart';
 import 'policy_content.dart';
+import '../../l10n/strings.dart';
 
-/// About, Contact and the policies, drawn natively in the app's Saffron & Ink
-/// style instead of loading the website.
+/// About, Contact and the policies, drawn natively in the app's calm
+/// classroom style instead of loading the website.
 
 void _push(BuildContext context, Widget page) =>
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
@@ -29,7 +30,7 @@ void openDataDeletion(BuildContext context) => openPolicy(
   Policies.dataDeletion,
   footer: Builder(
     builder: (context) => PrimaryButton(
-      label: 'Request deletion',
+      label: tx.requestDeletion,
       onPressed: () => _push(context, const DeleteAccountScreen()),
     ),
   ),
@@ -73,11 +74,11 @@ class _Header extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          eyebrow.toUpperCase(),
-          style: AppText.eyebrow(color: AppColors.primary),
+          tx.hindi ? eyebrow : eyebrow.toUpperCase(),
+          style: AppText.eyebrow(),
         ),
         const SizedBox(height: 10),
-        Text(title, style: AppText.serif(38, height: 1.0)),
+        Text(title, style: AppText.serif(36, height: 1.05)),
         if (intro != null) ...[
           const SizedBox(height: 14),
           Text(intro!, style: AppText.bodyLg.copyWith(height: 1.6)),
@@ -99,10 +100,22 @@ class PolicyScreen extends StatelessWidget {
       title: doc.title,
       children: [
         _Header(
-          eyebrow: 'Updated ${Academy.policiesUpdated}',
+          eyebrow: tx.updatedOn(tx.hindi ? '3 नवंबर 2026' : Academy.policiesUpdated),
           title: doc.title,
           intro: doc.intro,
         ),
+        if (tx.hindi) ...[
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: AppRadius.sm,
+              border: Border.all(color: AppColors.rule),
+            ),
+            child: Text(tx.hindiLegalNote, style: AppText.meta.copyWith(height: 1.5)),
+          ),
+        ],
         if (footer != null) ...[const SizedBox(height: 20), footer!],
         const SizedBox(height: 12),
         for (final (i, section) in doc.sections.indexed)
@@ -179,7 +192,7 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _InfoFrame(
-      title: 'About us',
+      title: tx.aboutUs,
       children: [
         Container(
           padding: const EdgeInsets.fromLTRB(22, 24, 22, 26),
@@ -193,12 +206,12 @@ class AboutScreen extends StatelessWidget {
               const AcademyMark(size: 64),
               const SizedBox(height: 18),
               Text(
-                'ABOUT ${Academy.name.toUpperCase()}',
-                style: AppText.eyebrow(color: AppColors.textOnDarkAccent),
+                tx.aboutEyebrow,
+                style: AppText.eyebrow(color: AppColors.textOnDarkMuted),
               ),
               const SizedBox(height: 10),
               Text(
-                'Built in Bihar, for Bihar Board.',
+                tx.aboutTitle,
                 style: AppText.serif(
                   36,
                   height: 1.0,
@@ -207,9 +220,7 @@ class AboutScreen extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               Text(
-                'A teacher with ${Academy.teacherYears} years in the classroom '
-                'and a developer, building the crash course they wish students '
-                'had: affordable, focused and in your language.',
+                tx.aboutLead(Academy.teacherYears),
                 style: AppText.bodyLg.copyWith(
                   color: AppColors.textOnDark,
                   height: 1.6,
@@ -219,7 +230,7 @@ class AboutScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 32),
-        const _Header(eyebrow: 'The people behind it', title: 'Founders'),
+        _Header(eyebrow: tx.peopleBehind, title: tx.founders),
         const SizedBox(height: 18),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,113 +238,37 @@ class AboutScreen extends StatelessWidget {
             for (final (i, f) in Academy.founders.indexed) ...[
               if (i > 0) const SizedBox(width: 14),
               Expanded(
-                child: _FounderCard(name: f.name, role: f.role, photo: f.photo),
+                child: _FounderCard(name: f.name == 'Ajit Sir' ? tx.teacherName : f.name, role: tx.role(f.role), photo: f.photo),
               ),
             ],
           ],
         ),
         const SizedBox(height: 32),
-        const _Header(
-          eyebrow: 'What we do',
-          title: 'One teacher. Three subjects.',
+        _Header(
+          eyebrow: tx.whatWeDo,
+          title: tx.oneTeacherThree,
         ),
         const SizedBox(height: 16),
-        const _Fact(
+        _Fact(
           icon: LucideIcons.bookOpen,
-          title: 'Class 12 PCM crash courses',
+          title: tx.wwdPcm,
           body:
-              'Physics, Chemistry and Maths for the Bihar Board exam, chapter by chapter.',
+              tx.wwdPcmBody,
         ),
-        const _Fact(
+        _Fact(
           icon: LucideIcons.playCircle,
-          title: 'Recorded classes, live doubts',
+          title: tx.wwdRecorded,
           body:
-              '${Academy.teacher} records every class and takes every live doubt session himself.',
+              tx.wwdRecordedBody,
         ),
-        const _Fact(
+        _Fact(
           icon: LucideIcons.indianRupee,
-          title: 'Priced for every student',
-          body: '₹249 a subject, with a free demo class to try first.',
+          title: tx.wwdPriced,
+          body: tx.wwdPricedBody,
         ),
         const SizedBox(height: 20),
         const _ContactCard(),
-        const SizedBox(height: 20),
-        const _GovDisclaimer(),
       ],
-    );
-  }
-}
-
-/// Google Play's Misleading Claims policy: the app mentions the Bihar Board,
-/// so it must say it is not a government body and link the official source.
-class _GovDisclaimer extends StatelessWidget {
-  const _GovDisclaimer();
-
-  static const officialUrl = 'https://biharboardonline.bihar.gov.in';
-
-  @override
-  Widget build(BuildContext context) {
-    return SoftCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(LucideIcons.info, size: 18, color: AppColors.primary),
-              const SizedBox(width: 8),
-              Text(
-                'Not a government app',
-                style: AppText.bodyLg.copyWith(fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${Academy.name} is a private coaching institute. It is not '
-            'affiliated with, endorsed by or representing the Bihar School '
-            'Examination Board (BSEB) or any government body. For the official '
-            'syllabus, exam dates, notices and results, use the official BSEB '
-            'website:',
-            style: AppText.meta.copyWith(height: 1.5),
-          ),
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: () {
-              Clipboard.setData(const ClipboardData(text: officialUrl));
-              ScaffoldMessenger.of(context)
-                ..hideCurrentSnackBar()
-                ..showSnackBar(
-                  const SnackBar(
-                    content: Text('Link copied — paste it in your browser.'),
-                  ),
-                );
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  Flexible(
-                    child: SelectableText(
-                      officialUrl,
-                      style: AppText.meta.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  const Icon(
-                    LucideIcons.copy,
-                    size: 14,
-                    color: AppColors.primary,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -439,24 +374,22 @@ class ContactScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _InfoFrame(
-      title: 'Contact us',
+      title: tx.contactUs,
       children: [
-        const _Header(
-          eyebrow: 'We reply within 2 working days',
-          title: 'Talk to us.',
+        _Header(
+          eyebrow: tx.replyWithin2,
+          title: tx.talkToUs,
           intro:
-              'For questions about a course, a payment or your account, raise a '
-              'support ticket — it reaches the team fastest and you can follow '
-              'the reply in the app.',
+              tx.contactLead,
         ),
         const SizedBox(height: 20),
         PrimaryButton(
-          label: 'Raise a support ticket',
+          label: tx.raiseSupportTicket,
           onPressed: () => context.push(Routes.newTicket),
         ),
         const SizedBox(height: 10),
         SecondaryButton(
-          label: 'My tickets',
+          label: tx.myTickets,
           onPressed: () => context.push(Routes.tickets),
         ),
         const SizedBox(height: 28),
@@ -478,7 +411,7 @@ class _ContactCard extends StatelessWidget {
         children: [
           _ContactRow(
             icon: LucideIcons.mail,
-            label: 'Email',
+            label: tx.email,
             value: Academy.email,
             trailing: LucideIcons.copy,
             onTap: () {
@@ -486,14 +419,14 @@ class _ContactCard extends StatelessWidget {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
-                  const SnackBar(content: Text('Email address copied.')),
+                  SnackBar(content: Text(tx.emailCopied)),
                 );
             },
           ),
           const Divider(height: 1, thickness: 1, color: AppColors.divider),
           _ContactRow(
             icon: LucideIcons.mapPin,
-            label: 'Address',
+            label: tx.address,
             value: '${Academy.name}\n${Academy.address.join('\n')}',
           ),
         ],

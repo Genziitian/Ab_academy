@@ -9,11 +9,12 @@ import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 /// The two classes crash courses run for, with their accent and tagline.
-const _classes = <(int, Color, String)>[
-  (12, AppColors.primary, 'Board 2027 crash courses'),
-  (11, AppColors.violet, 'Build a strong base for Class 12'),
+List<(int, Color, String)> get _classes => [
+  (12, AppColors.ink, tx.class12Tagline),
+  (11, AppColors.textMuted, tx.class11Tagline),
 ];
 
 /// 04 · Choose class.
@@ -34,11 +35,11 @@ class SetupClassScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (editing)
-              const AppTopBar(title: 'Class & stream')
+              AppTopBar(title: tx.setupTitle)
             else
-              const SetupProgressHeader(
-                step: 'Step 1 of 2',
-                trailing: 'Bihar Board',
+              SetupProgressHeader(
+                step: tx.step1of2,
+                trailing: tx.board,
                 progress: 0.5,
               ),
             Expanded(
@@ -47,10 +48,10 @@ class SetupClassScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Which class are you in?', style: AppText.h2),
+                    Text(tx.whichClass, style: AppText.h2),
                     const SizedBox(height: 6),
                     Text(
-                      "We'll show crash courses for your class.",
+                      tx.whichClassLead,
                       style: AppText.bodyLg,
                     ),
                     const SizedBox(height: 28),
@@ -73,7 +74,7 @@ class SetupClassScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
               child: PrimaryButton(
-                label: 'Continue',
+                label: tx.continueLabel,
                 onPressed: () => context.push(
                   editing ? Routes.setupStreamEdit : Routes.setupStream,
                 ),
@@ -121,7 +122,7 @@ class _ClassCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Class $level', style: AppText.cardTitleLg),
+                Text(tx.classN(level), style: AppText.cardTitleLg),
                 const SizedBox(height: 2),
                 Text(
                   tagline,

@@ -9,16 +9,18 @@ import '../../theme/app_text_styles.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/common.dart';
 import 'setup_class_screen.dart';
+import '../../l10n/strings.dart';
 
-const _streams = <(String, String)>[
-  ('Science', 'Physics · Chemistry · Biology · Maths'),
-  ('Commerce', 'Accountancy · Business Studies · Economics'),
-  ('Arts', 'History · Political Science · Geography'),
+/// Stored value, then the subjects line shown under it.
+List<(String, String)> get _streams => [
+  ('Science', tx.streamScienceSubjects),
+  ('Commerce', tx.streamCommerceSubjects),
+  ('Arts', tx.streamArtsSubjects),
 ];
 
-const _mediums = <(String, String)>[
-  ('Hindi', 'हिंदी माध्यम'),
-  ('Hinglish', 'Hindi + English terms'),
+List<(String, String)> get _mediums => [
+  ('Hindi', tx.hindiHint),
+  ('Hinglish', tx.hinglishHint),
 ];
 
 /// 05 · Stream & medium.
@@ -50,7 +52,7 @@ class _SetupStreamScreenState extends ConsumerState<SetupStreamScreen> {
       if (!mounted) return;
       if (widget.editing) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Class & stream updated.')),
+          SnackBar(content: Text(tx.classStreamUpdated)),
         );
         // Back past both edit screens to where Class & stream was opened.
         context.pop();
@@ -61,8 +63,8 @@ class _SetupStreamScreenState extends ConsumerState<SetupStreamScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not save. Check your connection and try again.'),
+        SnackBar(
+          content: Text(tx.couldNotSaveConnection),
         ),
       );
     } finally {
@@ -83,13 +85,13 @@ class _SetupStreamScreenState extends ConsumerState<SetupStreamScreen> {
           children: [
             if (widget.editing)
               AppTopBar(
-                title: 'Class & stream',
-                subtitle: 'Class ${onboarding.classLevel}',
+                title: tx.setupTitle,
+                subtitle: tx.classN(onboarding.classLevel),
               )
             else
               SetupProgressHeader(
-                step: 'Step 2 of 2',
-                trailing: 'Class ${onboarding.classLevel}',
+                step: tx.step2of2,
+                trailing: tx.classN(onboarding.classLevel),
                 progress: 1,
               ),
             Expanded(
@@ -98,7 +100,7 @@ class _SetupStreamScreenState extends ConsumerState<SetupStreamScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Choose your stream', style: AppText.h2),
+                    Text(tx.chooseStream, style: AppText.h2),
                     const SizedBox(height: 20),
                     for (final (name, subjects) in _streams) ...[
                       SelectableCard(
@@ -111,7 +113,7 @@ class _SetupStreamScreenState extends ConsumerState<SetupStreamScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    name,
+                                    tx.subject(name),
                                     style: AppText.tabular(16, FontWeight.w600),
                                   ),
                                   const SizedBox(height: 2),
@@ -137,7 +139,7 @@ class _SetupStreamScreenState extends ConsumerState<SetupStreamScreen> {
                     ],
                     const SizedBox(height: 18),
                     Text(
-                      'Medium of study',
+                      tx.mediumOfStudy,
                       style: AppText.tabular(16, FontWeight.w600),
                     ),
                     const SizedBox(height: 12),
@@ -156,7 +158,7 @@ class _SetupStreamScreenState extends ConsumerState<SetupStreamScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    '$name Medium',
+                                    tx.mediumLabel(name == 'Hindi' ? tx.hindiLang : tx.hinglishLang),
                                     style: AppText.tabular(
                                       15,
                                       FontWeight.w600,
@@ -191,10 +193,10 @@ class _SetupStreamScreenState extends ConsumerState<SetupStreamScreen> {
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
               child: PrimaryButton(
                 label: _saving
-                    ? 'Saving…'
+                    ? tx.saving
                     : widget.editing
-                    ? 'Save'
-                    : 'Start learning',
+                    ? tx.save
+                    : tx.startLearning,
                 onPressed: _saving ? null : _save,
               ),
             ),

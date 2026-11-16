@@ -44,7 +44,7 @@ abstract final class MockData {
   ];
 
   /// Every crash course runs on the same plan length.
-  static const planDays = 90;
+  static const planDays = 60;
 
   static const _crashHighlights = [
     'Daily live classes with doubt solving',
@@ -65,7 +65,7 @@ abstract final class MockData {
     subtitle: "PCM + PCB • Amit Sir, Neha Ma'am +2",
     board: 'Bihar Board',
     classLevel: 12,
-    batchLabel: 'BIHAR BOARD • 2027 BATCH',
+    batchLabel: 'CLASS 12 • 2027 BATCH',
     progressPercent: 42,
     chaptersCompleted: 12,
     chaptersTotal: 28,
@@ -74,7 +74,7 @@ abstract final class MockData {
     priceInr: 2499,
     originalPriceInr: 4999,
     description:
-        'Complete Class 12 Science revision in 90 days with live classes, chapter '
+        'Complete Class 12 Science revision in 60 days with live classes, chapter '
         'recordings, notes and board-pattern tests.',
     nextUpLabel: 'Next: Physics • Electric Charges',
     lessonsCount: 120,
@@ -265,7 +265,7 @@ abstract final class MockData {
     CourseBanner(
       id: 'b1',
       title: 'Class 12 Science Crash Course',
-      subtitle: 'Finish the syllabus in 90 days · 50% off',
+      subtitle: 'Finish the syllabus in 60 days · 50% off',
       courseId: 'class-12-science-crash-course-2027',
       ctaLabel: 'Enroll now',
       hue: 214,

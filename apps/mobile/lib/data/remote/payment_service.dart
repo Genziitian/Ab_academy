@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'repositories.dart';
+import '../../l10n/strings.dart';
 
 /// What the success screen shows after a purchase.
 class PaymentReceipt {
@@ -80,7 +81,7 @@ class PaymentService {
       'name': 'AB Academy',
       'description': order['course_title'] ?? 'Crash course',
       'prefill': prefill,
-      'theme': {'color': '#B4521A'},
+      'theme': {'color': '#171511'},
       'retry': {'enabled': true, 'max_count': 2},
     });
     final payment = await _pending!.future;
@@ -110,10 +111,10 @@ class PaymentService {
     _pending?.completeError(
       CheckoutException(
         cancelled
-            ? 'Payment cancelled.'
+            ? tx.paymentCancelled
             : (response.message?.isNotEmpty ?? false)
             ? response.message!
-            : 'Payment failed. Nothing was charged.',
+            : tx.paymentFailedNothingCharged,
       ),
     );
   }
@@ -122,8 +123,7 @@ class PaymentService {
     // The wallet app finishes the payment; the webhook enrols the student.
     _pending?.completeError(
       CheckoutException(
-        'Finishing payment in ${response.walletName ?? 'your wallet'} — '
-        'your course unlocks as soon as it is confirmed.',
+        tx.finishingIn(response.walletName ?? (tx.hindi ? 'आपके वॉलेट' : 'your wallet')),
       ),
     );
   }

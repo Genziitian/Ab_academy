@@ -1,86 +1,103 @@
 import 'package:flutter/material.dart';
 
-/// "Saffron & Ink" — the same cream / coal / saffron palette as the website,
-/// so the app and abacademy.in read as one product. Primary is the deeper
-/// clay so white button text stays readable; saffron is the accent.
+/// "Calm classroom" — the same palette as abacademy.in: warm paper grey,
+/// white panels, near-black ink. Saffron only marks things (the brand, today,
+/// the active tab, live). Token names are kept from the earlier design so
+/// every screen picks up the new look without changes.
 abstract final class AppColors {
-  // Brand
-  static const primary = Color(0xFFB4521A);
-  static const primaryPressed = Color(0xFF8A3C10);
+  // ---------------------------------------------------------------- core
 
-  /// Navy used for hero cards, the course page header and headings.
-  static const primaryDeep = Color(0xFF1C1814);
-  static const primaryDeepRaised = Color(0xFF3A342D);
-  static const primaryTint = Color(0xFFFBEADC);
-  static const primaryTintBorder = Color(0xFFEFC9AD);
-  static const primarySoft = Color(0xFFF7F3EC);
-  static const accent = Color(0xFFE8742A);
-  static const violet = Color(0xFF7A3E8E);
-  static const teal = Color(0xFF0F7A6E);
+  /// Page background — warm paper grey.
+  static const canvas = Color(0xFFF3F2EE);
 
-  // Subject accents (ink / tint pairs)
-  static const physics = Color(0xFFB4521A);
-  static const physicsTint = Color(0xFFFBEADC);
-  static const chemistry = Color(0xFF0F7A6E);
-  static const chemistryTint = Color(0xFFE3F2EC);
-  static const maths = Color(0xFF7A3E8E);
-  static const mathsTint = Color(0xFFF3E8F5);
-  static const biology = Color(0xFFC06A1A);
-  static const biologyTint = Color(0xFFFFF1E8);
-  static const english = Color(0xFFC23A68);
-  static const englishTint = Color(0xFFFFEEF3);
-  static const commerce = Color(0xFF1F7373);
-  static const commerceTint = Color(0xFFE4F1F1);
+  /// Grey tray that holds a white card (stat tiles, grouped lists).
+  static const tray = Color(0xFFEAE8E2);
 
-  // Status
-  static const live = Color(0xFFFF5D8F);
-  static const liveOnDark = Color(0xFFFF8FB0);
-  static const liveDot = Color(0xFFE5484D);
-  static const liveInk = Color(0xFFC43B3B);
-  static const liveTint = Color(0xFFFDE8E8);
-  static const pdfTint = Color(0xFFFDE9E9);
-  static const success = Color(0xFF16A34A);
-  static const successTint = Color(0xFFE9F9EF);
-  static const successDot = Color(0xFF22C55E);
-  static const warning = Color(0xFFC06A1A);
-  static const warningInk = Color(0xFFC06A1A);
-  static const warningTint = Color(0xFFFFF8EC);
-  static const warningBorder = Color(0xFFF6E3C4);
-  static const warningText = Color(0xFF8A6A3E);
-  static const amberTint = Color(0xFFFFF1E8);
-  static const dangerBorder = Color(0xFFF2D6D6);
+  /// Hairline rule between and around panels.
+  static const rule = Color(0xFFE3E0D8);
+  static const ruleStrong = Color(0xFFCDC9BE);
+
+  /// Saffron, and the darker saffron used for text on light backgrounds.
+  static const accent = Color(0xFFD4622A);
+  static const accentInk = Color(0xFFA8481B);
+  static const accentSoft = Color(0xFFFBEEE5);
+
+  // Brand. Primary actions are ink, as on the website.
+  static const primary = Color(0xFF171511);
+  static const primaryPressed = Color(0xFF000000);
+
+  /// Ink panels: the continue-learning card, the course page header.
+  static const primaryDeep = Color(0xFF171511);
+  static const primaryDeepRaised = Color(0xFF2E2B25);
+  static const primaryTint = Color(0xFFEFEDE7);
+  static const primaryTintBorder = Color(0xFFCDC9BE);
+  static const primarySoft = Color(0xFFF3F2EE);
+  static const violet = Color(0xFF5B4A8A);
+  static const teal = Color(0xFF2C7A6B);
+
+  // Subject accents (ink / tint pairs) — quiet, so subjects read as labels.
+  static const physics = Color(0xFFA8481B);
+  static const physicsTint = Color(0xFFFBEEE5);
+  static const chemistry = Color(0xFF2C7A6B);
+  static const chemistryTint = Color(0xFFE6F1ED);
+  static const maths = Color(0xFF5B4A8A);
+  static const mathsTint = Color(0xFFEEEBF5);
+  static const biology = Color(0xFF8A6A1E);
+  static const biologyTint = Color(0xFFF6F0E1);
+  static const english = Color(0xFF9A3B5B);
+  static const englishTint = Color(0xFFF7EBF0);
+  static const commerce = Color(0xFF2D6670);
+  static const commerceTint = Color(0xFFE5EFF1);
+
+  // Status. "Live" is green, as on the website; red is kept for errors.
+  static const live = Color(0xFF2C7A4B);
+  static const liveOnDark = Color(0xFF8FD3A8);
+  static const liveDot = Color(0xFF2C7A4B);
+  static const liveInk = Color(0xFFB42318);
+  static const liveTint = Color(0xFFFCEBE9);
+  static const pdfTint = Color(0xFFFCEBE9);
+  static const success = Color(0xFF2C7A4B);
+  static const successTint = Color(0xFFE5F1E9);
+  static const successDot = Color(0xFF2C7A4B);
+  static const warning = Color(0xFFA8481B);
+  static const warningInk = Color(0xFFA8481B);
+  static const warningTint = Color(0xFFFBEEE5);
+  static const warningBorder = Color(0xFFF3D5C2);
+  static const warningText = Color(0xFF7A4A2A);
+  static const amberTint = Color(0xFFFBEEE5);
+  static const dangerBorder = Color(0xFFF3CDC8);
 
   // Text
-  static const ink = Color(0xFF1C1814);
-  static const textBody = Color(0xFF4A433B);
-  static const textBodyAlt = Color(0xFF4A433B);
-  static const textMuted = Color(0xFF5E554B);
-  static const textSubtle = Color(0xFF9A8F82);
-  static const textFaint = Color(0xFFB5AB9E);
-  static const textDisabled = Color(0xFFCFC6B8);
-  static const textOnDark = Color(0xFFD9D1C4);
-  static const textOnDarkMuted = Color(0xFFBDB4A7);
-  static const textOnDarkAccent = Color(0xFFE8742A);
+  static const ink = Color(0xFF171511);
+  static const textBody = Color(0xFF3D3A34);
+  static const textBodyAlt = Color(0xFF3D3A34);
+  static const textMuted = Color(0xFF55514A);
+  static const textSubtle = Color(0xFF8B867C);
+  static const textFaint = Color(0xFFA9A498);
+  static const textDisabled = Color(0xFFCDC9BE);
+  static const textOnDark = Color(0xFFD8D5CE);
+  static const textOnDarkMuted = Color(0xFFA9A498);
+  static const textOnDarkAccent = Color(0xFFE88A5A);
 
   // Surfaces
-  static const surface = Color(0xFFFFFDF8);
-  static const background = Color(0xFFF7F3EC);
-  static const surfaceHover = Color(0xFFFBF8F2);
-  static const surfaceMuted = Color(0xFFF3EDE3);
-  static const fillMuted = Color(0xFFF3EDE3);
-  static const fillMutedAlt = Color(0xFFECE4D6);
-  static const trackMuted = Color(0xFFECE4D6);
-  static const classroom = Color(0xFF1C1814);
+  static const surface = Color(0xFFFFFFFF);
+  static const background = canvas;
+  static const surfaceHover = Color(0xFFF7F6F3);
+  static const surfaceMuted = tray;
+  static const fillMuted = canvas;
+  static const fillMutedAlt = tray;
+  static const trackMuted = tray;
+  static const classroom = Color(0xFF171511);
 
   // Borders
-  static const border = Color(0xFFE4DCCF);
-  static const borderStrong = Color(0xFFE4DCCF);
-  static const borderInput = Color(0xFFD9CFBF);
-  static const borderRadio = Color(0xFFCFC4B3);
-  static const divider = Color(0xFFECE4D6);
-  static const dividerSoft = Color(0xFFF0E9DD);
-  static const dividerFaint = Color(0xFFF0E9DD);
-  static const navBorder = Color(0xFFE4DCCF);
+  static const border = rule;
+  static const borderStrong = ruleStrong;
+  static const borderInput = ruleStrong;
+  static const borderRadio = Color(0xFFB9B4A9);
+  static const divider = Color(0xFFECEAE4);
+  static const dividerSoft = Color(0xFFF0EEE9);
+  static const dividerFaint = Color(0xFFF0EEE9);
+  static const navBorder = rule;
 }
 
 /// Subject-specific ink + tint used by tags, avatars and lesson rows.
@@ -99,9 +116,9 @@ enum SubjectPalette {
   final Color tint;
 
   static SubjectPalette fromName(String name) => switch (name.toLowerCase()) {
-    'physics' => physics,
-    'chemistry' || 'science' => chemistry,
-    'mathematics' || 'maths' || 'math' => mathematics,
+    'physics' || 'भौतिकी' => physics,
+    'chemistry' || 'science' || 'रसायन विज्ञान' => chemistry,
+    'mathematics' || 'maths' || 'math' || 'गणित' => mathematics,
     'biology' || 'hindi' => biology,
     'english' => english,
     'accountancy' ||

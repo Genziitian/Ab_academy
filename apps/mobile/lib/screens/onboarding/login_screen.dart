@@ -16,6 +16,8 @@ import '../../theme/app_theme.dart';
 import '../../config/env.dart';
 import '../../widgets/academy_mark.dart';
 import '../../widgets/buttons.dart';
+import '../../widgets/language_toggle.dart';
+import '../../l10n/strings.dart';
 
 /// 02 · Login — phone number or Google.
 class LoginScreen extends ConsumerStatefulWidget {
@@ -72,8 +74,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     super.dispose();
   }
 
-  void _phoneComingSoon() =>
-      _snack('Sign-in with mobile number is coming soon. Use Google for now.');
+  void _phoneComingSoon() => _snack(tx.mobileSoonSnack);
 
   String get _digits => _controller.text.replaceAll(RegExp(r'\D'), '');
 
@@ -102,7 +103,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     setState(() => _busy = false);
 
     if (!result.ok) {
-      _snack(result.error ?? 'Could not send the OTP. Try again.');
+      _snack(result.error ?? tx.otpSendFailed);
       return;
     }
     context.push(Routes.otp);
@@ -122,7 +123,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     setState(() => _busy = false);
 
     if (!result.ok) {
-      _snack(result.error ?? 'Quick login failed.');
+      _snack(result.error ?? tx.quickLoginFailed);
       return;
     }
 
@@ -146,8 +147,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       // something either way rather than leaving the button doing nothing.
       _snack(
         result.cancelled
-            ? 'Google sign-in did not complete. Try again or use your mobile number.'
-            : result.error ?? 'Google sign-in failed.',
+            ? tx.googleIncomplete
+            : result.error ?? tx.googleFailed,
       );
       return;
     }
@@ -177,7 +178,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     setState(() => _busy = false);
 
     if (!result.ok) {
-      _snack(result.error ?? 'Sign-in failed.');
+      _snack(result.error ?? tx.signInFailed);
       return;
     }
     await ref.read(sessionProvider.notifier).signIn();
@@ -191,7 +192,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          Positioned.fill(child: _AmbientGlow(animation: _ambient)),
           SafeArea(
             child: CustomScrollView(
               slivers: [
@@ -206,7 +206,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           animation: _intro,
                           from: 0,
                           to: 0.4,
-                          child: const Center(child: AcademyMark(size: 76)),
+                          child: const Row(
+                            children: [
+                              AcademyMark(size: 48),
+                              Spacer(),
+                              LanguageToggle(),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 20),
                         _Reveal(
@@ -223,15 +229,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Welcome back to AB Academy',
-                                style: AppText.h2,
-                              ),
+                              Text(tx.loginWelcome, style: AppText.h2),
                               const SizedBox(height: 6),
-                              Text(
-                                'Sign in to watch lectures, ask doubts and read notes.',
-                                style: AppText.bodyLg,
-                              ),
+                              Text(tx.loginLead, style: AppText.bodyLg),
                             ],
                           ),
                         ),
@@ -259,10 +259,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           child: TextButton(
                             onPressed: _busy ? null : _emailLogin,
                             child: Text(
-                              'Sign in with email',
+                              tx.signInWithEmail,
                               style: AppText.meta.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
+                                color: AppColors.textMuted,
+                                fontWeight: FontWeight.w500,
+                                decoration: TextDecoration.underline,
                               ),
                             ),
                           ),
@@ -270,13 +271,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         if (kDebugMode) ...[
                           const SizedBox(height: 10),
                           SecondaryButton(
-                            label: 'Quick login (skip OTP)',
+                            label: tx.quickLogin,
                             icon: LucideIcons.zap,
                             onPressed: _quickLogin,
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Debug builds only — signs you in as the demo student.',
+                            tx.quickLoginNote,
                             textAlign: TextAlign.center,
                             style: AppText.metaSm,
                           ),
@@ -288,30 +289,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           to: 1,
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(8, 24, 8, 28),
-                            child: Text.rich(
-                              TextSpan(
-                                style: AppText.meta.copyWith(height: 1.5),
-                                children: [
-                                  const TextSpan(
-                                    text: 'By continuing you agree to our ',
-                                  ),
+                            child: Column(
+                              children: [
+                                Text.rich(
                                   TextSpan(
-                                    text: 'Terms',
-                                    style: AppText.meta.copyWith(
-                                      color: AppColors.primary,
-                                    ),
+                                    style: AppText.meta.copyWith(height: 1.5),
+                                    children: [
+                                      TextSpan(text: tx.agreePre),
+                                      TextSpan(
+                                        text: tx.terms,
+                                        style: AppText.meta.copyWith(
+                                          color: AppColors.ink,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                      TextSpan(text: tx.and),
+                                      TextSpan(
+                                        text: tx.privacyPolicy,
+                                        style: AppText.meta.copyWith(
+                                          color: AppColors.ink,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                      TextSpan(text: '${tx.agreePost}.'),
+                                    ],
                                   ),
-                                  const TextSpan(text: ' and '),
-                                  TextSpan(
-                                    text: 'Privacy Policy',
-                                    style: AppText.meta.copyWith(
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                  const TextSpan(text: '.'),
-                                ],
-                              ),
-                              textAlign: TextAlign.center,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -340,7 +345,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
-                'OR',
+                tx.or,
                 style: AppText.eyebrow(size: 12, letterSpacing: 1),
               ),
             ),
@@ -349,7 +354,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         ),
         const SizedBox(height: 16),
         Text(
-          'Mobile number',
+          tx.mobileNumber,
           style: AppText.tabular(13, FontWeight.w500, color: AppColors.ink),
         ),
         const SizedBox(height: 6),
@@ -370,7 +375,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF7F3EC),
+                  color: AppColors.canvas,
                   border: Border(
                     right: BorderSide(color: AppColors.borderInput),
                   ),
@@ -415,7 +420,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         ),
         const SizedBox(height: 14),
         PrimaryButton(
-          label: _busy ? 'Please wait…' : 'Send OTP',
+          label: _busy ? tx.pleaseWait : tx.sendOtp,
           enabled: _canContinue && !_busy,
           onPressed: _continue,
         ),
@@ -465,12 +470,9 @@ class _EmailSheetState extends State<_EmailSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Sign in with email', style: AppText.h2),
+          Text(tx.signInWithEmail, style: AppText.h2),
           const SizedBox(height: 6),
-          Text(
-            'For accounts created by AB Academy. Students, please use Google.',
-            style: AppText.meta,
-          ),
+          Text(tx.emailOnlyNote, style: AppText.meta),
           const SizedBox(height: 18),
           TextField(
             controller: _email,
@@ -479,7 +481,7 @@ class _EmailSheetState extends State<_EmailSheet> {
             autofillHints: const [AutofillHints.email],
             textInputAction: TextInputAction.next,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(labelText: 'Email'),
+            decoration: InputDecoration(labelText: tx.email),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -490,7 +492,7 @@ class _EmailSheetState extends State<_EmailSheet> {
             onChanged: (_) => setState(() {}),
             onSubmitted: (_) => _submit(),
             decoration: InputDecoration(
-              labelText: 'Password',
+              labelText: tx.password,
               suffixIcon: IconButton(
                 icon: Icon(_hidden ? LucideIcons.eye : LucideIcons.eyeOff),
                 onPressed: () => setState(() => _hidden = !_hidden),
@@ -498,7 +500,7 @@ class _EmailSheetState extends State<_EmailSheet> {
             ),
           ),
           const SizedBox(height: 20),
-          PrimaryButton(label: 'Sign in', enabled: _ready, onPressed: _submit),
+          PrimaryButton(label: tx.signIn, enabled: _ready, onPressed: _submit),
         ],
       ),
     );
@@ -514,16 +516,7 @@ class _GoogleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.button,
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1F1C1814),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(borderRadius: AppRadius.button),
       child: Material(
         color: AppColors.surface,
         borderRadius: AppRadius.button,
@@ -551,8 +544,8 @@ class _GoogleButton extends StatelessWidget {
                   ),
                 const SizedBox(width: 12),
                 Text(
-                  busy ? 'Signing in…' : 'Continue with Google',
-                  style: AppText.tabular(16.5, FontWeight.w600),
+                  busy ? tx.signingIn : tx.continueWithGoogle,
+                  style: AppText.tabular(16, FontWeight.w500),
                 ),
               ],
             ),
@@ -573,7 +566,7 @@ class _PhoneComingSoon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Sign in with mobile number, coming soon',
+      label: tx.signInWithMobileSoon,
       child: InkWell(
         onTap: onTap,
         borderRadius: AppRadius.button,
@@ -595,7 +588,7 @@ class _PhoneComingSoon extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Sign in with mobile number',
+                  tx.signInWithMobile,
                   style: AppText.tabular(
                     15.5,
                     FontWeight.w600,
@@ -613,9 +606,9 @@ class _PhoneComingSoon extends StatelessWidget {
                   borderRadius: AppRadius.pill,
                 ),
                 child: Text(
-                  'COMING SOON',
+                  tx.comingSoonCaps,
                   style: AppText.eyebrow(
-                    color: AppColors.primary,
+                    color: AppColors.textMuted,
                     size: 10,
                     letterSpacing: 1,
                   ),
@@ -657,63 +650,6 @@ class _Reveal extends StatelessWidget {
           end: Offset.zero,
         ).animate(curved),
         child: child,
-      ),
-    );
-  }
-}
-
-/// Three soft brand-colour glows drifting slowly behind the screen.
-class _AmbientGlow extends StatelessWidget {
-  const _AmbientGlow({required this.animation});
-
-  final Animation<double> animation;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: animation,
-        builder: (context, _) {
-          final t = animation.value * 2 * math.pi;
-          Widget glow(Color color, double size, double x, double y) => Align(
-            alignment: Alignment(x, y),
-            child: Container(
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    color.withValues(alpha: 0.28),
-                    color.withValues(alpha: 0),
-                  ],
-                ),
-              ),
-            ),
-          );
-          return Stack(
-            children: [
-              glow(
-                AppColors.accent,
-                420,
-                -1.1 + 0.25 * math.sin(t),
-                -1.0 + 0.15 * math.cos(t),
-              ),
-              glow(
-                AppColors.teal,
-                360,
-                1.2 + 0.2 * math.cos(t),
-                0.2 + 0.25 * math.sin(t),
-              ),
-              glow(
-                AppColors.violet,
-                320,
-                -0.9 + 0.2 * math.sin(t + 1.5),
-                1.1 + 0.12 * math.cos(t),
-              ),
-            ],
-          );
-        },
       ),
     );
   }
@@ -785,127 +721,109 @@ class _PhoneFormatter extends TextInputFormatter {
   }
 }
 
-/// Saffron welcome card: the course promise above two students.
+/// Welcome card: the course promise on white, above two students, in a
+/// grey tray — the same calm card as the website.
 class _LoginHero extends StatelessWidget {
   const _LoginHero({required this.ambient});
 
-  /// Drives the photo's slow zoom and the live dot's pulse.
+  /// Drives the live dot's pulse.
   final Animation<double> ambient;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      clipBehavior: Clip.antiAlias,
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFFBDCC2), Color(0xFFF2A86B), AppColors.accent],
-        ),
+        color: AppColors.tray,
+        borderRadius: BorderRadius.circular(24),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'CLASS 12 CRASH COURSE',
-                  style: AppText.eyebrow(color: AppColors.primary, size: 11.5),
-                ),
-                const SizedBox(height: 8),
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      const TextSpan(text: 'The '),
-                      TextSpan(
-                        text: 'last 90 days',
-                        style: AppText.serif(
-                          34,
-                          italic: true,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const TextSpan(text: ' before your boards.'),
-                    ],
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.rule),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(tx.loginPanelEyebrow, style: AppText.eyebrow()),
+                  const SizedBox(height: 10),
+                  Text(
+                    tx.loginPanelTitle,
+                    style: AppText.serif(34, height: 1.05),
                   ),
-                  style: AppText.serif(34, height: 1.0),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Stack(
-            children: [
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: AnimatedBuilder(
-                  animation: ambient,
-                  builder: (context, child) => Transform.scale(
-                    scale: 1.04 + 0.04 * math.sin(ambient.value * 2 * math.pi),
-                    child: child,
-                  ),
+            Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 16 / 9,
                   child: Image.asset(
                     'assets/images/hero-students.png',
                     fit: BoxFit.cover,
                     alignment: const Alignment(0, -0.4),
-                    semanticLabel: 'Two students learning with AB Academy',
+                    semanticLabel: tx.loginPhotoAlt,
                   ),
                 ),
-              ),
-              Positioned(
-                left: 12,
-                bottom: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.background,
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AnimatedBuilder(
-                        animation: ambient,
-                        builder: (context, _) {
-                          // Seven pulses per ambient loop (~2 s each).
-                          final pulse =
-                              (math.sin(ambient.value * 14 * math.pi) + 1) / 2;
-                          return Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: AppColors.liveDot,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.liveDot.withValues(
-                                    alpha: 0.5 * (1 - pulse),
+                Positioned(
+                  left: 12,
+                  bottom: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedBuilder(
+                          animation: ambient,
+                          builder: (context, _) {
+                            final pulse =
+                                (math.sin(ambient.value * 14 * math.pi) + 1) /
+                                2;
+                            return Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                color: AppColors.accent,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.accent.withValues(
+                                      alpha: 0.4 * (1 - pulse),
+                                    ),
+                                    spreadRadius: 5 * pulse,
                                   ),
-                                  spreadRadius: 6 * pulse,
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 7),
-                      Text(
-                        'Recorded classes + live doubts',
-                        style: AppText.tabular(12, FontWeight.w700),
-                      ),
-                    ],
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          tx.loginPanelPoint,
+                          style: AppText.tabular(12.5, FontWeight.w500),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

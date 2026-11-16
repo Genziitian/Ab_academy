@@ -20,6 +20,7 @@ import '../../widgets/common.dart';
 import '../../widgets/course_slider.dart';
 import '../../widgets/ui_kit.dart';
 import 'my_courses_screen.dart';
+import '../../l10n/strings.dart';
 
 const _storeTab = 'Explore';
 const _mineTab = 'My courses';
@@ -65,7 +66,7 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: PageTitle(
-                title: _tab == _mineTab ? 'My Courses' : 'Explore',
+                title: _tab == _mineTab ? tx.myCourses : tx.explore,
                 trailing: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -77,7 +78,7 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
                     border: Border.all(color: AppColors.border),
                   ),
                   child: Text(
-                    '$enrolled Enrolled',
+                    tx.enrolledCount(enrolled),
                     style: AppText.tabular(15, FontWeight.w500),
                   ),
                 ),
@@ -92,8 +93,8 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
                 style: AppText.tabular(16, FontWeight.w400),
                 decoration: InputDecoration(
                   hintText: _tab == _mineTab
-                      ? 'Search your courses…'
-                      : 'Search crash courses…',
+                      ? tx.searchMyCourses
+                      : tx.searchCourses,
                   hintStyle: AppText.tabular(
                     16,
                     FontWeight.w400,
@@ -127,9 +128,11 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
               child: SegmentedTabs(
-                tabs: const [_mineTab, _storeTab],
-                selected: _tab,
-                onSelected: (tab) => setState(() => _tab = tab),
+                tabs: [tx.myCourses, tx.explore],
+                selected: _tab == _mineTab ? tx.myCourses : tx.explore,
+                onSelected: (label) => setState(
+                  () => _tab = label == tx.myCourses ? _mineTab : _storeTab,
+                ),
               ),
             ),
             Expanded(
@@ -148,6 +151,14 @@ class _CoursesScreenState extends ConsumerState<CoursesScreen> {
 }
 
 const _filters = ['All', 'Class 12', 'Class 11', 'Science', 'Commerce', 'Arts'];
+
+/// Filters are stored in English; this is what the chip shows.
+String _filterLabel(String f) => switch (f) {
+  'All' => tx.all,
+  'Class 12' => tx.classN(12),
+  'Class 11' => tx.classN(11),
+  _ => tx.subject(f),
+};
 
 bool _matches(Course c, String filter) => switch (filter) {
   'Class 12' => c.classLevel == 12,
@@ -187,7 +198,7 @@ class _StoreView extends ConsumerWidget {
             children: [
               for (final f in _filters)
                 FilterChipPill(
-                  label: f,
+                  label: _filterLabel(f),
                   selected: filter == f,
                   onTap: () =>
                       ref.read(exploreFilterProvider.notifier).select(f),
@@ -203,12 +214,12 @@ class _StoreView extends ConsumerWidget {
               ),
             ],
             error: (error, _) => [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: EmptyState(
                   icon: LucideIcons.wifiOff,
-                  title: 'Could not load courses',
-                  body: 'Check your connection and pull down to try again.',
+                  title: tx.couldNotLoadCourses,
+                  body: tx.checkConnection,
                 ),
               ),
             ],
@@ -228,10 +239,10 @@ class _StoreView extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: EmptyState(
                       icon: LucideIcons.bookOpen,
-                      title: 'Coming soon',
+                      title: tx.comingSoon,
                       body: filter == 'All'
-                          ? 'New crash courses open here as soon as they are published.'
-                          : 'No $filter crash courses are open yet.',
+                          ? tx.newCoursesSoon
+                          : tx.noFilterCourses(_filterLabel(filter)),
                     ),
                   ),
                 ];
@@ -292,7 +303,7 @@ class _StoreCard extends StatelessWidget {
                       const SizedBox(width: 6),
                     ],
                     _ThumbTag(
-                      'Class ${course.classLevel}',
+                      tx.classN(course.classLevel),
                       background: Colors.white.withValues(alpha: 0.22),
                     ),
                     const Spacer(),
@@ -314,7 +325,7 @@ class _StoreCard extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  course.stream ?? course.subjects.join(' · '),
+                  tx.subject(course.stream ?? course.subjects.join(' · ')),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppText.tabular(
@@ -336,9 +347,9 @@ class _StoreCard extends StatelessWidget {
                 Text(
                   [
                     if (course.lessonsCount > 0)
-                      '${course.lessonsCount}+ lectures',
-                    '${MockData.planDays} days',
-                    course.language,
+                      tx.lecturesPlus(course.lessonsCount),
+                    tx.days(MockData.planDays),
+                    tx.language(course.language),
                   ].join(' · '),
                   style: AppText.meta,
                 ),
@@ -348,7 +359,7 @@ class _StoreCard extends StatelessWidget {
                     Expanded(
                       child: enrolled
                           ? Text(
-                              '✓ Enrolled',
+                              tx.enrolledTick,
                               style: AppText.tabular(
                                 14,
                                 FontWeight.w600,
@@ -382,7 +393,7 @@ class _StoreCard extends StatelessWidget {
                                         ),
                                         TextSpan(
                                           text:
-                                              '  ${course.discountPercent}% OFF',
+                                              '  ${tx.percentOffCaps(course.discountPercent)}',
                                           style: AppText.tabular(
                                             12,
                                             FontWeight.w600,
@@ -397,10 +408,10 @@ class _StoreCard extends StatelessWidget {
                     ),
                     PrimaryButton(
                       label: enrolled
-                          ? 'Open'
+                          ? tx.open
                           : Env.inAppPurchase
-                          ? 'Enroll'
-                          : 'Details',
+                          ? tx.enroll
+                          : tx.details,
                       height: 40,
                       expand: false,
                       onPressed: enrolled

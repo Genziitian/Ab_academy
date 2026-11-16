@@ -5,6 +5,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
 import 'buttons.dart';
+import '../l10n/strings.dart';
 
 /// The interstitial card the admin console schedules in `popups`.
 ///
@@ -72,7 +73,7 @@ class PopupCard extends StatelessWidget {
                   if (popup.hasCta) const SizedBox(height: 8),
 
                   SecondaryButton(
-                    label: popup.hasCta ? 'Not now' : 'Got it',
+                    label: popup.hasCta ? tx.notNow : tx.gotIt,
                     height: 46,
                     onPressed: onDismiss,
                   ),

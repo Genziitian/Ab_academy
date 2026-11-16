@@ -2,7 +2,6 @@
 /// Kept in step with `apps/web/src/lib/landing.ts`.
 abstract final class Academy {
   static const name = 'AB Academy';
-  static const fullName = 'Akhand Bharat Academy';
   static const email = 'support@abacademy.in';
   static const site = 'abacademy.in';
   static const address = [
@@ -21,6 +20,12 @@ abstract final class Academy {
     ),
     (name: 'Sriram', role: 'Co-founder & Developer', photo: null as String?),
   ];
+
+  /// The 60-day plan: classes start, and the board exam (expected).
+  /// Kept in step with BATCH_START / EXAM_DATE in apps/web/src/lib/landing.ts.
+  static final batchStart = DateTime(2026, 11, 16);
+  static final examDate = DateTime(2027, 2, 1, 9, 30);
+  static const planDays = 60;
 
   /// Date shown on the policy pages; matches LEGAL_UPDATED on the website.
   static const policiesUpdated = '3 November 2026';

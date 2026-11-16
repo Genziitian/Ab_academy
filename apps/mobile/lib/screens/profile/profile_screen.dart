@@ -10,6 +10,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 const _qualities = ['Auto', '360p', '480p', '720p'];
 
@@ -38,7 +39,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
               child: Text(
-                'Lower quality saves mobile data and avoids buffering.',
+                tx.videoQualityHint,
                 style: AppText.meta,
               ),
             ),
@@ -69,14 +70,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final purchases = ref.watch(coursesProvider).length;
 
     final summary = [
-      'Class ${student.classLevel}',
-      if (student.stream != null) student.stream!,
-      '${student.medium} medium',
+      tx.classN(student.classLevel),
+      if (student.stream != null) tx.subject(student.stream!),
+      tx.mediumOf(tx.language(student.medium)),
     ].join(' · ');
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppTopBar(title: 'Profile & settings'),
+      appBar: AppTopBar(title: tx.profileSettings),
       body: SafeArea(
         top: false,
         bottom: false,
@@ -123,7 +124,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 TextButton(
                   onPressed: () => _editClassAndStream(context, ref),
                   child: Text(
-                    'Edit',
+                    tx.edit,
                     style: AppText.tabular(
                       13,
                       FontWeight.w600,
@@ -135,34 +136,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             _Group(
-              label: 'ACCOUNT',
+              label: tx.accountCaps,
               rows: [
                 _Row(
-                  title: 'Personal information',
+                  title: tx.personalInfo,
                   onTap: () => showDemoSnack(
                     context,
-                    'Name and phone are set at sign-in.',
+                    tx.nameSetAtSignIn,
                   ),
                 ),
                 if (student.studentCode != null)
                   _Row(
-                    title: 'Student ID',
+                    title: tx.studentId,
                     value: student.studentCode!,
                     onTap: () {
                       Clipboard.setData(
                         ClipboardData(text: student.studentCode!),
                       );
-                      showDemoSnack(context, 'Student ID copied.');
+                      showDemoSnack(context, tx.studentIdCopied);
                     },
                   ),
                 _Row(
-                  title: 'Class & stream',
+                  title: tx.classAndStream,
                   value:
-                      '${student.classLevel}${student.stream == null ? '' : ' · ${student.stream}'}',
+                      '${student.classLevel}${student.stream == null ? '' : ' · ${tx.subject(student.stream!)}'}',
                   onTap: () => _editClassAndStream(context, ref),
                 ),
                 _Row(
-                  title: 'My purchases',
+                  title: tx.myPurchases,
                   value: '$purchases',
                   onTap: () => context.go(Routes.myCourses),
                 ),
@@ -170,15 +171,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             _Group(
-              label: 'LEARNING',
+              label: tx.learningCaps,
               rows: [
                 _Row(
-                  title: 'Video quality',
+                  title: tx.videoQuality,
                   value: _quality,
                   onTap: _pickQuality,
                 ),
                 _Row(
-                  title: 'Notifications',
+                  title: tx.notifications,
                   trailing: Switch.adaptive(
                     value: pushEnabled,
                     activeTrackColor: AppColors.primary,
@@ -191,18 +192,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             _Group(
-              label: 'SUPPORT',
+              label: tx.supportCaps,
               rows: [
                 _Row(
-                  title: 'My tickets',
-                  value: openTickets == 0 ? '' : '$openTickets open',
+                  title: tx.myTickets,
+                  value: openTickets == 0 ? '' : tx.openTickets(openTickets),
                   onTap: () => context.push(Routes.tickets),
                 ),
                 _Row(
-                  title: 'Privacy & terms',
+                  title: tx.privacyTerms,
                   onTap: () => showDemoSnack(
                     context,
-                    'Read them at abacademy.in/privacy',
+                    tx.readAtSite,
                   ),
                 ),
               ],
@@ -221,7 +222,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   height: 46,
                   child: Center(
                     child: Text(
-                      'Log out',
+                      tx.logOut,
                       style: AppText.tabular(
                         14,
                         FontWeight.w600,
@@ -244,9 +245,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.card),
-        title: Text('Log out?', style: AppText.cardTitle),
+        title: Text(tx.logOutQ, style: AppText.cardTitle),
         content: Text(
-          'You will need your mobile number or Google account to sign back in.',
+          tx.logOutBody,
           style: AppText.tabular(
             13,
             FontWeight.w400,
@@ -257,14 +258,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
-              'Cancel',
+              tx.cancel,
               style: AppText.buttonSm.copyWith(color: AppColors.textMuted),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(
-              'Log out',
+              tx.logOut,
               style: AppText.buttonSm.copyWith(color: AppColors.liveInk),
             ),
           ),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'app.dart';
 import 'data/remote/push_service.dart';
 import 'data/remote/supabase_client.dart';
+import 'l10n/lang.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,5 +21,17 @@ Future<void> main() async {
   await Api.init();
   await PushService.init();
 
-  runApp(const ProviderScope(child: AkhandBharatAcademyApp()));
+  // Read before the first frame so the app never flashes the wrong language.
+  // Hindi month and weekday names for dates (calendar, deletion dates).
+  await initializeDateFormatting('hi');
+  await initializeDateFormatting('en');
+  final lang = await loadSavedLang();
+  applyLang(lang);
+
+  runApp(
+    ProviderScope(
+      overrides: [initialLangProvider.overrideWithValue(lang)],
+      child: const AkhandBharatAcademyApp(),
+    ),
+  );
 }

@@ -11,6 +11,7 @@ import '../../theme/app_text_styles.dart';
 import '../../widgets/brand_art.dart';
 import '../../widgets/common.dart';
 import '../../widgets/ui_kit.dart';
+import '../../l10n/strings.dart';
 
 /// 07 · My courses — the student's enrolled courses as large cards.
 class MyCoursesView extends ConsumerWidget {
@@ -39,11 +40,11 @@ class MyCoursesView extends ConsumerWidget {
                 child: Center(child: CircularProgressIndicator()),
               ),
             ],
-            error: (error, _) => const [
+            error: (error, _) => [
               EmptyState(
                 icon: LucideIcons.wifiOff,
-                title: 'Could not load your courses',
-                body: 'Check your connection and pull down to try again.',
+                title: tx.couldNotLoadMyCourses,
+                body: tx.checkConnection,
               ),
             ],
             data: (courses) {
@@ -54,10 +55,10 @@ class MyCoursesView extends ConsumerWidget {
                 return [
                   EmptyState(
                     icon: LucideIcons.bookOpen,
-                    title: q.isEmpty ? 'No courses yet' : 'No matches',
+                    title: q.isEmpty ? tx.noCoursesYet : tx.noMatches,
                     body: q.isEmpty
-                        ? 'Pick a crash course for your class to get started.'
-                        : 'Nothing in your courses matches “$query”.',
+                        ? tx.pickCourse
+                        : tx.nothingMatches(query),
                   ),
                   const SizedBox(height: 16),
                 ];
@@ -81,7 +82,7 @@ class MyCoursesView extends ConsumerWidget {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    'Explore more crash courses',
+                    tx.exploreMore,
                     style: AppText.tabular(16, FontWeight.w600),
                   ),
                 ),
@@ -109,23 +110,18 @@ class MyCourseCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(courseStatsProvider(course.id)).value;
     final teacher = course.teachers.isEmpty
-        ? 'Faculty Team'
+        ? tx.faculty
+        : course.teachers.first.displayName == 'Ajit Sir'
+        ? tx.teacherName
         : course.teachers.first.displayName;
     final subject = course.subjects.length == 1
-        ? course.subjects.first
-        : '${course.subjects.length} subjects';
+        ? tx.subject(course.subjects.first)
+        : tx.subjectsCount(course.subjects.length);
     void open() => context.push(Routes.curriculum, extra: course.id);
 
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x141C1814),
-            blurRadius: 24,
-            offset: Offset(0, 10),
-          ),
-        ],
       ),
       child: Material(
         color: AppColors.surface,
@@ -154,18 +150,6 @@ class MyCourseCard extends ConsumerWidget {
                         hue: course.thumbnailHue,
                       ),
                     // Decorative circle, as on the gradient headers.
-                    Positioned(
-                      right: -40,
-                      top: -30,
-                      child: Container(
-                        width: 170,
-                        height: 170,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.08),
-                        ),
-                      ),
-                    ),
                     Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
@@ -173,9 +157,9 @@ class MyCourseCard extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              _Tag('CLASS ${course.classLevel}'),
+                              _Tag(tx.classNCaps(course.classLevel)),
                               const Spacer(),
-                              _Tag(course.priceInr == 0 ? 'FREE' : 'PRO'),
+                              _Tag(course.priceInr == 0 ? tx.freeCaps : tx.pro),
                             ],
                           ),
                           const Spacer(),
@@ -246,11 +230,11 @@ class MyCourseCard extends ConsumerWidget {
                       ),
                       child: Row(
                         children: [
-                          _Stat('${stats?.chapters ?? '–'}', 'Chapters'),
+                          _Stat('${stats?.chapters ?? '–'}', tx.statChapters),
                           const _StatDivider(),
-                          _Stat('${stats?.lectures ?? '–'}', 'Lectures'),
+                          _Stat('${stats?.lectures ?? '–'}', tx.statLectures),
                           const _StatDivider(),
-                          _Stat('${stats?.notes ?? '–'}', 'Notes'),
+                          _Stat('${stats?.notes ?? '–'}', tx.statNotes),
                         ],
                       ),
                     ),
@@ -272,7 +256,7 @@ class MyCourseCard extends ConsumerWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    'Continue',
+                                    tx.continueLabel,
                                     style: AppText.tabular(
                                       17,
                                       FontWeight.w600,

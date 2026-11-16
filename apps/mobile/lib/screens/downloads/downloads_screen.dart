@@ -11,6 +11,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 /// 17 · Downloads — storage meter and everything saved for offline.
 class DownloadsScreen extends ConsumerWidget {
@@ -22,18 +23,18 @@ class DownloadsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppTopBar(title: 'Downloads'),
+      appBar: AppTopBar(title: tx.downloads),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         children: [
           const _StorageMeter(),
           const SizedBox(height: 14),
           if (downloads.isEmpty)
-            const EmptyState(
+            EmptyState(
               icon: LucideIcons.downloadCloud,
-              title: 'Nothing downloaded',
+              title: tx.nothingDownloaded,
               body:
-                  'Download lectures and notes on wifi to study without data.',
+                  tx.downloadOnWifi,
             )
           else
             ListCard(
@@ -43,7 +44,7 @@ class DownloadsScreen extends ConsumerWidget {
             ),
           const SizedBox(height: 14),
           Text(
-            'Downloads play offline inside the app for as long as your course is active.',
+            tx.downloadsOffline,
             style: AppText.meta.copyWith(height: 1.5),
           ),
         ],
@@ -99,11 +100,11 @@ class _StorageMeter extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          const Row(
+          Row(
             children: [
-              _Legend(color: AppColors.primary, label: 'Videos'),
+              _Legend(color: AppColors.primary, label: tx.videos),
               SizedBox(width: 16),
-              _Legend(color: AppColors.violet, label: 'Notes'),
+              _Legend(color: AppColors.violet, label: tx.notes),
             ],
           ),
         ],
@@ -181,7 +182,7 @@ class _DownloadRowState extends ConsumerState<_DownloadRow> {
                 video ? LucideIcons.play : LucideIcons.fileText,
                 size: 20,
               ),
-              title: Text(video ? 'Play' : 'Open', style: AppText.rowTitle),
+              title: Text(video ? tx.play : tx.open, style: AppText.rowTitle),
               onTap: () => Navigator.of(context).pop('open'),
             ),
             ListTile(
@@ -191,7 +192,7 @@ class _DownloadRowState extends ConsumerState<_DownloadRow> {
                 color: AppColors.liveInk,
               ),
               title: Text(
-                'Remove download',
+                tx.removeDownload,
                 style: AppText.rowTitle.copyWith(color: AppColors.liveInk),
               ),
               onTap: () => Navigator.of(context).pop('remove'),
@@ -214,7 +215,7 @@ class _DownloadRowState extends ConsumerState<_DownloadRow> {
     final downloading = item.state == DownloadState.downloading;
     final palette = SubjectPalette.fromName(item.subject);
     final meta = downloading && _paused
-        ? 'Paused · ${(item.progress * 100).round()}%'
+        ? tx.pausedAt((item.progress * 100).round())
         : item.metaLabel.replaceAll('•', '·');
 
     return InkWell(
@@ -271,7 +272,7 @@ class _DownloadRowState extends ConsumerState<_DownloadRow> {
               TextButton(
                 onPressed: () => setState(() => _paused = !_paused),
                 child: Text(
-                  _paused ? 'Resume' : 'Pause',
+                  _paused ? tx.resume : tx.pause,
                   style: AppText.tabular(
                     12,
                     FontWeight.w600,
@@ -281,7 +282,7 @@ class _DownloadRowState extends ConsumerState<_DownloadRow> {
               )
             else
               IconButton(
-                tooltip: 'More',
+                tooltip: tx.more,
                 onPressed: _menu,
                 icon: const Icon(
                   LucideIcons.moreHorizontal,

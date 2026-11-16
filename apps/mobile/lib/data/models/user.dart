@@ -1,3 +1,4 @@
+import '../../l10n/strings.dart';
 /// Mirrors `public.profiles` + `public.student_profiles`.
 class Student {
   const Student({
@@ -27,8 +28,9 @@ class Student {
     return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 
-  /// "Class 10 • Bihar Board • Hindi Medium"
-  String get summary => 'Class $classLevel • $board • $medium Medium';
+  /// "Class 12 • Hindi Medium"
+  String get summary =>
+      '${tx.classN(classLevel)} • ${tx.mediumOf(tx.language(medium))}';
 
   Student copyWith({int? classLevel, String? medium, String? stream}) =>
       Student(

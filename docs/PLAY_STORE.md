@@ -35,6 +35,78 @@ Android 16 always draws apps edge to edge.
 
 - [Target API level requirements](https://developer.android.com/google/play/requirements/target-sdk)
 
+## Store listing text (build 7)
+
+Rejected three times under Misleading Claims. The first two times for
+mentioning Bihar Board / BSEB without an official source link; the third
+time because that link (biharboardonline.bihar.gov.in) does not load for
+Google's reviewers. Fix in build 7: **the app and the listing no longer
+mention any board, exam body or government at all** — the app is simply for
+Class 12 students. With no government information there is nothing to source.
+Keep it that way: do not add "Bihar Board", "BSEB", official exam dates or
+.gov links to the app, the listing, screenshots or graphics.
+
+**App name (max 30):**
+
+```
+AB Academy: Class 12 Science
+```
+
+**Short description (max 80):**
+
+```
+Class 12 Physics, Chemistry & Maths crash course in Hindi and Hinglish.
+```
+
+**Full description:**
+
+```
+Class 12 Physics, Chemistry and Maths — planned chapter by chapter. AB Academy is a crash course for Class 12 science students, taught by Ajit Sir in Hindi or Hinglish — you choose the language you understand best.
+
+WHAT YOU GET
+• Recorded lecture for every chapter — watch at your own pace, as many times as you need
+• A practice session for every chapter with exam-style questions written by our teachers
+• Live doubt classes with Ajit Sir
+• Chapter notes and solved practice questions, opening right inside the app
+• A free demo course to try the classroom before you start
+
+COURSES
+• Class 12 Physics Crash Course — 14 chapters
+• Class 12 Chemistry Crash Course — 10 chapters
+• Class 12 Maths Crash Course — 13 chapters
+
+BUILT FOR CLASS 12 STUDENTS
+• Taught in Hindi and Hinglish
+• Simple, clean app that works well on everyday phones
+• Sign in with your Google account — your courses appear automatically
+
+HELP WHEN YOU NEED IT
+Raise a support ticket from the app and our team replies inside the app. You can also write to support@abacademy.in.
+
+YOUR PRIVACY
+We collect only what is needed to run your account and classes. We never sell your data and the app shows no ads. You can delete your account and data from the app at any time (More → Data & Account Deletion).
+
+Website: https://abacademy.in
+Privacy policy: https://abacademy.in/privacy
+```
+
+### Resubmission checklist (build 7)
+
+Files are in `apps/mobile/store/`.
+
+1. **Backend — done 13 Nov 2026:** the Free Demo Course thumbnail and the
+   "Start learning free" home slide now use `launch/feature-notes.jpg`
+   instead of `launch/demo-yt.jpg`, which showed the IIT Madras emblem.
+2. **App bundle:** upload `apps/mobile/build/app/outputs/bundle/release/app-release.aab`
+   (version 1.0.0, build 7) to the production track, replacing earlier builds.
+3. **Store listing:** app icon `play-icon-512.png`; feature graphic
+   `feature-graphic-1024x500.png`; delete every old screenshot and upload
+   `screenshots/*.png`.
+4. **Text:** name, short and full description from the section above.
+5. **App content:** if asked whether the app is a government app, answer no.
+6. **Publishing overview → Send changes for review**, then confirm nothing is
+   left under "Not yet submitted".
+
 ## Done in this release
 
 | Requirement | Where |

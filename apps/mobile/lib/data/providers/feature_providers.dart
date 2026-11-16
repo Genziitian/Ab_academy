@@ -11,6 +11,7 @@ import '../models/ticket.dart';
 import '../remote/auth_repository.dart';
 import '../remote/repositories.dart';
 import 'app_providers.dart';
+import '../../l10n/strings.dart';
 
 // ----------------------------------------------------------- live sessions
 
@@ -57,7 +58,7 @@ class LessonCommentsNotifier extends Notifier<List<LessonComment>> {
         author: student.fullName,
         initials: student.initials,
         body: body,
-        timeLabel: 'Just now',
+        timeLabel: tx.justNow,
         isMe: true,
       ),
     ];
@@ -141,12 +142,12 @@ class TicketsNotifier extends Notifier<List<Ticket>> {
         subject: subject,
         category: category,
         status: TicketStatus.open,
-        openedLabel: 'Opened just now',
+        openedLabel: tx.openedAgo(tx.justNow),
         messages: [
           TicketMessage(
             id: '${id}m1',
             body: body,
-            timeLabel: 'Just now',
+            timeLabel: tx.justNow,
             fromSupport: false,
           ),
         ],
@@ -169,7 +170,7 @@ class TicketsNotifier extends Notifier<List<Ticket>> {
               TicketMessage(
                 id: 'tm${DateTime.now().microsecondsSinceEpoch}',
                 body: body,
-                timeLabel: 'Just now',
+                timeLabel: tx.justNow,
                 fromSupport: false,
               ),
             ],

@@ -12,6 +12,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../utils/secure_screen.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 /// 11 · In-app PDF viewer for class notes.
 ///
@@ -71,10 +72,10 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
       noteId = resolved?.id;
       if (notes.hasValue && resolved == null) {
         return _Shell(
-          title: widget.title ?? 'Class notes',
-          child: const _Message(
+          title: widget.title ?? tx.classNotes,
+          child: _Message(
             icon: LucideIcons.fileX,
-            text: 'No notes have been added to this lesson yet.',
+            text: tx.noNotesForLesson,
           ),
         );
       }
@@ -83,7 +84,7 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
       noteId = widget.id;
     }
 
-    final title = widget.title ?? resolved?.title ?? 'Class notes';
+    final title = widget.title ?? resolved?.title ?? tx.classNotes;
     if (noteId == null) {
       return _Shell(
         title: title,
@@ -96,7 +97,7 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
 
     return _Shell(
       title: title,
-      subtitle: _pages == 0 ? null : 'Page $_page of $_pages',
+      subtitle: _pages == 0 ? null : tx.pageOf(_page, _pages),
       bottom: _pages == 0 ? null : _pager(),
       child: bytes.when(
         loading: () =>
@@ -107,7 +108,7 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
               : LucideIcons.fileWarning,
           text: error is NoteUnavailable
               ? error.message
-              : 'These notes could not be opened.',
+              : tx.notesCouldNotOpen,
           onRetry: error is NoteUnavailable && error.denied
               ? null
               : () => ref.invalidate(noteBytesProvider(noteId!)),
@@ -135,9 +136,9 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2.5),
                 ),
                 errorBannerBuilder: (context, error, stack, documentRef) =>
-                    const _Message(
+                    _Message(
                       icon: LucideIcons.fileWarning,
-                      text: 'This file is not a readable PDF.',
+                      text: tx.notAPdf,
                     ),
               ),
             ),
@@ -164,7 +165,7 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
             TextButton(
               onPressed: _page > 1 ? () => _go(_page - 1) : null,
               child: Text(
-                '‹ Prev',
+                tx.prev,
                 style: AppText.tabular(
                   14,
                   FontWeight.w400,
@@ -179,7 +180,7 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
             TextButton(
               onPressed: _page < _pages ? () => _go(_page + 1) : null,
               child: Text(
-                'Next ›',
+                tx.next,
                 style: AppText.tabular(
                   14,
                   FontWeight.w400,
@@ -240,7 +241,7 @@ class _Message extends StatelessWidget {
             Text(text, textAlign: TextAlign.center, style: AppText.cardTitleSm),
             if (onRetry != null) ...[
               const SizedBox(height: 8),
-              TextButton(onPressed: onRetry, child: const Text('Try again')),
+              TextButton(onPressed: onRetry, child: Text(tx.tryAgain)),
             ],
           ],
         ),

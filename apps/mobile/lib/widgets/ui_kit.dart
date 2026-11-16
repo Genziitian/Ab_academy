@@ -5,15 +5,15 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
+import '../l10n/strings.dart';
 
-/// Building blocks of the app layout: gradient header cards, coloured
-/// icon tiles, large page titles and grouped menu lists.
+/// Building blocks of the app layout: icon tiles, large page titles and
+/// grouped menu lists. Flat, as on the website: these "gradients" are kept
+/// for existing callers but every tile now draws quietly in ink on grey.
 abstract final class AppGradients {
-  /// Coal into warm brown — headers, the centre tab button, avatars.
+  /// Ink — headers, avatars.
   static const brand = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF1C1814), Color(0xFF3A342D)],
+    colors: [Color(0xFF171511), Color(0xFF171511)],
   );
 
   static LinearGradient pair(Color a, Color b) => LinearGradient(
@@ -22,12 +22,12 @@ abstract final class AppGradients {
     colors: [a, b],
   );
 
-  static final violet = pair(const Color(0xFF8E4FA3), const Color(0xFF7A3E8E));
-  static final orange = pair(const Color(0xFFE8742A), const Color(0xFFB4521A));
-  static final green = pair(const Color(0xFF1C9C88), const Color(0xFF0F7A6E));
-  static final sky = pair(const Color(0xFF3E8FB0), const Color(0xFF2B6F8C));
-  static final blue = pair(const Color(0xFF6B5D50), const Color(0xFF3A342D));
-  static final pink = pair(const Color(0xFFD0533B), const Color(0xFFB23A26));
+  static final violet = pair(AppColors.maths, AppColors.maths);
+  static final orange = pair(AppColors.accent, AppColors.accent);
+  static final green = pair(AppColors.teal, AppColors.teal);
+  static final sky = pair(AppColors.commerce, AppColors.commerce);
+  static final blue = pair(AppColors.ink, AppColors.ink);
+  static final pink = pair(AppColors.english, AppColors.english);
 }
 
 /// Big page title with an optional one-line subtitle, as on Academics.
@@ -52,7 +52,7 @@ class PageTitle extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: AppText.h1.copyWith(letterSpacing: -0.6)),
+              Text(title, style: AppText.h1),
               if (subtitle != null) ...[
                 const SizedBox(height: 4),
                 Text(subtitle!, style: AppText.bodyLg),
@@ -102,7 +102,8 @@ class BackSquareButton extends StatelessWidget {
   }
 }
 
-/// Coloured gradient square holding a white icon.
+/// Grey square holding an ink icon. (Took a gradient before the redesign;
+/// [gradient] now only tints the icon.)
 class GradientIcon extends StatelessWidget {
   const GradientIcon({
     super.key,
@@ -121,31 +122,21 @@ class GradientIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = gradient is LinearGradient
-        ? (gradient as LinearGradient).colors
-        : const [AppColors.primary];
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        gradient: gradient,
+        color: AppColors.tray,
         shape: round ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: round ? null : BorderRadius.circular(size * 0.3),
-        // A faint, tight shadow: depth without a coloured glow.
-        boxShadow: [
-          BoxShadow(
-            color: colors.last.withValues(alpha: 0.16),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        borderRadius: round ? null : BorderRadius.circular(size * 0.28),
       ),
-      child: Icon(icon, size: iconSize, color: Colors.white),
+      child: Icon(icon, size: iconSize * 0.9, color: AppColors.ink),
     );
   }
 }
 
-/// Soft tinted square with a coloured icon — menu rows and list items.
+/// Quiet square with an ink icon — menu rows and list items. [color] is kept
+/// for existing callers; tiles are neutral so the screen stays calm.
 class TintIcon extends StatelessWidget {
   const TintIcon({
     super.key,
@@ -164,22 +155,23 @@ class TintIcon extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(size * 0.3),
+        color: AppColors.canvas,
+        borderRadius: BorderRadius.circular(size * 0.28),
+        border: Border.all(color: AppColors.rule),
       ),
-      child: Icon(icon, size: size * 0.48, color: color),
+      child: Icon(icon, size: size * 0.44, color: AppColors.ink),
     );
   }
 }
 
-/// White rounded card with a soft shadow — the base surface of the layout.
+/// White card with a hairline border — the base surface of the layout.
 class SoftCard extends StatelessWidget {
   const SoftCard({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(18),
     this.onTap,
-    this.radius = 22,
+    this.radius = 16,
   });
 
   final Widget child;
@@ -193,25 +185,13 @@ class SoftCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(radius),
       side: const BorderSide(color: AppColors.border),
     );
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D1C1814),
-            blurRadius: 18,
-            offset: Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Material(
-        color: AppColors.surface,
-        shape: shape,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(padding: padding, child: child),
-        ),
+    return Material(
+      color: AppColors.surface,
+      shape: shape,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(padding: padding, child: child),
       ),
     );
   }
@@ -226,14 +206,10 @@ class GroupHeading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
       child: Text(
-        label.toUpperCase(),
-        style: AppText.tabular(
-          14,
-          FontWeight.w600,
-          color: AppColors.textMuted,
-        ).copyWith(letterSpacing: 1.1),
+        tx.hindi ? label : label.toUpperCase(),
+        style: AppText.eyebrow(size: 11.5),
       ),
     );
   }
@@ -279,12 +255,12 @@ class MenuList extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    TintIcon(icon: row.icon, color: row.color),
-                    const SizedBox(width: 16),
+                    TintIcon(icon: row.icon, color: row.color, size: 38),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Text(
                         row.label,
-                        style: AppText.tabular(16, FontWeight.w500),
+                        style: AppText.tabular(15, FontWeight.w500),
                       ),
                     ),
                     if (row.value != null) ...[
@@ -307,7 +283,7 @@ class MenuList extends StatelessWidget {
   }
 }
 
-/// Circle with initials on the brand gradient.
+/// Ink circle with the first initial.
 class GradientAvatar extends StatelessWidget {
   const GradientAvatar({
     super.key,
@@ -327,18 +303,14 @@ class GradientAvatar extends StatelessWidget {
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFE8742A), Color(0xFFB4521A)],
-        ),
+        color: AppColors.ink,
         shape: BoxShape.circle,
-        border: ring
-            ? Border.all(color: Colors.white, width: 3)
-            : Border.all(color: const Color(0xFFEFC9AD), width: 2),
+        border: ring ? Border.all(color: Colors.white, width: 3) : null,
       ),
       child: Text(
         initials.isEmpty ? '?' : initials.characters.first.toUpperCase(),
         style: AppText.tabular(
-          size * 0.42,
+          size * 0.4,
           FontWeight.w500,
           color: Colors.white,
         ),
@@ -349,10 +321,10 @@ class GradientAvatar extends StatelessWidget {
 
 /// "View All →" link in section headers.
 class ViewAllLink extends StatelessWidget {
-  const ViewAllLink({super.key, required this.onTap, this.label = 'View All'});
+  const ViewAllLink({super.key, required this.onTap, this.label});
 
   final VoidCallback onTap;
-  final String label;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -365,18 +337,14 @@ class ViewAllLink extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              label,
-              style: AppText.tabular(
-                16,
-                FontWeight.w500,
-                color: AppColors.primary,
-              ),
+              label ?? tx.viewAll,
+              style: AppText.tabular(14, FontWeight.w500, color: AppColors.ink),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
             const Icon(
               LucideIcons.arrowRight,
-              size: 18,
-              color: AppColors.primary,
+              size: 15,
+              color: AppColors.ink,
             ),
           ],
         ),
@@ -397,7 +365,7 @@ class SectionTitle extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text(title, style: AppText.h3.copyWith(letterSpacing: -0.4)),
+          child: Text(title, style: AppText.serif(24)),
         ),
         ?trailing,
       ],

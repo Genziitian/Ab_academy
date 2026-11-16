@@ -13,6 +13,7 @@ import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 /// 14 · Live classroom — slide stage on dark, chat / questions / notes below.
 class LiveClassroomScreen extends ConsumerStatefulWidget {
@@ -24,7 +25,7 @@ class LiveClassroomScreen extends ConsumerStatefulWidget {
 }
 
 class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen> {
-  static const _startedSecondsAgo = 24 * 60 + 18;
+  static final _startedSecondsAgo = 24 * 60 + 18;
 
   late final List<LiveMessage> _chat = [...MockData.liveChat];
   late final List<LiveMessage> _questions = [...MockData.liveQuestions];
@@ -59,15 +60,15 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen> {
       switch (tab) {
         case 'Chat':
           _chat.add(
-            LiveMessage(author: 'You', initials: student.initials, body: body),
+            LiveMessage(author: tx.you, initials: student.initials, body: body),
           );
         case 'Questions':
           _questions.add(
             LiveMessage(
-              author: 'You',
+              author: tx.you,
               initials: student.initials,
               body: body,
-              meta: 'Asked by you • 0 upvotes',
+              meta: tx.askedByYou,
             ),
           );
         default:
@@ -82,7 +83,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen> {
     final tab = ref.watch(liveTabProvider);
     final timer =
         '${_elapsed ~/ 60}:${(_elapsed % 60).toString().padLeft(2, '0')}';
-    const session = MockData.liveNow;
+    final session = MockData.liveNow;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -99,7 +100,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen> {
                     TextButton(
                       onPressed: () => context.pop(),
                       child: Text(
-                        '← Leave',
+                        tx.leave,
                         style: AppText.tabular(
                           13,
                           FontWeight.w400,
@@ -117,7 +118,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen> {
                         borderRadius: AppRadius.badge,
                       ),
                       child: Text(
-                        '● LIVE · $timer',
+                        tx.liveTimer(timer),
                         style: AppText.badge(
                           color: AppColors.liveOnDark,
                           size: 10,
@@ -126,7 +127,7 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      '${session.studentsEnrolled} watching',
+                      tx.watching(session.studentsEnrolled),
                       style: AppText.tabular(
                         12,
                         FontWeight.w400,
@@ -167,9 +168,11 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen> {
                             ])
                               Expanded(
                                 child: _PanelTab(
-                                  label: label == 'Questions'
-                                      ? 'Questions (${_questions.length})'
-                                      : label,
+                                  label: switch (label) {
+                                    'Questions' => tx.questionsN(_questions.length),
+                                    'My notes' => tx.myNotes,
+                                    _ => tx.chat,
+                                  },
                                   selected: tab == label,
                                   onTap: () => ref
                                       .read(liveTabProvider.notifier)
@@ -188,9 +191,9 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen> {
                       ),
                       MessageComposer(
                         hint: switch (tab) {
-                          'Questions' => 'Ask the teacher a question…',
-                          'My notes' => 'Write a note for yourself…',
-                          _ => 'Message the class…',
+                          'Questions' => tx.askTeacher,
+                          'My notes' => tx.writeNote,
+                          _ => tx.messageClass,
                         },
                         padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
                         leading: Material(
@@ -204,8 +207,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen> {
                               showDemoSnack(
                                 context,
                                 _handRaised
-                                    ? 'Hand raised — Amit Sir can see it.'
-                                    : 'Hand lowered.',
+                                    ? tx.handRaised
+                                    : tx.handLowered,
                               );
                             },
                             borderRadius: AppRadius.sm,
@@ -215,8 +218,8 @@ class _LiveClassroomScreenState extends ConsumerState<LiveClassroomScreen> {
                                 child: Text(
                                   '✋',
                                   semanticsLabel: _handRaised
-                                      ? 'Lower hand'
-                                      : 'Raise hand',
+                                      ? tx.lowerHand
+                                      : tx.raiseHand,
                                   style: const TextStyle(fontSize: 18),
                                 ),
                               ),
@@ -296,7 +299,7 @@ class _SlideStage extends StatelessWidget {
                 child: Image.asset(
                   'assets/images/feature-live-class.png',
                   fit: BoxFit.cover,
-                  semanticLabel: 'Teacher camera',
+                  semanticLabel: tx.teacherCamera,
                 ),
               ),
             ),
@@ -386,7 +389,7 @@ class _MessageList extends StatelessWidget {
                       ),
                       if (message.isTeacher) ...[
                         const SizedBox(width: 6),
-                        const StatusBadge.teacher(),
+                        StatusBadge.teacher(),
                       ],
                     ],
                   ),
@@ -435,7 +438,7 @@ class _NotesList extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'My note · ${notes[index].$1}',
+              tx.myNoteAt(notes[index].$1),
               style: AppText.tabular(
                 11,
                 FontWeight.w600,

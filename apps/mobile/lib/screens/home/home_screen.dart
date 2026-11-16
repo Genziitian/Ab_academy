@@ -15,10 +15,13 @@ import '../../utils/format.dart';
 import '../../widgets/brand_art.dart';
 import '../../widgets/common.dart';
 import '../../widgets/course_slider.dart';
+import '../../widgets/language_toggle.dart';
+import '../../widgets/plan_register.dart';
 import '../../widgets/ui_kit.dart';
+import '../../l10n/strings.dart';
 
-/// 06 · Home — greeting, continue learning, feature banners, quick actions,
-/// then every course top to bottom.
+/// 06 · Home — greeting, continue learning, the 60-day plan, feature
+/// banners, quick actions, then every course top to bottom.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -51,9 +54,9 @@ class HomeScreen extends ConsumerWidget {
                 children: [
                   GestureDetector(
                     onTap: () => context.go(Routes.more),
-                    child: GradientAvatar(initials: firstName, size: 48),
+                    child: GradientAvatar(initials: firstName, size: 44),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +65,7 @@ class HomeScreen extends ConsumerWidget {
                           _greeting(),
                           style: AppText.tabular(
                             13,
-                            FontWeight.w500,
+                            FontWeight.w400,
                             color: AppColors.textMuted,
                           ),
                         ),
@@ -70,12 +73,14 @@ class HomeScreen extends ConsumerWidget {
                           firstName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppText.serif(30, height: 1.1),
+                          style: AppText.serif(28, height: 1.1),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
+                  const LanguageToggle(),
+                  const SizedBox(width: 8),
                   _RoundIconButton(
                     icon: LucideIcons.bell,
                     badge: unread,
@@ -85,6 +90,8 @@ class HomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 22),
               const _ContinueCard(),
+              const PlanRegister(),
+              const SizedBox(height: 24),
               // Admin-managed slider (App slider in the console) when it has
               // slides; the app's own feature banners otherwise.
               if (hasAdminSlides)
@@ -99,17 +106,14 @@ class HomeScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
-                    child: Text('Courses for you', style: AppText.serif(28)),
+                    child: Text(tx.coursesForYou, style: AppText.serif(26)),
                   ),
                   GestureDetector(
                     onTap: () => context.go(Routes.store),
                     child: Text(
-                      'See all',
-                      style: AppText.tabular(
-                        14,
-                        FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
+                      tx.seeAll,
+                      style: AppText.tabular(14, FontWeight.w500, color: AppColors.ink)
+                          .copyWith(decoration: TextDecoration.underline, decorationColor: AppColors.ruleStrong),
                     ),
                   ),
                 ],
@@ -125,9 +129,9 @@ class HomeScreen extends ConsumerWidget {
 
   static String _greeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    if (hour < 12) return tx.goodMorning;
+    if (hour < 17) return tx.goodAfternoon;
+    return tx.goodEvening;
   }
 }
 
@@ -145,7 +149,7 @@ class _ContinueCard extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: 22),
       child: Material(
         color: AppColors.primaryDeep,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => context.push(Routes.courseDetails(course.id)),
@@ -155,15 +159,15 @@ class _ContinueCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'CONTINUE LEARNING',
-                  style: AppText.eyebrow(color: AppColors.accent, size: 11.5),
+                  tx.continueLearning,
+                  style: AppText.eyebrow(color: AppColors.textOnDarkMuted),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   course.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppText.serif(28, color: AppColors.surface),
+                  style: AppText.serif(26, color: AppColors.surface),
                 ),
                 if (course.nextUpLabel != null) ...[
                   const SizedBox(height: 6),
@@ -185,7 +189,7 @@ class _ContinueCard extends ConsumerWidget {
                         child: LinearProgressIndicator(
                           value: progress / 100,
                           minHeight: 6,
-                          color: AppColors.accent,
+                          color: AppColors.surface,
                           backgroundColor: AppColors.primaryDeepRaised,
                         ),
                       ),
@@ -205,14 +209,14 @@ class _ContinueCard extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 18),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.accent,
-                        borderRadius: BorderRadius.circular(99),
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        'Continue',
+                        tx.continueLabel,
                         style: AppText.tabular(
                           14,
-                          FontWeight.w700,
+                          FontWeight.w500,
                           color: AppColors.ink,
                         ),
                       ),
@@ -235,10 +239,10 @@ class _QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (LucideIcons.messageCircle, 'Live doubts', AppColors.accent, Routes.live),
-      (LucideIcons.fileText, 'Free notes', AppColors.teal, Routes.notes),
-      (LucideIcons.bookOpen, 'My courses', AppColors.violet, Routes.myCourses),
-      (LucideIcons.headphones, 'Support', AppColors.primary, Routes.tickets),
+      (LucideIcons.messageCircle, tx.qaLiveDoubts, AppColors.accent, Routes.live),
+      (LucideIcons.fileText, tx.qaFreeNotes, AppColors.teal, Routes.notes),
+      (LucideIcons.bookOpen, tx.qaMyCourses, AppColors.violet, Routes.myCourses),
+      (LucideIcons.headphones, tx.qaSupport, AppColors.primary, Routes.tickets),
     ];
     return Row(
       children: [
@@ -251,12 +255,12 @@ class _QuickActions extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Column(
                   children: [
-                    TintIcon(icon: icon, color: color, size: 56),
+                    TintIcon(icon: icon, color: color, size: 52),
                     const SizedBox(height: 8),
                     Text(
                       label,
                       textAlign: TextAlign.center,
-                      style: AppText.tabular(12.5, FontWeight.w600),
+                      style: AppText.tabular(12.5, FontWeight.w500),
                     ),
                   ],
                 ),
@@ -286,16 +290,14 @@ class _RoundIconButton extends StatelessWidget {
       children: [
         Material(
           color: AppColors.surface,
-          shape: const CircleBorder(),
-          elevation: 3,
-          shadowColor: const Color(0x221C1814),
+          shape: const CircleBorder(side: BorderSide(color: AppColors.rule)),
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onTap,
             child: SizedBox(
-              width: 54,
-              height: 54,
-              child: Icon(icon, size: 24, color: AppColors.ink),
+              width: 44,
+              height: 44,
+              child: Icon(icon, size: 20, color: AppColors.ink),
             ),
           ),
         ),
@@ -304,11 +306,11 @@ class _RoundIconButton extends StatelessWidget {
             right: -2,
             top: -4,
             child: Container(
-              width: 24,
-              height: 24,
+              width: 20,
+              height: 20,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: AppColors.liveDot,
+                color: AppColors.accent,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
@@ -337,7 +339,7 @@ class AnnouncementCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final n = notification;
     final (icon, color) = switch (n.kind) {
-      NotificationKind.live => (LucideIcons.video, const Color(0xFFE8742A)),
+      NotificationKind.live => (LucideIcons.video, AppColors.accent),
       NotificationKind.test => (LucideIcons.clipboardCheck, AppColors.warning),
       NotificationKind.recording => (LucideIcons.playCircle, AppColors.teal),
       NotificationKind.notes => (LucideIcons.fileText, AppColors.success),
@@ -368,7 +370,7 @@ class AnnouncementCard extends ConsumerWidget {
                     Expanded(
                       child: Text(
                         n.title,
-                        style: AppText.tabular(16, FontWeight.w600),
+                        style: AppText.tabular(15, FontWeight.w600),
                       ),
                     ),
                     if (n.timeAgo != null) ...[
@@ -398,7 +400,7 @@ class AnnouncementCard extends ConsumerWidget {
               height: 9,
               margin: const EdgeInsets.only(top: 6),
               decoration: const BoxDecoration(
-                color: AppColors.primary,
+                color: AppColors.accent,
                 shape: BoxShape.circle,
               ),
             ),
@@ -452,19 +454,21 @@ class HomeCourseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final teacher = course.teachers.isEmpty
-        ? 'Faculty Team'
+        ? tx.faculty
+        : course.teachers.first.displayName == 'Ajit Sir'
+        ? tx.teacherName
         : course.teachers.first.displayName;
     final language =
         course.language.contains('Hindi') && course.language.contains('English')
-        ? 'Hindi + English'
-        : course.language;
+        ? tx.hindiPlusEnglish
+        : tx.language(course.language);
     final free = course.priceInr == 0;
 
     return Material(
       color: AppColors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: const BorderSide(color: Color(0xFFE4DCCF)),
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: AppColors.rule),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -486,27 +490,22 @@ class HomeCourseCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'CLASS ${course.classLevel}  ·  ${language.toUpperCase()}',
-                    style: AppText.tabular(
-                      11,
-                      FontWeight.w700,
-                      color: AppColors.primary,
-                      letterSpacing: 0.8,
-                    ),
+                    '${tx.classNCaps(course.classLevel)}  ·  ${tx.hindi ? language : language.toUpperCase()}',
+                    style: AppText.eyebrow(),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     course.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: AppText.serif(24, height: 1.1),
+                    style: AppText.serif(23, height: 1.12),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     [
                       teacher,
                       if (course.lessonsCount > 0)
-                        '${course.lessonsCount}+ lectures',
+                        tx.lecturesPlus(course.lessonsCount),
                     ].join('  ·  '),
                     style: AppText.tabular(
                       13,
@@ -515,26 +514,26 @@ class HomeCourseCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const Divider(height: 1, color: Color(0xFFECE4D6)),
+                  const Divider(height: 1, color: AppColors.divider),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       if (enrolled)
                         _Badge(
-                          label: 'Enrolled',
+                          label: tx.enrolled,
                           color: AppColors.success,
                           icon: LucideIcons.checkCircle2,
                         )
                       else if (free)
                         _Badge(
-                          label: 'Free',
+                          label: tx.free,
                           color: AppColors.success,
                           icon: LucideIcons.gift,
                         )
                       else ...[
                         Text(
                           formatRupees(course.priceInr),
-                          style: AppText.tabular(18, FontWeight.w800),
+                          style: AppText.tabular(19, FontWeight.w600),
                         ),
                         if (course.discountPercent > 0) ...[
                           const SizedBox(width: 8),
@@ -548,7 +547,7 @@ class HomeCourseCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '${course.discountPercent}% off',
+                            tx.percentOff(course.discountPercent),
                             style: AppText.tabular(
                               13,
                               FontWeight.w700,
@@ -559,18 +558,18 @@ class HomeCourseCard extends StatelessWidget {
                       ],
                       const Spacer(),
                       Text(
-                        enrolled ? 'Continue' : 'View',
+                        enrolled ? tx.continueLabel : tx.view,
                         style: AppText.tabular(
                           14,
-                          FontWeight.w700,
-                          color: AppColors.primary,
+                          FontWeight.w500,
+                          color: AppColors.ink,
                         ),
                       ),
                       const SizedBox(width: 2),
                       const Icon(
-                        LucideIcons.chevronRight,
-                        size: 18,
-                        color: AppColors.primary,
+                        LucideIcons.arrowRight,
+                        size: 16,
+                        color: AppColors.ink,
                       ),
                     ],
                   ),
@@ -598,7 +597,7 @@ class _Badge extends StatelessWidget {
       children: [
         Icon(icon, size: 16, color: color),
         const SizedBox(width: 6),
-        Text(label, style: AppText.tabular(14, FontWeight.w700, color: color)),
+        Text(label, style: AppText.tabular(14, FontWeight.w500, color: color)),
       ],
     );
   }

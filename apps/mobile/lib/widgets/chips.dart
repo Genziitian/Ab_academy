@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_theme.dart';
+import '../l10n/strings.dart';
 
 /// Filter chip — subject filters on Notes, class / stream on Explore. The
 /// selected chip is filled navy, the rest are white with a hairline border.
@@ -30,17 +31,17 @@ class FilterChipPill extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: selected ? AppColors.primaryDeep : AppColors.surface,
-          borderRadius: AppRadius.xs,
+          borderRadius: AppRadius.pill,
           border: Border.all(
-            color: selected ? AppColors.primaryDeep : AppColors.border,
+            color: selected ? AppColors.primaryDeep : AppColors.rule,
           ),
         ),
         child: Text(
           label,
           style: AppText.tabular(
             13,
-            selected ? FontWeight.w600 : FontWeight.w500,
-            color: selected ? Colors.white : AppColors.textBody,
+            FontWeight.w500,
+            color: selected ? Colors.white : AppColors.textMuted,
           ),
         ),
       ),
@@ -72,8 +73,8 @@ class ChoiceChipPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? AppColors.primaryTint : AppColors.surface,
-          borderRadius: AppRadius.xs,
+          color: AppColors.surface,
+          borderRadius: AppRadius.pill,
           border: Border.all(
             color: selected ? AppColors.primary : AppColors.border,
             width: selected ? 1.5 : 1,
@@ -83,8 +84,8 @@ class ChoiceChipPill extends StatelessWidget {
           label,
           style: AppText.tabular(
             13,
-            selected ? FontWeight.w600 : FontWeight.w400,
-            color: selected ? AppColors.primary : AppColors.textBody,
+            FontWeight.w500,
+            color: selected ? AppColors.ink : AppColors.textMuted,
           ),
         ),
       ),
@@ -108,8 +109,8 @@ class SubjectTag extends StatelessWidget {
         borderRadius: AppRadius.badge,
       ),
       child: Text(
-        subject,
-        style: AppText.tabular(12, FontWeight.w600, color: palette.ink),
+        tx.subject(subject),
+        style: AppText.tabular(12, FontWeight.w500, color: palette.ink),
       ),
     );
   }
@@ -126,17 +127,17 @@ class StatusBadge extends StatelessWidget {
     this.letterSpacing = 0.4,
   });
 
-  const StatusBadge.live({super.key})
-    : label = 'LIVE',
-      color = AppColors.liveInk,
-      background = AppColors.liveTint,
+  StatusBadge.live({super.key})
+    : label = tx.liveCaps,
+      color = AppColors.live,
+      background = AppColors.successTint,
       fontSize = 9,
       letterSpacing = 0.4;
 
-  const StatusBadge.teacher({super.key})
-    : label = 'TEACHER',
+  StatusBadge.teacher({super.key})
+    : label = tx.teacherCaps,
       color = Colors.white,
-      background = AppColors.primary,
+      background = AppColors.ink,
       fontSize = 8,
       letterSpacing = 0.4;
 
@@ -218,9 +219,9 @@ class _LiveDotState extends State<LiveDot> with SingleTickerProviderStateMixin {
 
 /// "LIVE NOW" tag with the pulsing dot. [onDark] for the navy hero cards.
 class LivePill extends StatelessWidget {
-  const LivePill({super.key, this.label = 'LIVE NOW', this.onDark = true});
+  const LivePill({super.key, this.label, this.onDark = true});
 
-  final String label;
+  final String? label;
   final bool onDark;
 
   @override
@@ -230,18 +231,18 @@ class LivePill extends StatelessWidget {
       decoration: BoxDecoration(
         color: onDark
             ? AppColors.live.withValues(alpha: 0.18)
-            : AppColors.liveTint,
-        borderRadius: AppRadius.badge,
+            : AppColors.successTint,
+        borderRadius: AppRadius.pill,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          LiveDot(color: onDark ? AppColors.live : AppColors.liveInk),
+          LiveDot(color: onDark ? AppColors.liveOnDark : AppColors.live),
           const SizedBox(width: 6),
           Text(
-            label,
+            label ?? tx.liveNowCaps,
             style: AppText.badge(
-              color: onDark ? AppColors.liveOnDark : AppColors.liveInk,
+              color: onDark ? AppColors.liveOnDark : AppColors.live,
               size: 11,
             ).copyWith(letterSpacing: 0.7),
           ),

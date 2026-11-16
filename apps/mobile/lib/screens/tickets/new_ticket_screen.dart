@@ -10,6 +10,7 @@ import '../../theme/app_text_styles.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 const _categories = [
   TicketCategory.payment,
@@ -66,7 +67,7 @@ class _NewTicketScreenState extends ConsumerState<NewTicketScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _sending = false);
-      showDemoSnack(context, 'Could not send the ticket. Try again.');
+      showDemoSnack(context, tx.couldNotSendTicket);
     }
   }
 
@@ -76,11 +77,11 @@ class _NewTicketScreenState extends ConsumerState<NewTicketScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: const AppTopBar(title: 'Raise a ticket', closeIcon: true),
+      appBar: AppTopBar(title: tx.raiseATicket, closeIcon: true),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text('Category', style: label),
+          Text(tx.category, style: label),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -95,24 +96,24 @@ class _NewTicketScreenState extends ConsumerState<NewTicketScreen> {
             ],
           ),
           const SizedBox(height: 18),
-          Text('Subject', style: label),
+          Text(tx.subjectLabel, style: label),
           const SizedBox(height: 6),
           AppTextField(
             controller: _subject,
-            hint: 'Briefly describe the issue',
+            hint: tx.subjectHint,
           ),
           const SizedBox(height: 18),
-          Text('Details', style: label),
+          Text(tx.detailsLabel, style: label),
           const SizedBox(height: 6),
           AppTextField(
             controller: _body,
-            hint: 'Include order ID, course name or screenshots where helpful',
+            hint: tx.detailsHint,
             maxLines: 7,
             minLines: 5,
           ),
           const SizedBox(height: 14),
           Text(
-            'Our team replies here — you will also get a notification.',
+            tx.teamRepliesHere,
             style: AppText.meta,
           ),
         ],
@@ -122,7 +123,7 @@ class _NewTicketScreenState extends ConsumerState<NewTicketScreen> {
         child: SafeArea(
           top: false,
           child: PrimaryButton(
-            label: _sending ? 'Sending…' : 'Submit ticket',
+            label: _sending ? tx.sending : tx.submitTicket,
             enabled: _canSubmit && !_sending,
             onPressed: _submit,
           ),

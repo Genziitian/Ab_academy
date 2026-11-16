@@ -12,6 +12,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 const _dotColors = {
   SessionKind.live: AppColors.liveDot,
@@ -91,7 +92,7 @@ class CalendarView extends ConsumerWidget {
                 children: [
                   if (onBack != null)
                     IconButton(
-                      tooltip: 'Back',
+                      tooltip: tx.back,
                       onPressed: onBack,
                       icon: const Icon(
                         Icons.arrow_back,
@@ -105,7 +106,7 @@ class CalendarView extends ConsumerWidget {
                       // when there is no back button in front of it.
                       padding: EdgeInsets.only(left: onBack == null ? 12 : 0),
                       child: Text(
-                        DateFormat('MMMM y').format(month),
+                        DateFormat('MMMM y', tx.hindi ? 'hi' : null).format(month),
                         textAlign: onBack == null
                             ? TextAlign.left
                             : TextAlign.center,
@@ -114,7 +115,7 @@ class CalendarView extends ConsumerWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Previous month',
+                    tooltip: tx.previousMonth,
                     onPressed: () =>
                         ref.read(calendarMonthProvider.notifier).shift(-1),
                     icon: const Icon(
@@ -124,7 +125,7 @@ class CalendarView extends ConsumerWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Next month',
+                    tooltip: tx.nextMonth,
                     onPressed: () =>
                         ref.read(calendarMonthProvider.notifier).shift(1),
                     icon: const Icon(
@@ -152,15 +153,15 @@ class CalendarView extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
             children: [
               Text(
-                DateFormat('EEEE, d MMMM').format(selected),
+                DateFormat('EEEE, d MMMM', tx.hindi ? 'hi' : null).format(selected),
                 style: AppText.tabular(15, FontWeight.w600),
               ),
               const SizedBox(height: 10),
               if (agenda.isEmpty)
-                const EmptyState(
+                EmptyState(
                   icon: LucideIcons.calendarX,
-                  title: 'No classes scheduled',
-                  body: 'Pick a day with a dot to see its classes.',
+                  title: tx.noClassesThisDay,
+                  body: tx.pickDayWithDot,
                 ),
               for (final item in agenda) ...[
                 _AgendaCard(item: item),
@@ -362,7 +363,7 @@ class _AgendaCard extends StatelessWidget {
                   width: double.infinity,
                   child: Center(
                     child: Text(
-                      'Join now',
+                      tx.joinNow,
                       style: AppText.tabular(
                         13,
                         FontWeight.w600,

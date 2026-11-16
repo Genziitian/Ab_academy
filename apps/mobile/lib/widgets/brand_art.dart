@@ -7,6 +7,7 @@ import '../data/models/course.dart';
 import '../router/app_router.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import '../l10n/strings.dart';
 
 /// Course artwork: the uploaded thumbnail when there is one, otherwise the
 /// bundled subject art for single-subject Physics / Chemistry / Maths courses
@@ -31,25 +32,25 @@ class _Promo {
   final String route;
 }
 
-const _promos = [
+List<_Promo> get _promos => [
   _Promo(
     'assets/images/promo/batch.png',
-    'Class 12 Crash Course starts 16 November',
+    tx.promoBatch,
     Routes.store,
   ),
   _Promo(
     'assets/images/promo/doubts.png',
-    'Ask doubts and get them solved',
+    tx.promoDoubts,
     Routes.live,
   ),
   _Promo(
     'assets/images/promo/notes.png',
-    'Free notes and solved PYQs',
+    tx.promoNotes,
     Routes.notes,
   ),
   _Promo(
     'assets/images/promo/courses.png',
-    'Buy courses right in the app',
+    tx.promoBuy,
     Routes.store,
   ),
 ];

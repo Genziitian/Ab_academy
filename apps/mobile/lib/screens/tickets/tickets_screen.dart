@@ -11,6 +11,7 @@ import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/common.dart';
 import '../../widgets/ui_kit.dart';
+import '../../l10n/strings.dart';
 
 /// 21 · Support — the student's tickets; the academy replies from the admin
 /// console (Tickets) and the thread updates here.
@@ -39,11 +40,11 @@ class TicketsScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Support',
+                          tx.support,
                           style: AppText.h1.copyWith(letterSpacing: -0.6),
                         ),
                         Text(
-                          'We usually reply within a day',
+                          tx.replyWithinDay,
                           style: AppText.bodyLg,
                         ),
                       ],
@@ -75,12 +76,12 @@ class TicketsScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Raise a new ticket',
+                                  tx.raiseNewTicket,
                                   style: AppText.tabular(17, FontWeight.w600),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'Payments, course content, the app or anything else',
+                                  tx.raiseTicketLead,
                                   style: AppText.meta,
                                 ),
                               ],
@@ -94,12 +95,12 @@ class TicketsScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 26),
-                    const GroupHeading('Your tickets'),
+                    GroupHeading(tx.yourTickets),
                     if (tickets.isEmpty)
-                      const EmptyState(
+                      EmptyState(
                         icon: LucideIcons.lifeBuoy,
-                        title: 'No tickets yet',
-                        body: 'Raise one and our team will reply here.',
+                        title: tx.noTicketsYet,
+                        body: tx.noTicketsBody,
                       )
                     else
                       for (final t in tickets) ...[
@@ -174,7 +175,7 @@ class _TicketCard extends StatelessWidget {
           if (latest != null) ...[
             const SizedBox(height: 6),
             Text(
-              '${latest.fromSupport ? '${latest.authorName ?? 'Support'}: ' : 'You: '}${latest.body}',
+              '${latest.fromSupport ? '${latest.authorName ?? tx.support}: ' : '${tx.you}: '}${latest.body}',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: AppText.tabular(

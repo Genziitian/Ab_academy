@@ -4,19 +4,20 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../l10n/strings.dart';
 
 /// Order matches the shell branches in the router.
 enum AppTab { home, academics, courses, more }
 
-const _items = <(AppTab, IconData, String)>[
-  (AppTab.home, LucideIcons.home, 'Home'),
-  (AppTab.academics, LucideIcons.graduationCap, 'Academics'),
-  (AppTab.courses, LucideIcons.bookOpen, 'Courses'),
-  (AppTab.more, LucideIcons.layoutGrid, 'More'),
+List<(AppTab, IconData, String)> get _items => [
+  (AppTab.home, LucideIcons.home, tx.tabHome),
+  (AppTab.academics, LucideIcons.graduationCap, tx.tabAcademics),
+  (AppTab.courses, LucideIcons.bookOpen, tx.tabCourses),
+  (AppTab.more, LucideIcons.layoutGrid, tx.tabMore),
 ];
 
-/// Bottom bar: four equal tabs. The selected one gets a soft blue pill
-/// behind its icon; every tab has the same tap target and ripple, and the
+/// Bottom bar: four equal tabs. The selected one is ink, with a grey pill
+/// behind its icon and a saffron dot; every tab has the same tap target and ripple, and the
 /// bar scales with the screen width.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
@@ -39,14 +40,7 @@ class AppBottomNav extends StatelessWidget {
     return DecoratedBox(
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(top: BorderSide(color: Color(0xFFE4DCCF))),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x0F1C1814),
-            blurRadius: 16,
-            offset: Offset(0, -4),
-          ),
-        ],
+        border: Border(top: BorderSide(color: AppColors.rule)),
       ),
       child: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -94,7 +88,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.primary : const Color(0xFF9A8F82);
+    final color = selected ? AppColors.ink : AppColors.textSubtle;
     return Semantics(
       button: true,
       selected: selected,
@@ -116,14 +110,12 @@ class _NavItem extends StatelessWidget {
                 width: compact ? 52 : 60,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: selected
-                      ? AppColors.primary.withValues(alpha: 0.12)
-                      : Colors.transparent,
+                  color: selected ? AppColors.tray : Colors.transparent,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: AnimatedScale(
                   duration: const Duration(milliseconds: 220),
-                  scale: selected ? 1.06 : 1,
+                  scale: 1,
                   child: Icon(icon, size: 22, color: color),
                 ),
               ),
@@ -132,7 +124,7 @@ class _NavItem extends StatelessWidget {
                 duration: const Duration(milliseconds: 220),
                 style: AppText.tabular(
                   compact ? 11 : 12,
-                  selected ? FontWeight.w700 : FontWeight.w500,
+                  selected ? FontWeight.w600 : FontWeight.w500,
                   color: color,
                   letterSpacing: 0.1,
                 ),

@@ -11,6 +11,7 @@ import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/chips.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 /// 12 · Live sessions — the class on air now, then upcoming and past.
 /// Shown as the Live section of the Academics tab.
@@ -41,20 +42,20 @@ class _LiveSessionsViewState extends ConsumerState<LiveSessionsView> {
           const SizedBox(height: 16),
         ],
         SegmentedTabs(
-          tabs: const ['Upcoming', 'Past'],
-          selected: _tab,
-          onSelected: (tab) => setState(() => _tab = tab),
+          tabs: [tx.upcoming, tx.past],
+          selected: _tab == 'Upcoming' ? tx.upcoming : tx.past,
+          onSelected: (label) => setState(() => _tab = label == tx.upcoming ? 'Upcoming' : 'Past'),
         ),
         const SizedBox(height: 16),
         if (list.isEmpty)
           EmptyState(
             icon: LucideIcons.radio,
             title: _tab == 'Upcoming'
-                ? 'No classes scheduled'
-                : 'No recordings yet',
+                ? tx.noClassesScheduled
+                : tx.noRecordingsYet,
             body: _tab == 'Upcoming'
-                ? 'New live classes appear here as teachers schedule them.'
-                : 'Finished classes show up here with their recording.',
+                ? tx.newLiveClassesAppear
+                : tx.finishedClassesAppear,
           )
         else
           ListCard(
@@ -95,12 +96,12 @@ class _LiveNowCard extends StatelessWidget {
           const LivePill(),
           const SizedBox(height: 12),
           Text(
-            '${session.subject} · ${session.title}',
+            '${tx.subject(session.subject)} · ${session.title}',
             style: AppText.tabular(19, FontWeight.w700, color: Colors.white),
           ),
           const SizedBox(height: 4),
           Text(
-            '${session.teacherName} · ${session.studentsEnrolled} students',
+            '${session.teacherName} · ${tx.studentsCount(session.studentsEnrolled)}',
             style: AppText.tabular(
               13,
               FontWeight.w400,
@@ -119,7 +120,7 @@ class _LiveNowCard extends StatelessWidget {
                 width: double.infinity,
                 child: Center(
                   child: Text(
-                    'Join Live Class →',
+                    tx.joinLiveArrow,
                     style: AppText.tabular(14, FontWeight.w600),
                   ),
                 ),
@@ -174,7 +175,7 @@ class _SessionRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${session.subject} · ${session.title}',
+                    '${tx.subject(session.subject)} · ${session.title}',
                     style: AppText.rowTitle,
                   ),
                   const SizedBox(height: 1),
@@ -194,7 +195,7 @@ class _SessionRow extends StatelessWidget {
             const SizedBox(width: 8),
             if (past)
               Text(
-                'Watch',
+                tx.watch,
                 style: AppText.tabular(
                   12,
                   FontWeight.w600,
@@ -208,7 +209,7 @@ class _SessionRow extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(4),
                   child: Text(
-                    reminded ? '✓ Set' : 'Remind',
+                    reminded ? tx.reminderSetShort : tx.remind,
                     style: AppText.tabular(
                       12,
                       FontWeight.w600,

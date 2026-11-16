@@ -18,6 +18,7 @@ import '../../utils/format.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/brand_art.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 /// 24 · Course page — what the crash course includes, with price and enrol.
 class CourseDetailsScreen extends ConsumerWidget {
@@ -32,9 +33,9 @@ class CourseDetailsScreen extends ConsumerWidget {
     return async.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (error, _) => _Missing(message: 'Could not load this course.'),
+      error: (error, _) => _Missing(message: tx.couldNotLoadCourse),
       data: (course) => course == null
-          ? const _Missing(message: 'This course is not available.')
+          ? _Missing(message: tx.courseNotAvailable)
           : _Body(course),
     );
   }
@@ -50,23 +51,23 @@ class _Body extends StatelessWidget {
     final bilingual =
         course.language.contains('Hindi') &&
         course.language.contains('English');
-    final language = bilingual ? 'Hindi + English' : course.language;
+    final language = bilingual ? tx.hindiPlusEnglish : tx.language(course.language);
     final teachers = course.teachers.isEmpty
-        ? const [
+        ? [
             Teacher(
-              displayName: 'Faculty Team',
+              displayName: tx.faculty,
               subject: '',
               yearsExperience: 0,
             ),
           ]
         : course.teachers;
     final stats = [
-      ('${course.lessonsCount}+', 'Lectures'),
-      ('${MockData.planDays}', 'Days'),
+      ('${course.lessonsCount}+', tx.statLectures),
+      ('${MockData.planDays}', tx.statDays),
       if (course.questionsCount != null)
         (
           '${NumberFormat.decimalPattern('en_IN').format(course.questionsCount)}+',
-          'Questions',
+          tx.statQuestions,
         ),
     ];
 
@@ -100,8 +101,10 @@ class _Body extends StatelessWidget {
                                 ? Align(
                                     alignment: Alignment.bottomLeft,
                                     child: Text(
-                                      course.stream ??
-                                          course.subjects.join(' · '),
+                                      tx.subject(
+                                        course.stream ??
+                                            course.subjects.join(' · '),
+                                      ),
                                       style: AppText.tabular(
                                         22,
                                         FontWeight.w700,
@@ -118,7 +121,7 @@ class _Body extends StatelessWidget {
                             color: Colors.black.withValues(alpha: 0.35),
                             shape: const CircleBorder(),
                             child: IconButton(
-                              tooltip: 'Back',
+                              tooltip: tx.back,
                               onPressed: () => context.pop(),
                               icon: const Icon(
                                 Icons.arrow_back,
@@ -141,12 +144,12 @@ class _Body extends StatelessWidget {
                           runSpacing: 6,
                           children: [
                             _Tag(
-                              '${MockData.planDays}-day crash course',
+                              tx.crashCourseDays(MockData.planDays),
                               color: AppColors.primary,
                               background: AppColors.primaryTint,
                             ),
                             _Tag(
-                              'Class ${course.classLevel} · ${course.board}',
+                              tx.classBoard(course.classLevel, course.board),
                               color: AppColors.textBody,
                               background: AppColors.fillMuted,
                             ),
@@ -176,7 +179,7 @@ class _Body extends StatelessWidget {
                                 if (course.reviewCount != null)
                                   TextSpan(
                                     text:
-                                        '  (${NumberFormat.decimalPattern('en_IN').format(course.reviewCount)} ratings)',
+                                        '  (${tx.ratings(NumberFormat.decimalPattern('en_IN').format(course.reviewCount))})',
                                     style: AppText.meta,
                                   ),
                               ],
@@ -210,8 +213,8 @@ class _Body extends StatelessWidget {
                                       course.subjects.length == 1 &&
                                               teacher.subject ==
                                                   course.subjects.first
-                                          ? '${teacher.subject} teacher'
-                                          : 'Course teacher',
+                                          ? tx.subjectTeacher(teacher.subject)
+                                          : tx.courseTeacher,
                                       style: AppText.meta,
                                     ),
                                   ],
@@ -231,12 +234,12 @@ class _Body extends StatelessWidget {
                             _Fact(icon: LucideIcons.languages, text: language),
                             _Fact(
                               icon: LucideIcons.calendarDays,
-                              text: '${MockData.planDays} days',
+                              text: tx.days(MockData.planDays),
                             ),
                             if (course.lessonsCount > 0)
                               _Fact(
                                 icon: LucideIcons.playCircle,
-                                text: '${course.lessonsCount}+ lectures',
+                                text: tx.lecturesPlus(course.lessonsCount),
                               ),
                           ],
                         ),
@@ -244,7 +247,7 @@ class _Body extends StatelessWidget {
                         // 4 · What you get.
                         if (course.highlights.isNotEmpty) ...[
                           const SizedBox(height: 22),
-                          Text('What you get', style: AppText.sectionTitle),
+                          Text(tx.whatYouGet, style: AppText.sectionTitle),
                           const SizedBox(height: 12),
                           AppCard(
                             padding: const EdgeInsets.symmetric(
@@ -302,7 +305,7 @@ class _Body extends StatelessWidget {
                         if (course.description.isNotEmpty) ...[
                           const SizedBox(height: 22),
                           Text(
-                            'About this course',
+                            tx.aboutThisCourse,
                             style: AppText.sectionTitle,
                           ),
                           const SizedBox(height: 8),
@@ -438,7 +441,7 @@ class _BottomBar extends StatelessWidget {
         top: false,
         child: course.isEnrolled
             ? PrimaryButton(
-                label: 'Go to course',
+                label: tx.goToCourse,
                 onPressed: () =>
                     context.push(Routes.curriculum, extra: course.id),
               )
@@ -453,8 +456,7 @@ class _BottomBar extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Not enrolled yet. Courses on your account appear here '
-                      'automatically when you sign in.',
+                      tx.notEnrolledNote,
                       style: AppText.bodyCompact,
                     ),
                   ),
@@ -487,7 +489,7 @@ class _BottomBar extends StatelessWidget {
                                       ),
                                 ),
                                 TextSpan(
-                                  text: '  ${course.discountPercent}% OFF',
+                                  text: '  ${tx.percentOffCaps(course.discountPercent)}',
                                   style: AppText.tabular(
                                     12,
                                     FontWeight.w600,
@@ -501,7 +503,7 @@ class _BottomBar extends StatelessWidget {
                     ),
                   ),
                   PrimaryButton(
-                    label: 'Enroll now',
+                    label: tx.enrollNow,
                     height: 50,
                     expand: false,
                     onPressed: () => context.push(Routes.checkout(course.id)),
@@ -521,13 +523,13 @@ class _Missing extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppTopBar(title: 'Course'),
+      appBar: AppTopBar(title: tx.course),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: EmptyState(
           icon: LucideIcons.bookX,
           title: message,
-          body: 'Go back and pick another crash course.',
+          body: tx.pickAnother,
         ),
       ),
     );

@@ -241,12 +241,12 @@ export function GoogleMark() {
 }
 
 /** The academy logo tile: white mortarboard on a blue square. */
-/** The Akhand Bharat Academy logo, as a round badge. */
+/** The AB Academy logo, as a round badge. */
 export function BrandMark({ size = 36 }: { size?: number }) {
   return (
     <Image
       src="/images/logo.png"
-      alt="Akhand Bharat Academy logo"
+      alt="AB Academy logo"
       width={size}
       height={size}
       className="shrink-0 rounded-full"
@@ -292,7 +292,7 @@ export function LinkedInIcon(props: IconProps) {
   );
 }
 
-/** The name beside the logo: "Akhand Bharat" over a spaced-out "ACADEMY". */
+/** The name beside the logo: "AB" over a spaced-out "ACADEMY". */
 export function Wordmark({
   size = "md",
   tone = "dark",
@@ -311,7 +311,7 @@ export function Wordmark({
   return (
     <span className={`inline-flex flex-col leading-none ${className}`}>
       <span className={`whitespace-nowrap font-semibold tracking-[-0.02em] ${top} ${dark ? "text-ab-ink" : "text-white"}`}>
-        Akhand Bharat
+        AB
       </span>
       <span
         className={`mt-[3px] whitespace-nowrap font-[family-name:var(--font-geist-mono)] uppercase tracking-[0.32em] ${bottom} ${

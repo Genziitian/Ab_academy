@@ -18,7 +18,7 @@ const en: Record<LegalKey, LegalDoc> = {
     title: "Privacy policy",
     description: "What AB Academy collects, why, who it is shared with, and how to delete it.",
     intro:
-      "AB Academy (Akhand Bharat Academy) runs the website abacademy.in and the AB Academy app. This policy explains what we collect, why, who we share it with, and the choices you have. We do not sell your data and we do not show ads.",
+      "AB Academy runs the website abacademy.in and the AB Academy app. This policy explains what we collect, why, who we share it with, and the choices you have. We do not sell your data and we do not show ads.",
     sections: [
       {
         heading: "What we collect",
@@ -243,7 +243,7 @@ const hi: Record<LegalKey, LegalDoc> = {
     title: "गोपनीयता नीति",
     description: "AB अकादमी क्या जानकारी लेती है, क्यों, किसके साथ साझा करती है और उसे कैसे हटाएँ।",
     intro:
-      "AB अकादमी (अखंड भारत अकादमी) वेबसाइट abacademy.in और AB अकादमी ऐप चलाती है। यह नीति बताती है कि हम क्या जानकारी लेते हैं, क्यों लेते हैं, किसके साथ साझा करते हैं और आपके पास क्या विकल्प हैं। हम आपका डेटा बेचते नहीं हैं और विज्ञापन नहीं दिखाते।",
+      "AB अकादमी वेबसाइट abacademy.in और AB अकादमी ऐप चलाती है। यह नीति बताती है कि हम क्या जानकारी लेते हैं, क्यों लेते हैं, किसके साथ साझा करते हैं और आपके पास क्या विकल्प हैं। हम आपका डेटा बेचते नहीं हैं और विज्ञापन नहीं दिखाते।",
     sections: [
       {
         heading: "हम क्या जानकारी लेते हैं",

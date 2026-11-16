@@ -10,6 +10,7 @@ import '../../theme/app_text_styles.dart';
 import '../../widgets/common.dart';
 import '../../widgets/ui_kit.dart';
 import 'tickets_screen.dart';
+import '../../l10n/strings.dart';
 
 /// 21 · Ticket detail — the conversation with support, plus a reply box.
 class TicketDetailScreen extends ConsumerStatefulWidget {
@@ -65,7 +66,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                   const SizedBox(width: 14),
                   Expanded(
                     child: ticket == null
-                        ? Text('Loading…', style: AppText.meta)
+                        ? Text(tx.loading, style: AppText.meta)
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -115,14 +116,14 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                   color: AppColors.surface,
                   padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
                   child: Text(
-                    'This ticket is ${ticket.status.label.toLowerCase()}. Raise a new one if the problem comes back.',
+                    tx.ticketClosedNote(tx.hindi ? ticket.status.label : ticket.status.label.toLowerCase()),
                     textAlign: TextAlign.center,
                     style: AppText.meta,
                   ),
                 )
               else
                 MessageComposer(
-                  hint: 'Write a reply…',
+                  hint: tx.writeReply,
                   onSend: (body) async {
                     try {
                       await ref
@@ -130,7 +131,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                           .reply(widget.ticketId, body);
                     } catch (_) {
                       if (context.mounted) {
-                        showDemoSnack(context, 'Could not send. Try again.');
+                        showDemoSnack(context, tx.couldNotSendTryAgain);
                       }
                     }
                   },
@@ -174,7 +175,7 @@ class _Bubble extends StatelessWidget {
             children: [
               if (!mine) ...[
                 Text(
-                  message.authorName ?? 'Support',
+                  message.authorName ?? tx.support,
                   style: AppText.tabular(
                     11,
                     FontWeight.w600,

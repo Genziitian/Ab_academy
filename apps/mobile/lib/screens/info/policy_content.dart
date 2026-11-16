@@ -1,4 +1,6 @@
 import '../../config/academy.dart';
+import 'policy_content_hi.dart';
+import '../../l10n/strings.dart';
 
 /// One block of a policy section: a paragraph, or a bulleted list.
 sealed class PolicyBlock {
@@ -39,10 +41,16 @@ class PolicyDoc {
 abstract final class Policies {
   static final _address = '${Academy.name}, ${Academy.address.join(', ')}';
 
-  static final privacy = PolicyDoc(
+  /// The policy in the student's language.
+  static PolicyDoc get privacy => tx.hindi ? PoliciesHi.privacy : _privacy;
+  static PolicyDoc get terms => tx.hindi ? PoliciesHi.terms : _terms;
+  static PolicyDoc get refund => tx.hindi ? PoliciesHi.refund : _refund;
+  static PolicyDoc get dataDeletion => tx.hindi ? PoliciesHi.dataDeletion : _dataDeletion;
+
+  static final _privacy = PolicyDoc(
     title: 'Privacy policy',
     intro:
-        '${Academy.name} (${Academy.fullName}) runs the website ${Academy.site} '
+        '${Academy.name} runs the website ${Academy.site} '
         'and the ${Academy.name} app. This policy explains what we collect, why, '
         'who we share it with, and the choices you have. We do not sell your '
         'data and we do not show ads.',
@@ -108,7 +116,7 @@ abstract final class Policies {
     ],
   );
 
-  static final terms = PolicyDoc(
+  static final _terms = PolicyDoc(
     title: 'Terms & conditions',
     intro:
         'These terms apply when you use the ${Academy.name} website or app, or '
@@ -127,7 +135,7 @@ abstract final class Policies {
           'Each course gives you access to its recorded classes, live doubt sessions, notes and practice questions for the period shown on the course page. Class dates, lectures and teachers may change; we will tell you in the app when they do.',
         ),
         Para(
-          'We teach to the Bihar Board syllabus and pattern, but we cannot promise any particular marks or result.',
+          'We teach to the Class 12 syllabus, but we cannot promise any particular marks or result.',
         ),
       ]),
       const PolicySection('Prices and payment', [
@@ -166,7 +174,7 @@ abstract final class Policies {
     ],
   );
 
-  static final refund = PolicyDoc(
+  static final _refund = PolicyDoc(
     title: 'Refund policy',
     intro:
         'We want you to buy a course only when you are sure it suits you, so '
@@ -204,7 +212,7 @@ abstract final class Policies {
     ],
   );
 
-  static final dataDeletion = PolicyDoc(
+  static final _dataDeletion = PolicyDoc(
     title: 'Data & account deletion',
     intro:
         'You can ask us to delete your personal data, or your whole '

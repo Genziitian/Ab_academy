@@ -1,3 +1,4 @@
+import '../../l10n/strings.dart';
 /// Mirrors `public.course_banners` — one slide in the course slider, managed
 /// from the admin console's "App slider" page.
 class CourseBanner {
@@ -34,7 +35,7 @@ class CourseBanner {
       subtitle: row['subtitle'] as String?,
       imageUrl: path == null ? null : '$publicBase$path',
       courseId: row['course_id'] as String?,
-      ctaLabel: (row['cta_label'] as String?) ?? 'View course',
+      ctaLabel: (row['cta_label'] as String?) ?? tx.viewCourse,
       hue: (row['hue'] as int?) ?? 214,
     );
   }

@@ -21,6 +21,7 @@ import '../../widgets/brand_art.dart';
 import '../../widgets/common.dart';
 import '../../widgets/ui_kit.dart';
 import '../onboarding/setup_class_screen.dart';
+import '../../l10n/strings.dart';
 
 /// 25 · Checkout — the course, what it includes, how to pay, the total.
 ///
@@ -80,7 +81,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (mounted) showDemoSnack(context, e.message);
     } catch (_) {
       if (mounted) {
-        showDemoSnack(context, 'Payment could not be completed. Try again.');
+        showDemoSnack(context, tx.paymentNotCompleted);
       }
     } finally {
       if (mounted) setState(() => _paying = false);
@@ -96,18 +97,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ? method
         : _methods.first.name;
     final teacher = course.teachers.isEmpty
-        ? 'Ajit Sir'
+        ? tx.teacherName
         : course.teachers.first.displayName;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppTopBar(
-        title: 'Checkout',
+        title: tx.checkout,
         actions: [
           const Icon(LucideIcons.lock, size: 14, color: AppColors.success),
           const SizedBox(width: 4),
           Text(
-            'Secure',
+            tx.secure,
             style: AppText.tabular(
               13,
               FontWeight.w600,
@@ -120,7 +121,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
         children: [
           Text(
-            'COMPLETE YOUR ENROLMENT',
+            tx.completeEnrolment,
             style: AppText.eyebrow(color: AppColors.primary),
           ),
           const SizedBox(height: 14),
@@ -152,7 +153,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'CLASS ${course.classLevel} · ${course.board.toUpperCase()}',
+                              tx.classNCaps(course.classLevel),
                               style: AppText.eyebrow(
                                 color: AppColors.primary,
                                 size: 10,
@@ -161,7 +162,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             const SizedBox(height: 5),
                             Text(course.title, style: AppText.cardTitleLg),
                             const SizedBox(height: 3),
-                            Text('with $teacher', style: AppText.meta),
+                            Text(tx.withTeacher(teacher), style: AppText.meta),
                           ],
                         ),
                       ),
@@ -174,10 +175,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   child: Column(
                     children: [
                       for (final item in [
-                        'Recorded classes — watch anytime',
-                        'Live doubt sessions with $teacher',
-                        'On the app and the website',
-                        'Access until 31 March 2027',
+                        tx.incRecorded,
+                        tx.incLive(teacher),
+                        tx.incAppWeb,
+                        tx.incAccess,
                       ])
                         Padding(
                           padding: const EdgeInsets.only(bottom: 9),
@@ -200,12 +201,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          Text('Pay with', style: AppText.sectionTitle),
+          Text(tx.payWith, style: AppText.sectionTitle),
           const SizedBox(height: 12),
           for (final option in _methods) ...[
             _MethodRow(
               icon: option.icon,
-              name: option.name,
+              name: option.label,
               subtitle: option.subtitle,
               selected: selected == option.name,
               onTap: () =>
@@ -227,9 +228,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Payments are processed securely by Razorpay — we never see '
-                  'your card or UPI details. 7-day refund if you have watched '
-                  '3 lectures or fewer. Questions? ${Academy.email}',
+                  tx.paymentFinePrint(Academy.email),
                   style: AppText.meta.copyWith(height: 1.5),
                 ),
               ),
@@ -251,7 +250,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Total', style: AppText.meta),
+                  Text(tx.total, style: AppText.meta),
                   Text(
                     formatRupees(course.priceInr),
                     style: AppText.serif(30, height: 1.0),
@@ -261,7 +260,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               const SizedBox(width: 18),
               Expanded(
                 child: PrimaryButton(
-                  label: _paying ? 'Opening payment…' : 'Pay securely',
+                  label: _paying ? tx.openingPayment : tx.paySecurely,
                   enabled: !_paying,
                   onPressed: () => _pay(course, selected),
                 ),
@@ -274,15 +273,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 }
 
-const _methods = [
+/// `name` is the stored method id; `label` is what the student reads.
+List<({String name, String label, String subtitle, IconData icon})> get _methods => [
   (
     name: 'UPI',
-    subtitle: 'Google Pay, PhonePe, Paytm or any UPI app',
+    label: 'UPI',
+    subtitle: tx.upiApps,
     icon: LucideIcons.smartphone,
   ),
   (
     name: 'Card / Net banking',
-    subtitle: 'Visa, Mastercard, RuPay and all major banks',
+    label: tx.cardNetbanking,
+    subtitle: tx.cardBanks,
     icon: LucideIcons.creditCard,
   ),
 ];
@@ -364,7 +366,7 @@ class _Summary extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Course price', style: row),
+              Text(tx.coursePrice, style: row),
               Text(formatRupees(original), style: row),
             ],
           ),
@@ -373,7 +375,7 @@ class _Summary extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Discount', style: row),
+                Text(tx.discount, style: row),
                 Text(
                   '− ${formatRupees(discount)}',
                   style: row.copyWith(color: AppColors.success),
@@ -387,7 +389,7 @@ class _Summary extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Total', style: AppText.tabular(16, FontWeight.w700)),
+              Text(tx.total, style: AppText.tabular(16, FontWeight.w600)),
               Text(
                 formatRupees(course.priceInr),
                 style: AppText.serif(30, height: 1.0),

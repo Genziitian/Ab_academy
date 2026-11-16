@@ -16,6 +16,8 @@ import '../../widgets/ui_kit.dart';
 import '../info/info_screens.dart';
 import '../info/policy_content.dart';
 import 'delete_account_screen.dart';
+import '../../l10n/strings.dart';
+import '../../widgets/language_toggle.dart';
 
 final _versionProvider = FutureProvider<String>((ref) async {
   try {
@@ -48,13 +50,6 @@ class MoreScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 gradient: AppGradients.brand,
                 borderRadius: BorderRadius.circular(26),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.28),
-                    blurRadius: 22,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
               ),
               child: Material(
                 type: MaterialType.transparency,
@@ -88,8 +83,8 @@ class MoreScreen extends ConsumerWidget {
                               const SizedBox(height: 4),
                               Text(
                                 student.studentCode == null
-                                    ? 'STUDENT · View Profile'
-                                    : '${student.studentCode} · View Profile',
+                                    ? tx.studentViewProfile
+                                    : tx.codeViewProfile(student.studentCode!),
                                 style: AppText.tabular(
                                   14,
                                   FontWeight.w400,
@@ -110,97 +105,120 @@ class MoreScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+            // Language, first: students who open the app in the wrong
+            // language should find the switch without reading anything.
+            SoftCard(
+              padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+              child: Row(
+                children: [
+                  TintIcon(icon: LucideIcons.languages, color: AppColors.ink, size: 38),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(tx.hindi ? 'भाषा · Language' : 'Language · भाषा', style: AppText.tabular(15, FontWeight.w500)),
+                        const SizedBox(height: 2),
+                        Text(tx.languageHint, style: AppText.meta),
+                      ],
+                    ),
+                  ),
+                  const LanguageToggle(),
+                ],
+              ),
+            ),
             const SizedBox(height: 28),
-            const GroupHeading('General'),
+            GroupHeading(tx.groupGeneral),
             MenuList(
               rows: [
                 MenuRow(
                   icon: LucideIcons.headphones,
                   color: AppColors.primary,
-                  label: 'Support',
-                  value: openTickets > 0 ? '$openTickets open' : null,
+                  label: tx.support,
+                  value: openTickets > 0 ? tx.openTickets(openTickets) : null,
                   onTap: () => context.push(Routes.tickets),
                 ),
                 MenuRow(
                   icon: LucideIcons.settings,
                   color: AppColors.primary,
-                  label: 'Settings',
+                  label: tx.settings,
                   onTap: () => context.push(Routes.profile),
                 ),
                 MenuRow(
                   icon: LucideIcons.share2,
                   color: AppColors.primary,
-                  label: 'Share App',
+                  label: tx.shareApp,
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: Env.siteUrl));
                     showDemoSnack(
                       context,
-                      'Link copied — share it with friends.',
+                      tx.linkCopied,
                     );
                   },
                 ),
                 MenuRow(
                   icon: LucideIcons.downloadCloud,
                   color: AppColors.primary,
-                  label: 'Check for Updates',
+                  label: tx.checkUpdates,
                   value: version,
                   onTap: () => showDemoSnack(
                     context,
-                    'You are on the latest version${version.isEmpty ? '' : ' ($version)'}.',
+                    '${tx.latestVersion(version.isEmpty ? '' : ' ($version)')}.',
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 28),
-            const GroupHeading('Information'),
+            GroupHeading(tx.groupInformation),
             MenuList(
               rows: [
                 MenuRow(
                   icon: LucideIcons.info,
                   color: AppColors.primary,
-                  label: 'About Us',
+                  label: tx.aboutUs,
                   onTap: () => openAbout(context),
                 ),
                 MenuRow(
                   icon: LucideIcons.gavel,
                   color: AppColors.primary,
-                  label: 'Terms & Conditions',
+                  label: tx.termsConditions,
                   onTap: () => openPolicy(context, Policies.terms),
                 ),
                 MenuRow(
                   icon: LucideIcons.shieldCheck,
                   color: AppColors.primary,
-                  label: 'Privacy Policy',
+                  label: tx.privacyPolicy,
                   onTap: () => openPolicy(context, Policies.privacy),
                 ),
                 MenuRow(
                   icon: LucideIcons.receipt,
                   color: AppColors.primary,
-                  label: 'Refund Policy',
+                  label: tx.refundPolicy,
                   onTap: () => openPolicy(context, Policies.refund),
                 ),
                 MenuRow(
                   icon: LucideIcons.fileX,
                   color: AppColors.primary,
-                  label: 'Data & Account Deletion',
+                  label: tx.dataDeletion,
                   onTap: () => openDataDeletion(context),
                 ),
                 MenuRow(
                   icon: LucideIcons.mail,
                   color: AppColors.primary,
-                  label: 'Contact Us',
+                  label: tx.contactUs,
                   onTap: () => openContact(context),
                 ),
               ],
             ),
             const SizedBox(height: 28),
-            const GroupHeading('Account'),
+            GroupHeading(tx.groupAccount),
             MenuList(
               rows: [
                 MenuRow(
                   icon: LucideIcons.userX,
                   color: AppColors.liveInk,
-                  label: 'Delete account or data',
+                  label: tx.deleteAccountOrData,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const DeleteAccountScreen(),
@@ -233,7 +251,7 @@ class MoreScreen extends ConsumerWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
-                          'Sign out',
+                          tx.signOut,
                           style: AppText.tabular(
                             17,
                             FontWeight.w600,
@@ -268,20 +286,20 @@ class MoreScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: Text('Sign out?', style: AppText.cardTitle),
+        title: Text(tx.signOutQ, style: AppText.cardTitle),
         content: Text(
-          'You will need your Google account to sign back in.',
+          tx.signOutBody,
           style: AppText.meta.copyWith(height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(tx.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Sign out',
+            child: Text(
+              tx.signOut,
               style: TextStyle(color: AppColors.liveInk),
             ),
           ),

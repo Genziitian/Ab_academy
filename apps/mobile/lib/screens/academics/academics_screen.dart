@@ -9,6 +9,7 @@ import '../../widgets/ui_kit.dart';
 import '../calendar/calendar_screen.dart';
 import '../live/live_sessions_screen.dart';
 import '../materials/study_materials_screen.dart';
+import '../../l10n/strings.dart';
 
 /// Academics tab — one tile per part of the learning journey.
 class AcademicsScreen extends StatelessWidget {
@@ -19,25 +20,25 @@ class AcademicsScreen extends StatelessWidget {
     final tiles = [
       (
         LucideIcons.video,
-        'Live Sessions',
+        tx.liveSessions,
         AppGradients.orange,
         () => context.push(Routes.live),
       ),
       (
         LucideIcons.fileText,
-        'Class Notes',
+        tx.classNotesTitle,
         AppGradients.green,
         () => context.push(Routes.notes),
       ),
       (
         LucideIcons.headphones,
-        'Support',
+        tx.support,
         AppGradients.sky,
         () => context.push(Routes.tickets),
       ),
       (
         LucideIcons.bell,
-        'Announcements',
+        tx.announcements,
         AppGradients.blue,
         () => context.push(Routes.notifications),
       ),
@@ -50,9 +51,9 @@ class AcademicsScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 18, 20, 48),
           children: [
-            const PageTitle(
-              title: 'Academics',
-              subtitle: 'Everything for your learning journey',
+            PageTitle(
+              title: tx.academics,
+              subtitle: tx.academicsLead,
             ),
             const SizedBox(height: 16),
             const Divider(color: AppColors.border, height: 1),
@@ -108,18 +109,18 @@ class AcademicsSectionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final (title, subtitle, Widget body) = switch (section) {
       'calendar' => (
-        'Calendar',
-        'Classes and tests by day',
+        tx.calendar,
+        tx.calendarLead,
         const CalendarView(),
       ),
       'notes' => (
-        'Class Notes',
-        'Chapter PDFs from your courses',
+        tx.classNotesTitle,
+        tx.classNotesLead,
         const NotesView(),
       ),
       _ => (
-        'Live Sessions',
-        'Join live or catch the recording',
+        tx.liveSessions,
+        tx.liveSessionsLead,
         const LiveSessionsView(),
       ),
     };

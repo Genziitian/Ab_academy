@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Admin · Akhand Bharat Academy",
+  title: "Admin · AB Academy",
   description: "Manage courses, schedules, doubts, notifications and support tickets.",
   robots: { index: false, follow: false },
 };

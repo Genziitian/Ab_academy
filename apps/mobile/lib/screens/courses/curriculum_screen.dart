@@ -11,8 +11,16 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/common.dart';
 import '../../widgets/ui_kit.dart';
+import '../../l10n/strings.dart';
 
 const _tabs = ['Curriculum', 'Notes', 'Overview'];
+
+/// Tabs are keyed in English; this is what each one shows.
+String _tabLabel(String t) => switch (t) {
+  'Notes' => tx.notes,
+  'Overview' => tx.overview,
+  _ => tx.curriculum,
+};
 
 /// 08 · An enrolled course: gradient header card, then Curriculum (chapters
 /// that open into lesson tiles), Notes and Overview.
@@ -69,10 +77,12 @@ class _CurriculumScreenState extends ConsumerState<CurriculumScreen> {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: UnderlineTabs(
-                tabs: _tabs,
-                selected: _tab,
+                tabs: [for (final t in _tabs) _tabLabel(t)],
+                selected: _tabLabel(_tab),
                 gap: 26,
-                onSelected: (t) => setState(() => _tab = t),
+                onSelected: (label) => setState(
+                  () => _tab = _tabs.firstWhere((t) => _tabLabel(t) == label),
+                ),
               ),
             ),
             Expanded(
@@ -93,7 +103,7 @@ class _CurriculumScreenState extends ConsumerState<CurriculumScreen> {
                                 separatorBuilder: (_, _) =>
                                     const SizedBox(width: 8),
                                 itemBuilder: (_, i) => ChoiceChip(
-                                  label: Text(subjects[i]),
+                                  label: Text(tx.subject(subjects[i])),
                                   selected: subjects[i] == subject,
                                   onSelected: (_) => setState(() {
                                     _subject = subjects[i];
@@ -105,10 +115,10 @@ class _CurriculumScreenState extends ConsumerState<CurriculumScreen> {
                             const SizedBox(height: 14),
                           ],
                           if (chapters.isEmpty)
-                            const EmptyState(
+                            EmptyState(
                               icon: LucideIcons.bookOpen,
-                              title: 'Chapters coming soon',
-                              body: 'Teachers are still adding lessons.',
+                              title: tx.chaptersSoon,
+                              body: tx.teachersAdding,
                             ),
                           for (var i = 0; i < chapters.length; i++) ...[
                             _ChapterCard(
@@ -140,35 +150,18 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final eyebrow = (subject ?? course?.subjects.firstOrNull ?? 'Course')
-        .toUpperCase();
+    final raw = subject ?? course?.subjects.firstOrNull;
+    final eyebrow = raw == null
+        ? (tx.hindi ? tx.course : tx.course.toUpperCase())
+        : (tx.hindi ? tx.subject(raw) : raw.toUpperCase());
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        gradient: AppGradients.brand,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.25),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        color: AppColors.ink,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Stack(
         children: [
-          Positioned(
-            right: -50,
-            top: -40,
-            child: Container(
-              width: 190,
-              height: 190,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
             child: Column(
@@ -210,7 +203,7 @@ class _Header extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        '${course?.priceInr == 0 ? 'FREE' : 'PRO'} · CLASS ${course?.classLevel ?? ''}',
+                        '${course?.priceInr == 0 ? tx.freeCaps : tx.pro} · ${tx.classNCaps(course?.classLevel ?? '')}',
                         style: AppText.tabular(
                           13,
                           FontWeight.w600,
@@ -231,7 +224,7 @@ class _Header extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  course?.title ?? 'My course',
+                  course?.title ?? tx.myCourse,
                   style: AppText.tabular(
                     26,
                     FontWeight.w700,
@@ -269,8 +262,8 @@ class _ChapterCard extends StatelessWidget {
         .length;
     final notes = chapter.lessons.length - lectures;
     final meta = [
-      '$lectures lecture${lectures == 1 ? '' : 's'}',
-      if (notes > 0) '$notes note${notes == 1 ? '' : 's'}',
+      tx.lectureCount(lectures),
+      if (notes > 0) tx.noteCount(notes),
     ].join('  ·  ');
 
     return Container(
@@ -296,7 +289,7 @@ class _ChapterCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'CHAPTER ${number.toString().padLeft(2, '0')}',
+                          tx.chapterN(number),
                           style: AppText.tabular(
                             11,
                             FontWeight.w700,
@@ -379,19 +372,19 @@ class LessonRow extends StatelessWidget {
     final (IconData icon, Color color, String kind) = switch (state) {
       LessonState.notes => (
         LucideIcons.fileText,
-        const Color(0xFFD9480F),
-        'Notes',
+        AppColors.accentInk,
+        tx.notes,
       ),
-      LessonState.live => (LucideIcons.radio, AppColors.liveDot, 'Live class'),
-      LessonState.locked => (LucideIcons.lock, AppColors.textSubtle, 'Lecture'),
-      _ => (LucideIcons.play, AppColors.primary, 'Lecture'),
+      LessonState.live => (LucideIcons.radio, AppColors.liveDot, tx.liveClass),
+      LessonState.locked => (LucideIcons.lock, AppColors.textSubtle, tx.lecture),
+      _ => (LucideIcons.play, AppColors.primary, tx.lecture),
     };
     final detail = switch (state) {
       LessonState.notes => 'PDF',
       LessonState.live => lesson.scheduleLabel ?? '',
-      LessonState.locked => 'Enrol to unlock',
-      _ => lesson.durationLabel ?? 'Recorded',
-    }.replaceAll('•', '·').replaceAll('Recorded · ', '');
+      LessonState.locked => tx.enrolToUnlock,
+      _ => lesson.durationLabel ?? tx.recorded,
+    }.replaceAll('•', '·').replaceAll('Recorded · ', '').replaceAll('${tx.recorded} · ', '');
 
     return InkWell(
       onTap: onTap,
@@ -497,11 +490,11 @@ class _NotesTab extends ConsumerWidget {
     if (notes.isEmpty) {
       return ListView(
         padding: const EdgeInsets.all(20),
-        children: const [
+        children: [
           EmptyState(
             icon: LucideIcons.fileText,
-            title: 'No notes yet',
-            body: 'Chapter notes appear here as teachers add them.',
+            title: tx.noNotesYet,
+            body: tx.chapterNotesAppear,
           ),
         ],
       );
@@ -536,7 +529,7 @@ class _NotesTab extends ConsumerWidget {
                 ),
               ),
               Text(
-                'Open',
+                tx.open,
                 style: AppText.tabular(
                   14,
                   FontWeight.w600,
@@ -564,13 +557,13 @@ class _OverviewTab extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 40),
       children: [
         if (c.description.isNotEmpty) ...[
-          Text('About this course', style: AppText.sectionTitle),
+          Text(tx.aboutThisCourse, style: AppText.sectionTitle),
           const SizedBox(height: 8),
           Text(c.description, style: AppText.body),
           const SizedBox(height: 22),
         ],
         if (c.highlights.isNotEmpty) ...[
-          Text('What you get', style: AppText.sectionTitle),
+          Text(tx.whatYouGet, style: AppText.sectionTitle),
           const SizedBox(height: 10),
           SoftCard(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -601,7 +594,7 @@ class _OverviewTab extends StatelessWidget {
           ),
           const SizedBox(height: 22),
         ],
-        Text('Teachers', style: AppText.sectionTitle),
+        Text(tx.teachers, style: AppText.sectionTitle),
         const SizedBox(height: 10),
         for (final t in c.teachers)
           Padding(

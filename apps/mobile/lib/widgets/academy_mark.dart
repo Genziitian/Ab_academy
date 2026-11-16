@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// The Akhand Bharat Academy logo, as a round badge.
+/// The AB Academy logo, as a round badge.
 class AcademyMark extends StatelessWidget {
   const AcademyMark({super.key, this.size = 84});
 
@@ -14,7 +14,7 @@ class AcademyMark extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        semanticLabel: 'Akhand Bharat Academy logo',
+        semanticLabel: 'AB Academy logo',
       ),
     );
   }

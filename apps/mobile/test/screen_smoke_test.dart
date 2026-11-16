@@ -1,8 +1,10 @@
+import 'package:akhand_bharat_academy/l10n/lang.dart';
 import 'package:akhand_bharat_academy/router/app_router.dart';
 import 'package:akhand_bharat_academy/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 /// Every route in the app, with the label used in failure messages.
 const _routes = <(String, String)>[
@@ -36,58 +38,67 @@ const _routes = <(String, String)>[
 ];
 
 void main() {
-  testWidgets('every screen builds and lays out without errors', (
-    tester,
-  ) async {
-    // Deliberately wider than the 390pt design. Widget tests substitute a font
-    // whose every glyph is a full em square, so text measures about twice as
-    // wide here as in the bundled Jakarta; at 390 that reports overflows the
-    // design does not have on a device. The generous surface keeps those false
-    // positives out while still catching what this test is for: structural
-    // layout errors (unbounded constraints, bad state, missing providers),
-    // which are independent of the surface size. Overflow at the real 390pt
-    // width is verified by running the app — see `lib/main_route_walk.dart`.
-    tester.view.physicalSize = const Size(900, 1400);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
+  for (final lang in AppLang.values) {
+    testWidgets('every screen builds and lays out without errors (${lang.name})', (
+      tester,
+    ) async {
+      await initializeDateFormatting('hi');
+      applyLang(lang);
+      addTearDown(() => applyLang(AppLang.en));
 
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-    final router = container.read(routerProvider);
+      // Deliberately wider than the 390pt design. Widget tests substitute a font
+      // whose every glyph is a full em square, so text measures about twice as
+      // wide here as in the bundled Jakarta; at 390 that reports overflows the
+      // design does not have on a device. The generous surface keeps those false
+      // positives out while still catching what this test is for: structural
+      // layout errors (unbounded constraints, bad state, missing providers),
+      // which are independent of the surface size. Overflow at the real 390pt
+      // width is verified by running the app — see `lib/main_route_walk.dart`.
+      tester.view.physicalSize = const Size(900, 1400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
-      ),
-    );
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final router = container.read(routerProvider);
 
-    for (final (path, label) in _routes) {
-      router.go(path);
-      // Fixed frames rather than pumpAndSettle — the live dot and the countdowns
-      // animate forever, so settling would never complete. Enough of them to let
-      // the route transition finish and drop the outgoing page, which otherwise
-      // briefly holds a second copy of the nav shell.
-      await tester.pump();
-      for (var i = 0; i < 8; i++) {
-        await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            theme: AppTheme.light,
+            routerConfig: router,
+          ),
+        ),
+      );
+
+      for (final (path, label) in _routes) {
+        router.go(path);
+        // Fixed frames rather than pumpAndSettle — the live dot and the countdowns
+        // animate forever, so settling would never complete. Enough of them to let
+        // the route transition finish and drop the outgoing page, which otherwise
+        // briefly holds a second copy of the nav shell.
+        await tester.pump();
+        for (var i = 0; i < 8; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: '$label ($path) threw during layout',
+        );
+        expect(
+          find.byType(Scaffold),
+          findsWidgets,
+          reason: '$label ($path) rendered nothing',
+        );
       }
 
-      expect(
-        tester.takeException(),
-        isNull,
-        reason: '$label ($path) threw during layout',
-      );
-      expect(
-        find.byType(Scaffold),
-        findsWidgets,
-        reason: '$label ($path) rendered nothing',
-      );
-    }
-
-    // Unmount so pending timers (splash redirect, OTP resend, lobby countdown)
-    // are cancelled in dispose before the test ends.
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-  });
+      // Unmount so pending timers (splash redirect, OTP resend, lobby countdown)
+      // are cancelled in dispose before the test ends.
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    });
+  }
 }

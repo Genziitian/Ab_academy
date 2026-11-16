@@ -5,7 +5,7 @@ import { getT } from "@/lib/i18n/server";
 
 export const metadata = {
   title: "About",
-  description: "About AB Academy (Akhand Bharat Academy) — Class 12 crash courses for Bihar Board.",
+  description: "About AB Academy — Class 12 crash courses for Bihar Board.",
 };
 
 export default async function AboutPage() {

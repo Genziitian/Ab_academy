@@ -13,6 +13,7 @@ import '../../router/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../widgets/ui_kit.dart';
+import '../../l10n/strings.dart';
 
 const _bg = Color(0xFFF7F3EC);
 const _navy = Color(0xFF1C1814);
@@ -101,19 +102,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   Widget build(BuildContext context) {
     final slides = <Widget>[
       const _LogoSlide(),
-      const _FeatureSlide(
+      _FeatureSlide(
         icon: LucideIcons.video,
         gradientIndex: 0,
-        title: 'Live & recorded classes',
+        title: tx.introLiveTitle,
         body:
-            'Join live with expert teachers, or watch every lecture again whenever you need it.',
+            tx.introLiveBody,
       ),
-      const _FeatureSlide(
+      _FeatureSlide(
         icon: LucideIcons.fileText,
         gradientIndex: 1,
-        title: 'Notes, tests & doubt support',
+        title: tx.introNotesTitle,
         body:
-            'Chapter notes, board-pattern practice and answers to your doubts — all in one app.',
+            tx.introNotesBody,
       ),
     ].take(_count).toList();
 
@@ -158,7 +159,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                           ),
                         ),
                         child: Text(
-                          'Skip',
+                          tx.skip,
                           style: AppText.tabular(
                             15,
                             FontWeight.w600,
@@ -252,7 +253,7 @@ class _LogoSlide extends StatelessWidget {
             const SizedBox(height: 28),
             Text.rich(
               const TextSpan(
-                text: 'Akhand Bharat ',
+                text: 'AB ',
                 style: TextStyle(color: _navy),
                 children: [
                   TextSpan(
@@ -271,13 +272,13 @@ class _LogoSlide extends StatelessWidget {
             Container(width: 52, height: 3, color: _gold),
             const SizedBox(height: 18),
             Text(
-              'LEARN  •  LEAD  •  BUILD',
+              tx.tagline,
               textAlign: TextAlign.center,
               style: tagline,
             ),
             const SizedBox(height: 6),
             Text(
-              'A STRONGER BHARAT',
+              tx.taglineSub,
               textAlign: TextAlign.center,
               style: tagline,
             ),

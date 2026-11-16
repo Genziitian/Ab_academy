@@ -13,6 +13,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/buttons.dart';
+import '../../l10n/strings.dart';
 
 /// 03 · Verify OTP. The six boxes mirror a hidden text field, so the system
 /// keyboard and SMS one-time-code autofill both work.
@@ -69,8 +70,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       SnackBar(
         content: Text(
           result.ok
-              ? 'OTP resent to +91 $phone'
-              : result.error ?? 'Could not resend the OTP.',
+              ? tx.otpResentTo(phone)
+              : result.error ?? tx.otpResendFailed,
         ),
       ),
     );
@@ -90,7 +91,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
     if (!result.ok) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.error ?? 'That code did not work.')),
+        SnackBar(content: Text(result.error ?? tx.otpWrong)),
       );
       ref.read(onboardingProvider.notifier).clearOtp();
       _controller.clear();
@@ -128,20 +129,20 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 onPressed: () => context.pop(),
               ),
               const SizedBox(height: 28),
-              Text('Enter the 6-digit OTP', style: AppText.h2),
+              Text(tx.otpTitle, style: AppText.h2),
               const SizedBox(height: 6),
               Text.rich(
                 TextSpan(
                   style: AppText.bodyLg,
                   children: [
-                    TextSpan(text: 'Sent to +91 $phone · '),
+                    TextSpan(text: tx.otpSentTo(phone)),
                     WidgetSpan(
                       alignment: PlaceholderAlignment.baseline,
                       baseline: TextBaseline.alphabetic,
                       child: GestureDetector(
                         onTap: () => context.pop(),
                         child: Text(
-                          'Edit',
+                          tx.edit,
                           style: AppText.tabular(
                             15,
                             FontWeight.w600,
@@ -204,7 +205,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       color: AppColors.textMuted,
                     ),
                     children: [
-                      const TextSpan(text: "Didn't get it? Resend in "),
+                      TextSpan(text: tx.otpResendIn),
                       TextSpan(
                         text: _countdownLabel,
                         style: AppText.tabular(14, FontWeight.w600),
@@ -223,9 +224,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                         color: AppColors.textMuted,
                       ),
                       children: [
-                        const TextSpan(text: "Didn't get it? "),
+                        TextSpan(text: tx.otpDidntGet),
                         TextSpan(
-                          text: 'Resend OTP',
+                          text: tx.otpResend,
                           style: AppText.tabular(
                             14,
                             FontWeight.w600,
@@ -240,7 +241,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 28),
                 child: PrimaryButton(
-                  label: _verifying ? 'Verifying…' : 'Verify & continue',
+                  label: _verifying ? tx.verifying : tx.verifyContinue,
                   enabled: onboarding.otpComplete && !_verifying,
                   onPressed: () => _verify(onboarding.phone, onboarding.otp),
                 ),

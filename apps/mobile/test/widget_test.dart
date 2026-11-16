@@ -10,9 +10,9 @@ void main() {
     await tester.pump();
 
     expect(
-      find.text('Akhand Bharat Academy', findRichText: true),
+      find.text('AB Academy', findRichText: true),
       findsOneWidget,
     );
-    expect(find.text('A STRONGER BHARAT'), findsOneWidget);
+    expect(find.text('CLASS 12 SCIENCE'), findsOneWidget);
   });
 }

@@ -8,6 +8,7 @@ import '../../theme/app_text_styles.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/common.dart';
+import '../../l10n/strings.dart';
 
 /// More → Delete account or data. Files a request that a super admin
 /// completes within 3 days (Google Play's in-app account deletion).
@@ -79,7 +80,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
   Future<void> _submit() async {
     if (_busy || !_confirmed) return;
     if (!Env.hasBackend) {
-      _snack('Deletion requests need an internet connection.');
+      _snack(tx.deletionNeedsInternet);
       return;
     }
     setState(() => _busy = true);
@@ -90,12 +91,12 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       );
       await _load();
       if (mounted) {
-        _snack('Request received. We will complete it within 3 days.');
+        _snack(tx.deletionReceived);
       }
     } catch (_) {
       if (mounted) {
         _snack(
-          'Could not send your request. Try again, or email support@abacademy.in.',
+          tx.deletionFailed,
         );
       }
     } finally {
@@ -113,9 +114,9 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
         params: {'p_id': pending.id},
       );
       await _load();
-      if (mounted) _snack('Your request was cancelled.');
+      if (mounted) _snack(tx.deletionCancelled);
     } catch (_) {
-      if (mounted) _snack('Could not cancel. Try again.');
+      if (mounted) _snack(tx.couldNotCancel);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -125,7 +126,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppTopBar(title: 'Delete account or data'),
+      appBar: AppTopBar(title: tx.deleteAccountOrData),
       body: _loading
           ? const Center(child: CircularProgressIndicator(strokeWidth: 2.5))
           : ListView(
@@ -136,44 +137,40 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
   }
 
   List<Widget> _pendingView(_Request r) => [
-    Text('Request in progress', style: AppText.h3),
+    Text(tx.requestInProgress, style: AppText.h3),
     const SizedBox(height: 10),
     Text(
       r.kind == 'account'
-          ? 'You asked us to delete your account. It will be deleted by '
-                '${DateFormat('d MMM yyyy').format(r.dueAt)}.'
-          : 'You asked us to delete your personal data. It will be erased by '
-                '${DateFormat('d MMM yyyy').format(r.dueAt)}.',
+          ? tx.accountDeletedBy(DateFormat('d MMM yyyy', tx.hindi ? 'hi' : null).format(r.dueAt))
+          : tx.dataErasedBy(DateFormat('d MMM yyyy', tx.hindi ? 'hi' : null).format(r.dueAt)),
       style: AppText.bodyLg,
     ),
     const SizedBox(height: 24),
     SecondaryButton(
-      label: 'Cancel my request',
+      label: tx.cancelMyRequest,
       onPressed: _busy ? null : _cancel,
     ),
   ];
 
   List<Widget> _form() => [
     Text(
-      'Choose what you want us to delete. We complete every request within 3 days.',
+      tx.chooseWhatToDelete,
       style: AppText.bodyLg,
     ),
     const SizedBox(height: 18),
     _Option(
       selected: _kind == 'data',
-      title: 'Delete my data',
+      title: tx.deleteMyData,
       body:
-          'Erase my name, school, doubts, comments, support tickets and history. '
-          'Keep my account and courses.',
+          tx.deleteMyDataBody,
       onTap: () => setState(() => _kind = 'data'),
     ),
     const SizedBox(height: 10),
     _Option(
       selected: _kind == 'account',
-      title: 'Delete my account',
+      title: tx.deleteMyAccount,
       body:
-          'Erase everything above and close my account for good, including '
-          'access to courses I bought.',
+          tx.deleteMyAccountBody,
       onTap: () => setState(() => _kind = 'account'),
     ),
     const SizedBox(height: 18),
@@ -181,15 +178,14 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       controller: _reason,
       maxLength: 1000,
       maxLines: 3,
-      decoration: const InputDecoration(
-        labelText: 'Reason (optional)',
+      decoration: InputDecoration(
+        labelText: tx.reasonOptional,
         border: OutlineInputBorder(borderRadius: AppRadius.sm),
       ),
     ),
     const SizedBox(height: 4),
     Text(
-      'Orders and payment records are kept without your name, as Indian tax '
-      'law requires.',
+      tx.ordersKept,
       style: AppText.meta,
     ),
     const SizedBox(height: 14),
@@ -200,18 +196,18 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       onChanged: (v) => setState(() => _confirmed = v ?? false),
       title: Text(
         _kind == 'account'
-            ? 'I understand my account and course access will be permanently deleted.'
-            : 'I understand my personal data will be permanently erased.',
+            ? tx.confirmAccount
+            : tx.confirmData,
         style: AppText.body,
       ),
     ),
     const SizedBox(height: 14),
     PrimaryButton(
       label: _busy
-          ? 'Sending…'
+          ? tx.sending
           : _kind == 'account'
-          ? 'Request account deletion'
-          : 'Request data deletion',
+          ? tx.requestAccountDeletion
+          : tx.requestDataDeletion,
       enabled: _confirmed && !_busy,
       onPressed: _submit,
     ),
