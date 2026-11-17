@@ -50,7 +50,7 @@ abstract final class MockData {
     'Daily live classes with doubt solving',
     'Recordings for every chapter',
     'Chapter-wise PDF notes',
-    'Weekly board-pattern tests',
+    'Weekly exam-style tests',
     'Offline downloads for low network',
   ];
 
@@ -75,7 +75,7 @@ abstract final class MockData {
     originalPriceInr: 4999,
     description:
         'Complete Class 12 Science revision in 60 days with live classes, chapter '
-        'recordings, notes and board-pattern tests.',
+        'recordings, notes and exam-style tests.',
     nextUpLabel: 'Next: Physics • Electric Charges',
     lessonsCount: 120,
     notesCount: 38,
@@ -474,7 +474,7 @@ abstract final class MockData {
     LiveMessage(
       author: 'Priya',
       initials: 'PS',
-      body: 'Will this come in board exam?',
+      body: 'Will this come in the exam?',
     ),
     LiveMessage(
       author: 'Amit Sir',
@@ -750,7 +750,7 @@ abstract final class MockData {
   static const lectureEyebrow = 'PHYSICS · CHAPTER 01';
   static const lectureAbout =
       "Electric flux and Gauss's law with applications to a line charge, a plane sheet "
-      'and a spherical shell. Includes four board-pattern derivations.';
+      'and a spherical shell. Includes four exam-style derivations.';
 
   /// PDFs attached to a lecture. The asset is bundled so the viewer works offline.
   static const lessonAttachments = [
@@ -798,7 +798,7 @@ abstract final class MockData {
       id: 'c3',
       author: 'Rahul Kumar',
       initials: 'RK',
-      body: 'Can we get more board-pattern derivations on the spherical shell?',
+      body: 'Can we get more exam-style derivations on the spherical shell?',
       timeLabel: '20m',
       isMe: true,
     ),
