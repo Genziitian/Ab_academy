@@ -19,7 +19,7 @@ export function daysUntil(target: Date, now: number) {
 }
 
 /**
- * The board plan drawn as a register: three phases (concepts, practice,
+ * The study plan drawn as a register: three phases (concepts, practice,
  * revision), one cell per day, filled up to today. Real dates only — it never
  * pretends to know a student's attendance.
  *

@@ -152,7 +152,7 @@ export default async function AdminPopupsPage({
               label="Title"
               name="title"
               defaultValue={editing?.title}
-              placeholder="Board exam crash course"
+              placeholder="Class 12 crash course"
               required
             />
 

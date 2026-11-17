@@ -67,7 +67,7 @@ WHAT YOU GET
 • Recorded lecture for every chapter — watch at your own pace, as many times as you need
 • A practice session for every chapter with exam-style questions written by our teachers
 • Live doubt classes with Ajit Sir
-• Chapter notes and solved practice questions, opening right inside the app
+• Chapter notes that open right inside the lecture
 • A free demo course to try the classroom before you start
 
 COURSES
@@ -90,7 +90,7 @@ Website: https://abacademy.in
 Privacy policy: https://abacademy.in/privacy
 ```
 
-### Resubmission checklist (build 8)
+### Resubmission checklist (build 9)
 
 Files are in `apps/mobile/store/`.
 
@@ -98,7 +98,7 @@ Files are in `apps/mobile/store/`.
    "Start learning free" home slide now use `launch/feature-notes.jpg`
    instead of `launch/demo-yt.jpg`, which showed the IIT Madras emblem.
 2. **App bundle:** upload `apps/mobile/build/app/outputs/bundle/release/app-release.aab`
-   (version 1.0.0, build 8) to the production track, replacing earlier builds.
+   (version 1.0.0, build 9) to the production track, replacing earlier builds.
 3. **Store listing:** app icon `play-icon-512.png`; feature graphic
    `feature-graphic-1024x500.png`; delete every old screenshot and upload
    `screenshots/*.png`.

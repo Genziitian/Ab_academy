@@ -59,14 +59,14 @@ export type Course = {
   bestseller?: boolean;
 };
 
-/** Every crash course runs on the same 60-day board plan. */
+/** Every crash course runs on the same 60-day study plan. */
 export const CRASH_COURSE_DAYS = 60;
 
 export const classes = [
   {
     level: 12 as const,
     title: "Class 12",
-    tagline: "Board 2027 crash courses",
+    tagline: "Class 12 crash courses",
   },
   {
     level: 11 as const,
@@ -121,7 +121,7 @@ const standardDeliverables = (lectures: number, subjects: string) => [
     body: `Every chapter of ${subjects}, recorded so you can learn at your own pace.`,
   },
   {
-    title: "60-day board plan",
+    title: "60-day study plan",
     body: "Chapter-by-chapter flow with weekly revision checkpoints.",
   },
   {
@@ -176,17 +176,17 @@ export const courses: Course[] = [
     price: 249,
     rating: 0,
     lessons: 28,
-    batch: "Board 2027 Batch",
+    batch: "2027 Batch",
     validity: "Until 31 March 2027",
-    tagline: "14 chapters · Board pattern",
+    tagline: "14 chapters · Chapter by chapter",
     thumbnailHue: 20,
     description:
-      "Every Class 12 Physics chapter as a recorded class, with live doubt sessions, chapter notes and board-pattern questions.",
+      "Every Class 12 Physics chapter as a recorded class, with live doubt sessions, chapter notes and exam-style questions.",
     highlights: [
       "Recorded class for every chapter",
       "Live doubt sessions with Ajit Sir",
       "Chapter notes PDF",
-      "Board-pattern questions",
+      "Exam-style questions",
     ],
     deliverables: standardDeliverables(14, "Physics"),
     curriculum: crashCurriculum("Physics"),
@@ -204,17 +204,17 @@ export const courses: Course[] = [
     price: 249,
     rating: 0,
     lessons: 20,
-    batch: "Board 2027 Batch",
+    batch: "2027 Batch",
     validity: "Until 31 March 2027",
-    tagline: "10 chapters · Board pattern",
+    tagline: "10 chapters · Chapter by chapter",
     thumbnailHue: 150,
     description:
-      "Every Class 12 Chemistry chapter as a recorded class, with live doubt sessions, chapter notes and board-pattern questions.",
+      "Every Class 12 Chemistry chapter as a recorded class, with live doubt sessions, chapter notes and exam-style questions.",
     highlights: [
       "Recorded class for every chapter",
       "Live doubt sessions with Ajit Sir",
       "Chapter notes PDF",
-      "Board-pattern questions",
+      "Exam-style questions",
     ],
     deliverables: standardDeliverables(10, "Chemistry"),
     curriculum: crashCurriculum("Chemistry"),
@@ -232,17 +232,17 @@ export const courses: Course[] = [
     price: 249,
     rating: 0,
     lessons: 26,
-    batch: "Board 2027 Batch",
+    batch: "2027 Batch",
     validity: "Until 31 March 2027",
-    tagline: "13 chapters · Board pattern",
+    tagline: "13 chapters · Chapter by chapter",
     thumbnailHue: 270,
     description:
-      "Every Class 12 Maths chapter as a recorded class, with live doubt sessions, chapter notes and board-pattern questions.",
+      "Every Class 12 Maths chapter as a recorded class, with live doubt sessions, chapter notes and exam-style questions.",
     highlights: [
       "Recorded class for every chapter",
       "Live doubt sessions with Ajit Sir",
       "Chapter notes PDF",
-      "Board-pattern questions",
+      "Exam-style questions",
     ],
     deliverables: standardDeliverables(13, "Maths"),
     curriculum: crashCurriculum("Maths"),

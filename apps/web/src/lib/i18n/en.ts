@@ -75,7 +75,7 @@ export const en = {
   },
 
   plan: {
-    title: "Board 2027 plan",
+    title: "Your 60-day plan",
     yourPlan: "Your 60-day plan",
     startsIn: (n: number) => (n === 1 ? "Starts tomorrow" : `Starts in ${n} days`),
     dayOf: (d: number) => `Day ${d} of 60`,
@@ -83,7 +83,7 @@ export const en = {
     phases: ["Concepts", "Practice", "Revision"],
     phaseDays: ["Days 1–20", "Days 21–40", "Days 41–60"],
     classesStart: "Classes start",
-    boardExam: "Board exam",
+    boardExam: "Course target date",
     expected: "expected",
     daysLeft: (n: number) => `${n} days left`,
     legendDone: "Done",
@@ -94,7 +94,7 @@ export const en = {
 
   home: {
     eyebrow: "Class 12 · Physics · Chemistry · Maths",
-    title: "Board-ready in 60 days.",
+    title: "Your 60-day study plan.",
     lead: "Class 12 Physics, Chemistry and Maths — recorded classes, live doubt sessions with Ajit Sir and chapter notes, in Hindi or Hinglish.",
     meta: (date: string, from: string | null) =>
       [`Classes start ${date}`, from ? `from ${from} a subject` : null, "Hindi or Hinglish"].filter(Boolean) as string[],
@@ -113,10 +113,10 @@ export const en = {
     ] as [string, string][],
 
     syllabusEyebrow: "Syllabus",
-    syllabusTitle: "Every chapter, in board order.",
+    syllabusTitle: "Every chapter, in syllabus order.",
     syllabusHint: "Choose a chapter to see what's included",
     chapter: "Chapter",
-    included: ["Recorded class", "Live doubt session", "Notes + board questions"],
+    included: ["Recorded class", "Live doubt session", "Notes + practice questions"],
     includedValue: "Included",
 
     coursesEyebrow: "Courses",
@@ -130,14 +130,14 @@ export const en = {
     starts: (date: string) => `Starts ${date}`,
     batch: "Batch 2027",
 
-    includedTitle: "Everything you need for the boards.",
+    includedTitle: "Everything you need for Class 12.",
     includedLead: "One course per subject, chapter by chapter.",
     includedItems: [
       "Recorded classes",
       "Live doubts",
       "Practice every chapter",
       "Chapter notes",
-      "Board-pattern questions",
+      "Exam-style questions",
       "Hindi or Hinglish",
       "App + website",
       "Exam revision",
@@ -178,7 +178,7 @@ export const en = {
 
     finalEyebrow: (date: string) => `Classes start ${date}`,
     finalTitle: "Make the last 60 days count.",
-    daysToBoards: "days to the boards",
+    daysToBoards: "days left",
     perSubjectFrom: "a subject, from",
     choose: "Choose your crash course",
     from: (price: string) => `from ${price}`,
@@ -190,7 +190,7 @@ export const en = {
 
   catalog: {
     title: "Class 12 crash courses",
-    lead: "Recorded lectures, live doubt sessions, chapter notes and board-pattern practice — one course per subject.",
+    lead: "Recorded lectures, live doubt sessions, chapter notes and exam-style practice — one course per subject.",
     all: "All",
     count: (shown: number, total: number) => `${shown} of ${total}`,
     empty: "No courses for this subject yet.",
@@ -255,10 +255,10 @@ export const en = {
 
   about: {
     eyebrow: "About us",
-    title: "A small academy with one job: get you ready for the boards.",
+    title: "A small academy with one job: help you study Class 12 well.",
     lead:
       "AB Academy teaches Class 12 students through recorded lectures, live doubt sessions and chapter notes, so every student knows what to study next.",
-    p1: "Right now we focus on Class 12 crash courses in Physics, Chemistry and Maths. More classes and boards will follow under the same academy.",
+    p1: "Right now we focus on Class 12 crash courses in Physics, Chemistry and Maths. More classes and subjects will follow under the same academy.",
     quote: "हमारा लक्ष्य है कि हर छात्र को साफ़ पता हो कि आगे क्या पढ़ना है — बिना उलझन के।",
     p2: "Hindi-medium and Hinglish learners get the same simple path: pick your subject, watch the lectures, revise with notes, and ask when you're stuck.",
     explore: "Explore courses",
@@ -317,7 +317,7 @@ export const en = {
     titleLive: "Free notes for every chapter.",
     titleSoon: "Notes are coming soon.",
     lead:
-      "A notes PDF and solved PYQs for every Class 12 chapter, in Hindi and English. They open in a secure viewer on the website and in the app.",
+      "A notes PDF for every Class 12 chapter, in Hindi and English. They open in a secure viewer on the website and in the app.",
     join: "Join the crash course",
     notify: "Sign in to get notified",
     readArrow: "Read",
@@ -325,7 +325,7 @@ export const en = {
     readOnly: "Read here only — notes can't be downloaded or shared.",
     wantMore: "Want every chapter taught step by step?",
     seeCourses: "See the Class 12 crash courses",
-    bannerAlt: "Free notes and solved PYQs",
+    bannerAlt: "Free chapter notes",
     opening: "Opening notes…",
     pages: (n: number) => `${n} pages`,
     signInAgain: "Sign in again to open these notes.",
@@ -360,7 +360,7 @@ export const en = {
 
   login: {
     panelHindi: "आज शुरू करें — कल का आत्मविश्वास बनाएँ।",
-    panelTitle: "Board-ready in 60 days.",
+    panelTitle: "Your 60-day study plan.",
     panelPoints: ["Recorded classes for every chapter", "Live doubt sessions with Ajit Sir", "Notes in Hindi and English"],
     title: "Log in or sign up",
     sub: "Use your mobile number or Google account.",
@@ -472,7 +472,7 @@ export const en = {
 
     greeting: (part: "morning" | "afternoon" | "evening", name: string) =>
       `Good ${part}, ${name}`,
-    dashLead: "Here's where your board preparation stands today.",
+    dashLead: "Here's where your preparation stands today.",
 
     tileCourses: "Courses",
     enrolled: "enrolled",
@@ -483,7 +483,7 @@ export const en = {
     scheduled: "scheduled",
     nextAt: (when: string) => `Next: ${when}`,
     noneScheduled: "None scheduled yet",
-    tileExam: "Board exam",
+    tileExam: "Course target date",
     days: "days",
     expectedExam: (date: string) => `Expected ${date}`,
     openLink: "Open",
@@ -534,9 +534,9 @@ export const en = {
     liveEmptyStarts: (date: string) => `Classes start ${date}.`,
     liveEmptyBody: "Ajit Sir's live sessions will be listed here with their date and time. Join them from the AB Academy app.",
 
-    notesLead: "Chapter notes and PYQs",
+    notesLead: "Chapter notes",
     notesEmptyTitle: "Notes are coming soon",
-    notesEmptyBody: "Chapter notes and solved PYQs will appear here. Notes attached to a lecture open from that lecture.",
+    notesEmptyBody: "Chapter notes will appear here. Notes attached to a lecture open from that lecture.",
 
     profileLead: "Your account",
     fullName: "Full name",

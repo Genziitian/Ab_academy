@@ -21,7 +21,7 @@ abstract final class Academy {
     (name: 'Sriram', role: 'Co-founder & Developer', photo: null as String?),
   ];
 
-  /// The 60-day plan: classes start, and the board exam (expected).
+  /// The 60-day plan: classes start, and the course target date.
   /// Kept in step with BATCH_START / EXAM_DATE in apps/web/src/lib/landing.ts.
   static final batchStart = DateTime(2026, 11, 16);
   static final examDate = DateTime(2027, 2, 1, 9, 30);

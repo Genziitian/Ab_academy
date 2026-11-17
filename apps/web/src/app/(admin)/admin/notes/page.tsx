@@ -27,7 +27,7 @@ function NoteForm({ chapterId, note }: { chapterId: string; note?: FreeNote }) {
     <ModalForm action={saveNoteAction}>
       <input type="hidden" name="chapterId" value={chapterId} />
       {note ? <input type="hidden" name="id" value={note.id} /> : null}
-      <Field label="Title" name="title" placeholder="Chapter notes + solved PYQs" defaultValue={note?.title} required />
+      <Field label="Title" name="title" placeholder="Chapter notes" defaultValue={note?.title} required />
       <Field
         label={note ? "Replace Google Drive link (optional)" : "Google Drive link of the PDF"}
         name="link"

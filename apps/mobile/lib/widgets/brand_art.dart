@@ -48,11 +48,6 @@ List<_Promo> get _promos => [
     tx.promoNotes,
     Routes.notes,
   ),
-  _Promo(
-    'assets/images/promo/courses.png',
-    tx.promoBuy,
-    Routes.store,
-  ),
 ];
 
 /// The app's own feature banners: an auto-advancing, swipeable carousel.

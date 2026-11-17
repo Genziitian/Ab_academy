@@ -267,10 +267,9 @@ class S {
   String planDaysLeft(int n) => _('$n days left', '$n दिन बाकी');
 
   // ----------------------------------------------------------- promos
-  String get promoBatch => _('Class 12 Crash Course starts 16 November', 'कक्षा 12 क्रैश कोर्स 16 नवंबर से शुरू');
+  String get promoBatch => _('Class 12 Physics, Chemistry and Maths crash courses', 'कक्षा 12 भौतिकी, रसायन और गणित क्रैश कोर्स');
   String get promoDoubts => _('Ask doubts and get them solved', 'डाउट पूछें और हल पाएँ');
-  String get promoNotes => _('Free notes and solved PYQs', 'मुफ़्त नोट्स और हल किए गए PYQ');
-  String get promoBuy => _('Buy courses right in the app', 'ऐप में ही कोर्स ख़रीदें');
+  String get promoNotes => _('Free chapter notes', 'मुफ़्त अध्याय नोट्स');
   String get viewCourse => _('View course', 'कोर्स देखें');
 
   // ---------------------------------------------------------- courses
@@ -394,11 +393,11 @@ class S {
   String get noNotesFound => _('No notes found', 'कोई नोट्स नहीं मिले');
   String noFilterNotes(String f) => _('Teachers have not uploaded $f notes yet.', 'शिक्षकों ने अभी $f के नोट्स अपलोड नहीं किए हैं।');
   String nothingMatchesQuery(String q) => _('Nothing matches “$q”.', '“$q” से कुछ नहीं मिला।');
-  String get freeNotesTitle => _('Free notes and solved PYQs', 'मुफ़्त नोट्स और हल किए गए PYQ');
+  String get freeNotesTitle => _('Free chapter notes', 'मुफ़्त अध्याय नोट्स');
   String get notesOnTheWay => _('Chapter notes are on the way.', 'अध्याय के नोट्स जल्द आ रहे हैं।');
   String get notesOnTheWayBody => _(
-    'A notes PDF and solved PYQs for every Class 12 chapter, in Hindi and English. They will open right here in the secure viewer.',
-    'कक्षा 12 के हर अध्याय का नोट्स PDF और हल किए गए PYQ, हिंदी और अंग्रेज़ी में। ये यहीं सुरक्षित व्यूअर में खुलेंगे।',
+    'A notes PDF for every Class 12 chapter, in Hindi and English. They will open right here in the secure viewer.',
+    'कक्षा 12 के हर अध्याय का नोट्स PDF, हिंदी और अंग्रेज़ी में। ये यहीं सुरक्षित व्यूअर में खुलेंगे।',
   );
 
   // -------------------------------------------------------------- live
